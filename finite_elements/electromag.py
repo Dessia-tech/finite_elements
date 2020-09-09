@@ -107,7 +107,9 @@ class MagnetLoad(DessiaObject):
             if count == 1 and (linear_element.points[0] not in self.non_contour_nodes \
             or linear_element.points[1] not in self.non_contour_nodes):
                 contour_linear_elements.append(linear_element)
+        
         return contour_linear_elements
+    
 
 
 class ContinuityCondition(DessiaObject):
@@ -144,7 +146,7 @@ class FiniteElementAnalysis(DessiaObject):
     :param continuity_conditions: The list of continuity conditions applied to the nodes.
     :type continuity_conditions: List of ContinuityCondition objects
     """
-    def __init__(self, mesh:vmmesh.Mesh, element_loads:List[ConstantLoad], node_loads:List[SingleNodeLoad], magnet_loads:List[MagnetLoad], continuity_conditions:List[ContinuityCondition]):
+    def __init__(self, mesh:vmmesh.Mesh,element_loads:List[ConstantLoad], node_loads:List[SingleNodeLoad], magnet_loads:List[MagnetLoad], continuity_conditions:List[ContinuityCondition]):
         self.mesh = mesh
         self.element_loads = element_loads # current density J
         self.node_loads = node_loads 
@@ -166,25 +168,32 @@ class FiniteElementAnalysis(DessiaObject):
                 indexes = [self.mesh.node_to_index[element.points[0]],
                            self.mesh.node_to_index[element.points[1]],
                            self.mesh.node_to_index[element.points[2]]]
+              
                 b1 = element_form_functions[0][1]
                 c1 = element_form_functions[0][2]
                 b2 = element_form_functions[1][1]
                 c2 = element_form_functions[1][2]
                 b3 = element_form_functions[2][1]
                 c3 = element_form_functions[2][2]
-                
+              +.
+              
+              
+              
                 row_ind.extend((indexes[0], indexes[0], indexes[0], indexes[1], indexes[1], indexes[1], indexes[2], indexes[2], indexes[2]))
                 col_ind.extend((indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2]))
-                data.extend((1/elements_group.mu_total * (b1**2 + c1**2) * element.area, 
-                             1/elements_group.mu_total * (b1*b2 + c1*c2) * element.area,
-                             1/elements_group.mu_total * (b1*b3 + c1*c3) * element.area,
-                             1/elements_group.mu_total * (b1*b2 + c1*c2) * element.area,
-                             1/elements_group.mu_total * (b2**2 + c2**2) * element.area,
-                             1/elements_group.mu_total * (b2*b3 + c2*c3) * element.area,
-                             1/elements_group.mu_total * (b1*b3 + c1*c3) * element.area,
-                             1/elements_group.mu_total * (b2*b3 + c2*c3) * element.area,
-                             1/elements_group.mu_total * (b3**2 + c3**2) * element.area))
-                
+             
+                data.extend((1/MU*(b1**2 + c1**2) * element.area, 
+                             1/MU*
+                             * element.area,
+                             1/MU*(b1*b3 + c1*c3) * element.area,
+                             1/MU* (b1*b2 + c1*c2) * element.area,
+                             1/MU * (b2**2 + c2**2) * element.area,
+                             1/MU * (b2*b3 + c2*c3) * element.area,
+                             1/MU * (b1*b3 + c1*c3) * element.area,
+                             1/MU * (b2*b3 + c2*c3) * element.area,
+                             1/MU * (b3**2 + c3**2) * element.area))
+          
+
         for i, load in enumerate(self.node_loads):
             index = self.mesh.node_to_index[load.node]
             
@@ -192,15 +201,16 @@ class FiniteElementAnalysis(DessiaObject):
             col_ind.extend((index, len(self.mesh.nodes) + i))
             data.extend((1, 1))
             
-        for i, condition in enumerate(self.continuity_conditions):
-            index1 = self.mesh.node_to_index[condition.node1]
-            index2 = self.mesh.node_to_index[condition.node2]
+        # for i, condition in enumerate(self.continuity_conditions):
+        #     index1 = self.mesh.node_to_index[condition.node1]
+        #     index2 = self.mesh.node_to_index[condition.node2]
             
-            row_ind.extend((len(self.mesh.nodes)+len(self.node_loads) + i, index1, len(self.mesh.nodes)+len(self.node_loads) + i, index2))
-            col_ind.extend((index1, len(self.mesh.nodes)+len(self.node_loads) + i, index2, len(self.mesh.nodes)+len(self.node_loads) + i))
-            data.extend((1, 1, -condition.value, -condition.value))
+        #     row_ind.extend((len(self.mesh.nodes)+len(self.node_loads) + i, index1, len(self.mesh.nodes)+len(self.node_loads) + i, index2))
+        #     col_ind.extend((index1, len(self.mesh.nodes)+len(self.node_loads) + i, index2, len(self.mesh.nodes)+len(self.node_loads) + i))
+        #     data.extend((1, 1, -condition.value, -condition.value))
             
         matrix = sparse.csr_matrix((data, (row_ind, col_ind)))
+        
 
         return matrix
             
@@ -709,7 +719,7 @@ class Result(DessiaObject):
             
         x = npy.asarray(x_list)
         y = npy.asarray(y_list)
-        z = npy.asarray([p[0] for p in self.result_vector[:len(self.mesh.nodes)]])
+        z = npy.asarray([p for p in self.result_vector[:len(self.mesh.nodes)]])
         z_min, z_max = min(z), max(z)
         triang = mtri.Triangulation(x, y, triangles)
         
