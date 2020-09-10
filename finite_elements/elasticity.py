@@ -54,7 +54,12 @@ class ConstantLoad(DessiaObject):
         
         
         
-#class LinearLoad
+class BoundaryLoad(DessiaObject):
+    def __init__(self,point1:vm.Point2D,point2:vm.Point2D,interior_normal:vm.Vector2D,load_vector:vm.Vector2D):
+        self.point1=point1
+        self.point2=point2
+        self.interior_normal=interior_normal
+        self.load_vector=load_vector
         
 class SingleNodeLoad(DessiaObject):
     """ 
@@ -125,11 +130,12 @@ class FiniteElementAnalysis(DessiaObject):
     :param continuity_conditions: The list of continuity conditions applied to the nodes.
     :type continuity_conditions: List of ContinuityCondition objects
     """
-    def __init__(self,mesh:vmmesh.Mesh,materials:corefe.Materials,element_loads:List[ConstantLoad],node_loads:List[SingleNodeLoad],node_displacements:List[NodeDisplacement],continuity_conditions:List[ContinuityCondition]):
+    def __init__(self,mesh:vmmesh.Mesh,materials:corefe.Materials,element_loads:List[ConstantLoad],boundary_loads:[BoundaryLoad],node_loads:List[SingleNodeLoad],node_displacements:List[NodeDisplacement],continuity_conditions:List[ContinuityCondition]):
         self.mesh = mesh
         self.materials=materials
         self.node_loads=node_loads
         self.element_loads = element_loads 
+        self.boundary_loads=boundary_loads
         self.node_displacements= node_displacements
         self.nb_loads = len(node_loads)
         self.continuity_conditions = continuity_conditions
@@ -145,7 +151,9 @@ class FiniteElementAnalysis(DessiaObject):
         for elements_group in self.mesh.elements_groups:
             e_young=self.materials.materials_properties[elements_group][0]
             v_poisson=self.materials.materials_properties[elements_group][1]
-            mu_lame=e_young/(2*(1+v_poisson))
+            alpha=e_young/(1-v_poisson**2)
+            beta=(1-v_poisson)/2
+            gamma=(1+v_poisson)/2
             for element in elements_group.elements:
                 indexes=[]
                 element_form_functions = element.form_functions
@@ -184,48 +192,49 @@ class FiniteElementAnalysis(DessiaObject):
                 
                 
                
-                data.extend((element.area*(b1**2+c1**2)*mu_lame,
-                             element.area*(b1**2+c1**2)*mu_lame,
-                             element.area*(b1*b2+c2*c1)*mu_lame,
-                             element.area*(b1*b2+c2*c1)*mu_lame,
-                             element.area*(b1*b3+c3*c1)*mu_lame,
-                             element.area*(b1*b3+c3*c1)*mu_lame,
+                data.extend((element.area*(b1**2+beta*c1**2)*alpha,
+                             element.area*gamma*b1*c1*alpha,
+                             element.area*(b1*b2+beta*c2*c1)*alpha,
+                             element.area*(c2*b1*v_poisson+beta*b2*c1)*alpha,
+                             element.area*(b1*b3+beta*c3*c1)*alpha,
+                             element.area*(v_poisson*c3*b1+beta*b3*c1)*alpha,
                              
-                             element.area*(b1**2+c1**2)*mu_lame,
-                             element.area*(b1**2+c1**2)*mu_lame,
-                             element.area*(b1*b2+c2*c1)*mu_lame,
-                             element.area*(b1*b2+c2*c1)*mu_lame,
-                             element.area*(b1*b3+c3*c1)*mu_lame,
-                             element.area*(b1*b3+c3*c1)*mu_lame,
+                             element.area*gamma*b1*c1*alpha,
+                             element.area*(c1**2+beta*b1**2)*alpha,
+                             element.area*(v_poisson*c1*b2+beta*c2*b1)*alpha,
+                             element.area*(c2*c1+beta*b2*b1)*alpha,
+                             element.area*(v_poisson*c1*b3+beta*c3*b1)*alpha,
+                             element.area*(c1*c3+beta*b3*b1)*alpha,
                              
                              
-                             element.area*(b1*b2+c1*c2)*mu_lame,
-                             element.area*(b1*b2+c1*c2)*mu_lame,
-                             element.area*(b2**2+c2**2)*mu_lame,
-                             element.area*(b2**2+c2**2)*mu_lame,
-                             element.area*(b3*b2+c3*c2)*mu_lame,  
-                             element.area*(b3*b2+c3*c2)*mu_lame,   
+                             element.area*(b1*b2+beta*c1*c2)*alpha,
+                             element.area*(v_poisson*c1*b2+beta*b1*c2)*alpha,
+                             element.area*(b2**2+beta*c2**2)*alpha,
+                             element.area*b2*c2*gamma*alpha,
+                             element.area*(b3*b2+beta*c3*c2)*alpha,  
+                             element.area*(v_poisson*c3*b2+beta*c2*b3)*alpha,   
                              
-                             element.area*(b1*b2+c1*c2)*mu_lame,
-                             element.area*(b1*b2+c1*c2)*mu_lame,
-                             element.area*(b2**2+c2**2)*mu_lame,
-                             element.area*(b2**2+c2**2)*mu_lame,
-                             element.area*(b3*b2+c3*c2)*mu_lame,  
-                             element.area*(b3*b2+c3*c2)*mu_lame,   
+                             element.area*(c2*b1*v_poisson+beta*b2*c1)*alpha,
+                             element.area*(c2*c1+beta*b2*b1)*alpha,
+                             element.area*b2*c2*gamma*alpha,
+                             element.area*(c2**2+beta*b2**2)*alpha,
+                             element.area*(v_poisson*b3*c2+beta*c3*b2)*alpha,  
+                             element.area*(c3*c2+beta*b3*b2)*alpha,   
                              
-                             element.area*(b1*b3+c1*c3)*mu_lame,
-                             element.area*(b1*b3+c1*c3)*mu_lame,
-                             element.area*(b3*b2+c3*c2)*mu_lame,
-                             element.area*(b3*b2+c3*c2)*mu_lame, 
-                             element.area*(b3**2+c3**2)*mu_lame,
-                             element.area*(b3**2+c3**2)*mu_lame,
+                             element.area*(b1*b3+beta*c1*c3)*alpha,
+                             element.area*(v_poisson*c1*b3+beta*b1*c3)*alpha,
+                             element.area*(b3*b2+beta*c3*c2)*alpha,
+                             element.area*(v_poisson*b3*c2+beta*c3*b2)*alpha, 
+                             element.area*(b3**2+beta*c3**2)*alpha,
+                             element.area*b3*c3*gamma*alpha,
                              
-                             element.area*(b1*b3+c1*c3)*mu_lame,
-                             element.area*(b1*b3+c1*c3)*mu_lame,
-                             element.area*(b3*b2+c3*c2)*mu_lame,
-                             element.area*(b3*b2+c3*c2)*mu_lame, 
-                             element.area*(b3**2+c3**2)*mu_lame,
-                             element.area*(b3**2+c3**2)*mu_lame))
+                             element.area*(v_poisson*b1*c3+beta*b3*c1)*alpha,
+                             element.area*(beta*b1*b3+c1*c3)*alpha,
+                             element.area*(v_poisson*c3*b2+beta*b3*c2)*alpha,
+                             element.area*(c2*c3+beta*b2*b3)*alpha, 
+                             element.area*b3*c3*gamma**alpha,
+                             element.area*(c3**2+beta*b3**2)*alpha))
+                             
                              
                
                 
@@ -345,7 +354,19 @@ class FiniteElementAnalysis(DessiaObject):
             
              matrix[ 2*len(self.mesh.nodes) + i+k][0]=displacement.ux
              matrix[ 2*len(self.mesh.nodes) + i+1+k][0]=displacement.uy
-            
+        for boundary_load in self.boundary_loads:
+           
+                indexes = []
+                x=2*self.mesh.node_to_index[boundary_load.point1]
+                y=2*self.mesh.node_to_index[boundary_load.point2]
+                indexes.append(x)
+                indexes.append(y) 
+                
+                length = vmmesh.LinearElement([boundary_load.point1,boundary_load.point2],boundary_load.interior_normal).length()
+                dl = vm.Vector2D([-boundary_load.interior_normal[0],boundary_load.interior_normal[1]])
+                matrix[indexes[0]][0] += boundary_load.load_vector.Dot(dl) * length/2
+                matrix[indexes[1]][0] += boundary_load.load_vector.Dot(dl) * length/2
+                
         return matrix   
     
     def solve(self):

@@ -40,7 +40,7 @@ tr4=vmmesh.TriangularElement([p2,p5,p6])
 load0=els.ConstantLoad([tr1],[12,5])
 load1=els.ConstantLoad([tr1,tr2],[12,5])
 load2=els.ConstantLoad([tr3,tr4],[3,7])
-
+boundary_load=els.BoundaryLoad(p2,p3,vm.Vector2D([1,0],'interior_normal'),vm.Vector2D([35,0],'load_vector'))
 noad_load_1=els.SingleNodeLoad(p1,[1,1])
 noad_load_2=els.SingleNodeLoad(p2,[2,2])
 noad_load_3=els.SingleNodeLoad(p3,[3,3])
@@ -62,7 +62,7 @@ mesh.plot()
 
 materials=corefe.Materials({elements_group_1:aluminium,elements_group_2:steel})
 
-solution = els.FiniteElementAnalysis(mesh,materials,[load0],[noad_load_1,noad_load_2,noad_load_3,noad_load_4,noad_load_5,noad_load_6],[displacement_condition_1,displacement_condition_2],[])
+solution = els.FiniteElementAnalysis(mesh,materials,[load0],[boundary_load],[noad_load_1,noad_load_2,noad_load_3,noad_load_4,noad_load_5,noad_load_6],[displacement_condition_1,displacement_condition_4],[])
 M=solution.create_stiffness_matrix()
 M2=M.toarray()
 print(npy.linalg.matrix_rank(M2))
