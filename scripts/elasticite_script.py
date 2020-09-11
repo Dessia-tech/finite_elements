@@ -37,42 +37,45 @@ tr2=vmmesh.TriangularElement([p1,p3,p4])
 tr1=vmmesh.TriangularElement([p1,p2,p3])
 tr3=vmmesh.TriangularElement([p2,p3,p6])
 tr4=vmmesh.TriangularElement([p2,p5,p6])
-load0=els.ConstantLoad([tr1],[12,5])
+load0=els.ConstantLoad([tr1],[0,0])
 load1=els.ConstantLoad([tr1,tr2],[12,5])
 load2=els.ConstantLoad([tr3,tr4],[3,7])
-boundary_load=els.BoundaryLoad(p2,p3,vm.Vector2D([1,0],'interior_normal'),vm.Vector2D([35,0],'load_vector'))
-noad_load_1=els.SingleNodeLoad(p1,[1,1])
-noad_load_2=els.SingleNodeLoad(p2,[2,2])
-noad_load_3=els.SingleNodeLoad(p3,[3,3])
-noad_load_4=els.SingleNodeLoad(p4,[4,4])
+boundary_load=els.BoundaryLoad(p2,p3,vm.Vector2D([-1,0],'interior_normal'),vm.Vector2D([0.5,0],'load_vector'))
+noad_load_1=els.SingleNodeLoad(p1,[0.1,0.1])
+noad_load_2=els.SingleNodeLoad(p2,[0.1,0.2])
+noad_load_3=els.SingleNodeLoad(p3,[0.3,0.3])
+noad_load_4=els.SingleNodeLoad(p4,[0.,0.4])
 noad_load_5=els.SingleNodeLoad(p5,[0.5,0.5])
-noad_load_6=els.SingleNodeLoad(p6,[6,6])
+noad_load_6=els.SingleNodeLoad(p6,[0.6,0.6])
 
 displacement_condition_1=els.NodeDisplacement(p1,0,0)
 displacement_condition_2=els.NodeDisplacement(p2,0,0) 
 displacement_condition_4=els.NodeDisplacement(p4,0,0)
-displacement_condition_3=els.NodeDisplacement(p3,0,0)                                       
+displacement_condition_3=els.NodeDisplacement(p3,0,0)
+displacement_condition_5=els.NodeDisplacement(p5,0,0)
+displacement_condition_6=els.NodeDisplacement(p6,0,0)                                           
 Triangles=[tr1,tr2,tr3,tr4]
 
 elements_group_0=vmmesh.ElementsGroup([tr1],'first_elements_group')
 elements_group_1=vmmesh.ElementsGroup([tr1,tr2],'first_elements_group')
 elements_group_2=vmmesh.ElementsGroup([tr3,tr4],'second_elements_group')
 mesh=vmmesh.Mesh([elements_group_1,elements_group_2])
-mesh.plot()
+ax=mesh.plot()
 
 materials=corefe.Materials({elements_group_1:aluminium,elements_group_2:steel})
 
-solution = els.FiniteElementAnalysis(mesh,materials,[load0],[boundary_load],[noad_load_1,noad_load_2,noad_load_3,noad_load_4,noad_load_5,noad_load_6],[displacement_condition_1,displacement_condition_4],[])
+solution = els.FiniteElementAnalysis(mesh,materials,[load0],[boundary_load],[noad_load_1,noad_load_2,noad_load_3,noad_load_4,noad_load_5,noad_load_6],[displacement_condition_1,displacement_condition_4])
 M=solution.create_stiffness_matrix()
 M2=M.toarray()
-print(npy.linalg.matrix_rank(M2))
+#print(npy.linalg.matrix_rank(M2))
 
 
-N=solution.create_force_matrix()
-print(N)
 result= solution.solve()
 v=result.result_vector
 print(v)
+node_deformation=result.node_to_displacement()
+mesh.plot_displaced_mesh(node_deformation,ax)
+
 
 
 

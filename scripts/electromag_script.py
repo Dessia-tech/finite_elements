@@ -54,7 +54,6 @@ mesh=vmmesh.Mesh([elements_group_1,elements_group_2])
 
 
 
-mesh.plot()
 
 solution = els.FiniteElementAnalysis(mesh,[load],[noad_load_1,noad_load_2,noad_load_3,noad_load_4,noad_load_5],[],[])
 M=solution.create_matrix()
@@ -62,6 +61,7 @@ M2=M.toarray()
 print(solution.create_matrix())
 result=solution.solve()
 print(result.result_vector)
+
 # #result.plot_magnetic_field_contour(),
 # result.plot_potential_vector(None),
 # # result.plot_magnetic_field(None,None)
