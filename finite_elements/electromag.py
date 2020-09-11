@@ -175,7 +175,7 @@ class FiniteElementAnalysis(DessiaObject):
                 c2 = element_form_functions[1][2]
                 b3 = element_form_functions[2][1]
                 c3 = element_form_functions[2][2]
-              +.
+              
               
               
               
@@ -183,8 +183,7 @@ class FiniteElementAnalysis(DessiaObject):
                 col_ind.extend((indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2]))
              
                 data.extend((1/MU*(b1**2 + c1**2) * element.area, 
-                             1/MU*
-                             * element.area,
+                             1/MU*(b1*b2+c1*c2)* element.area,
                              1/MU*(b1*b3 + c1*c3) * element.area,
                              1/MU* (b1*b2 + c1*c2) * element.area,
                              1/MU * (b2**2 + c2**2) * element.area,

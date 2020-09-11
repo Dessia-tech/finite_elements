@@ -55,14 +55,27 @@ class ConstantLoad(DessiaObject):
         
         
 class BoundaryLoad(DessiaObject):
-    def __init__(self,point1:vm.Point2D,point2:vm.Point2D,interior_normal:vm.Vector2D,load_vector:vm.Vector2D):
-        self.point1=point1
-        self.point2=point2
-        self.interior_normal=interior_normal
-        self.load_vector=load_vector
-        
+        """ 
+    Sets a load by unit of length on the selected bound (a linear element) of the domain.
+
+    :param point1: The first point of the linear element.
+    :type point1: vm.Point2D object
+    :param point2: The first point of the linear element.
+    :type point2: vm.Point2D object
+    :param interior_normal: The interior normal of the linear element
+    :type interior_normal: vm.Vector2D object
+    :param load_vector: Value of the force in both directions
+    :type load_vector: vm.Vector2D object
+    """
+        def __init__(self,point1:vm.Point2D,point2:vm.Point2D,interior_normal:vm.Vector2D,load_vector:vm.Vector2D):
+            self.point1=point1
+            self.point2=point2
+            self.interior_normal=interior_normal
+            self.linear_element=vmmesh.LinearElement([self.point1,self.point2],self.interior_normal)
+            self.load_vector=load_vector
+      
 class SingleNodeLoad(DessiaObject):
-    """ 
+    """
     Forces the value of the vector potential A at a node. To set a magnetic wall \
     the value of the vector potential has to be set to A.
     
@@ -79,42 +92,23 @@ class SingleNodeLoad(DessiaObject):
         
 class NodeDisplacement(DessiaObject):
     """ 
-    Forces the value of the load N at a node. 
-    the value of the load has to be set to N.
-    
+    Forces the value of the displacement u along the x axis and v along the/
+    y axis at a node. 
+
     :param node: The node.
     :type node: volmdlr.Point2D object
-    :param ux: Set the node's displacement along the x axis.
+    :param u: Set the node's displacement along the x axis.
     :type value: float
-    :param uy: Set the node's displacement along the y axis.
+    :param v: Set the node's displacement along the y axis.
     :type value: float
     """
-    def __init__(self, node:vm.Point2D, ux:float,uy:float):
+    def __init__(self, node:vm.Point2D, u:float,v:float):
         self.node = node
-        self.ux = ux
-        self.uy=uy
+        self.u = u
+        self.v=v
         
         DessiaObject.__init__(self, name='')
-class ContinuityCondition(DessiaObject):
-    """ 
-    The continuity conditions link the value of vector potential A between two \
-    nodes. It is used to describe periodic or antiperiodic conditions inside the \
-    mesh. 
-    
-    :param node1: The first node.
-    :type node1: volmdlr.Point2D object
-    :param node2: The second node.
-    :type node2: volmdlr.Point2D object
-    :param value: If value is equal to 1, there's continuity. \
-    If value is equal to -1, no continuity.
-    :type value: int
-    """
-    def __init__(self, node1:vm.Point2D, node2:vm.Point2D, value):
-        self.node1 = node1
-        self.node2 = node2 
-        self.value = value
         
-        DessiaObject.__init__(self, name='')        
 
 
 class FiniteElementAnalysis(DessiaObject):
@@ -130,7 +124,7 @@ class FiniteElementAnalysis(DessiaObject):
     :param continuity_conditions: The list of continuity conditions applied to the nodes.
     :type continuity_conditions: List of ContinuityCondition objects
     """
-    def __init__(self,mesh:vmmesh.Mesh,materials:corefe.Materials,element_loads:List[ConstantLoad],boundary_loads:[BoundaryLoad],node_loads:List[SingleNodeLoad],node_displacements:List[NodeDisplacement],continuity_conditions:List[ContinuityCondition]):
+    def __init__(self,mesh:vmmesh.Mesh,materials:corefe.Materials,element_loads:List[ConstantLoad],boundary_loads:[BoundaryLoad],node_loads:List[SingleNodeLoad],node_displacements:List[NodeDisplacement]):
         self.mesh = mesh
         self.materials=materials
         self.node_loads=node_loads
@@ -138,12 +132,17 @@ class FiniteElementAnalysis(DessiaObject):
         self.boundary_loads=boundary_loads
         self.node_displacements= node_displacements
         self.nb_loads = len(node_loads)
-        self.continuity_conditions = continuity_conditions
+  
         
         DessiaObject.__init__(self, name='')
         
     def create_stiffness_matrix(self):
-
+        """
+        Creats the elementary stiffness matrix Ke of each element and assembles/
+        them into the matrix K. The rows and columns corresponding to the imposed/
+        node displacements are also added (lagrange multiplicators method).
+       
+        """
         row_ind=[]
         col_ind=[]
         data = []       
@@ -159,12 +158,13 @@ class FiniteElementAnalysis(DessiaObject):
                 element_form_functions = element.form_functions
                 for point in element.points:
             
-                  
-                   x=2*self.mesh.node_to_index[point]
-                   y=2*self.mesh.node_to_index[point]+1
-                   indexes.append(x)
-                   indexes.append(y)
-                print(indexes)
+                  indexes.append(self.mesh.set_node_displacement_index()[point][0])
+                  indexes.append(self.mesh.set_node_displacement_index()[point][1])
+                   # x=2*self.mesh.node_to_index[point]
+                   # y=2*self.mesh.node_to_index[point]+1
+                   # indexes.append(x)
+                   # indexes.append(y)
+               
                 
                 b1 = element_form_functions[0][1] 
                 c1 = element_form_functions[0][2]
@@ -172,14 +172,7 @@ class FiniteElementAnalysis(DessiaObject):
                 c2 = element_form_functions[1][2]
                 b3 = element_form_functions[2][1]
                 c3 = element_form_functions[2][2]
-                print(b1,b2,c1,c2)
-                # for k in range(len(indexes)):
-                #     i=0
-                #     while i < len(indexes):
-                
-                       
-                #         col_ind.extend((indexes[i],indexes[i+1]))
-                #         i=i+2
+               
                 
                 
                 for k in range(len(indexes)):
@@ -245,9 +238,9 @@ class FiniteElementAnalysis(DessiaObject):
         for  i,displacement in enumerate(self.node_displacements):
             
                   k = self.node_displacements.index(displacement)
-                  if displacement.ux == None and displacement.uy == None :
+                  if displacement.u == None and displacement.v == None :
                       break 
-                  if displacement.ux!=None:
+                  if displacement.u!=None:
                       index = self.mesh.node_to_index[displacement.node]
                     
                 
@@ -257,7 +250,7 @@ class FiniteElementAnalysis(DessiaObject):
             
                       data.extend((1,1,0,0))
                 
-                  if displacement.uy!=None:
+                  if displacement.v!=None:
                     index = self.mesh.node_to_index[displacement.node]
                 
                 
@@ -266,11 +259,7 @@ class FiniteElementAnalysis(DessiaObject):
                     col_ind.extend((2*index+1, 2*len(self.mesh.nodes) + i+1+k,2*index+1,2*len(self.mesh.nodes)+i+1+k))
             
                     data.extend((1,1,0,0))
-              
-                
-                  
-                  
-
+ 
             
         matrix = sparse.csr_matrix((data, (row_ind, col_ind)))  
       
@@ -287,14 +276,9 @@ class FiniteElementAnalysis(DessiaObject):
                 for element in load.elements:
                     indexes=[]
                     for point in element.points:
-            
+                        indexes.append(self.mesh.set_node_displacement_index()[point][0])
+                        indexes.append(self.mesh.set_node_displacement_index()[point][1])
                   
-                        x=2*self.mesh.node_to_index[point]
-                        y=2*self.mesh.node_to_index[point]+1
-                   
-                        indexes.append(x)
-                        indexes.append(y)     
-                
                 
                 x1 = element.points[0][0]
                 y1 = element.points[0][1]
@@ -352,18 +336,18 @@ class FiniteElementAnalysis(DessiaObject):
         for  i,displacement in enumerate(self.node_displacements):
              k=self.node_displacements.index(displacement)
             
-             matrix[ 2*len(self.mesh.nodes) + i+k][0]=displacement.ux
-             matrix[ 2*len(self.mesh.nodes) + i+1+k][0]=displacement.uy
+             matrix[ 2*len(self.mesh.nodes) + i+k][0]=displacement.u
+             matrix[ 2*len(self.mesh.nodes) + i+1+k][0]=displacement.v
+             
+             
         for boundary_load in self.boundary_loads:
            
-                indexes = []
-                x=2*self.mesh.node_to_index[boundary_load.point1]
-                y=2*self.mesh.node_to_index[boundary_load.point2]
-                indexes.append(x)
-                indexes.append(y) 
-                
-                length = vmmesh.LinearElement([boundary_load.point1,boundary_load.point2],boundary_load.interior_normal).length()
-                dl = vm.Vector2D([-boundary_load.interior_normal[0],boundary_load.interior_normal[1]])
+                indexes =[]
+                indexes.append(self.mesh.set_node_displacement_index()[point][0])
+                indexes.append(self.mesh.set_node_displacement_index()[point][1])
+               
+                length = boundary_load.linear_element.length()
+                dl = vm.Vector2D([boundary_load.interior_normal[0],boundary_load.interior_normal[1]])
                 matrix[indexes[0]][0] += boundary_load.load_vector.Dot(dl) * length/2
                 matrix[indexes[1]][0] += boundary_load.load_vector.Dot(dl) * length/2
                 
@@ -372,8 +356,9 @@ class FiniteElementAnalysis(DessiaObject):
     def solve(self):
         """
         Solve the matix equation : F = K.X, where X is the unknown vector. \
-        Each value of the vector represents the displacement of the node \
-        of a node. 
+        Each pair of value of the vector represents the displacement of a node\
+        along the x and y axis.
+        
         Returns a Result object.
         """
         
@@ -407,15 +392,6 @@ class FiniteElementAnalysis(DessiaObject):
         return ax
   
     
-  
-    def plot_continuity_condition(self, ax=None):
-        if ax is None:
-            ax = self.mesh.plot()
-            
-        for i, continuity_condition in enumerate(self.continuity_conditions):
-            continuity_condition.node1.MPLPlot(ax=ax, color='C{}'.format(i%10))
-            continuity_condition.node2.MPLPlot(ax=ax, color='C{}'.format(i%10))
-        return ax
     
         
 class  FiniteElementAnalysisResult(DessiaObject):
@@ -526,3 +502,23 @@ class  FiniteElementAnalysisResult(DessiaObject):
         
         return ax
     
+    def node_to_displacement(self):
+        """
+        Creats a dictionnary containing : for keys the nodes of the mesh and for/
+        values their respective displacement along the x and y axes.
+        """
+        U_coordonate={}
+        nodes = self.mesh.nodes
+       
+        for node in nodes:
+             indexes=[]
+             indexes.append(self.mesh.set_node_displacement_index()[node][0])
+             indexes.append(self.mesh.set_node_displacement_index()[node][1])
+                            
+             U_coordonate[node]=[self.result_vector[indexes[0]],self.result_vector[indexes[1]]]
+                        
+        return U_coordonate
+
+                        
+
+       
