@@ -1,5 +1,5 @@
 """
-Created on Mon Aug 31 15:45:15 2020
+Create  on Mon Aug 31 15:45:15 2020
 
 @author: gasmi
 
@@ -150,8 +150,7 @@ class FiniteElementAnalysis(DessiaObject):
         for elements_group in self.mesh.elements_groups:
             e_young=self.materials.materials_properties[elements_group][0]
             v_poisson=self.materials.materials_properties[elements_group][1]
-            alpha=e_young/((1-v_poisson**2))
-            
+            alpha=e_young/(1-v_poisson**2)
             beta=(1-v_poisson)/2
             gamma=(1+v_poisson)/2
             for element in elements_group.elements:
@@ -166,13 +165,14 @@ class FiniteElementAnalysis(DessiaObject):
                    # indexes.append(x)
                    # indexes.append(y)
                
+                
                 b1 = element_form_functions[0][1] 
                 c1 = element_form_functions[0][2]
                 b2 = element_form_functions[1][1]
                 c2 = element_form_functions[1][2]
                 b3 = element_form_functions[2][1]
                 c3 = element_form_functions[2][2]
-               
+                e1
                 
                 
                 for k in range(len(indexes)):
@@ -342,16 +342,15 @@ class FiniteElementAnalysis(DessiaObject):
              
         for boundary_load in self.boundary_loads:
            
-                
+                indexes =[]
+                indexes.append(self.mesh.set_node_displacement_index()[point][0])
+                indexes.append(self.mesh.set_node_displacement_index()[point][1])
                
                 length = boundary_load.linear_element.length()
-                dl = vm.Vector2D([-boundary_load.interior_normal[0],boundary_load.interior_normal[1]])
-                if boundary_load.load_vector[1]==0:
-                    matrix[self.mesh.set_node_displacement_index()[boundary_load.point1][0]][0] += boundary_load.load_vector.Dot(dl) * length/2
-                    matrix[self.mesh.set_node_displacement_index()[boundary_load.point2][0]][0] += boundary_load.load_vector.Dot(dl) * length/2
-                if boundary_load.load_vector[0]==0:
-                    matrix[self.mesh.set_node_displacement_index()[boundary_load.point1][1]][0] += boundary_load.load_vector.Dot(dl) * length/2
-                    matrix[self.mesh.set_node_displacement_index()[boundary_load.point2][1]][0] += boundary_load.load_vector.Dot(dl) * length/2
+                dl = vm.Vector2D([boundary_load.interior_normal[0],boundary_load.interior_normal[1]])
+                matrix[indexes[0]][0] += boundary_load.load_vector.Dot(dl) * length/2
+                matrix[indexes[1]][0] += boundary_load.load_vector.Dot(dl) * length/2
+                
         return matrix   
     
     def solve(self):

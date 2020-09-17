@@ -19,7 +19,7 @@ import time
 from dessia_common import DessiaObject
 from typing import TypeVar, List, Tuple,Dict
 
-steel=[210,0.27]
+steel=[210,0.3,7800*1E3]
 aluminium=[69,0.346]
 
 class Materials(DessiaObject):
