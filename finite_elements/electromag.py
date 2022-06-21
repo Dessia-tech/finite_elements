@@ -415,7 +415,7 @@ class Result(DessiaObject):
                 c3 = element_form_functions[2][2]
                 B_x = float(c1*self.result_vector[indexes[0]] + c2*self.result_vector[indexes[1]] + c3*self.result_vector[indexes[2]])
                 B_y = float(-b1*self.result_vector[indexes[0]] - b2*self.result_vector[indexes[1]] - b3*self.result_vector[indexes[2]])
-                element_to_magnetic_field[element] = vm.Vector2D((B_x, B_y))
+                element_to_magnetic_field[element] = vm.Vector2D(B_x, B_y)
         return element_to_magnetic_field
     
     def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor, nb_notches):
@@ -573,7 +573,7 @@ class Result(DessiaObject):
         element_to_magnetic_field = self.magnetic_field_per_element()
             
         color_map = ((0,0,1), (1,0,0))
-        Bs = [B.Norm() for B in list(element_to_magnetic_field.values())]
+        Bs = [B.norm() for B in list(element_to_magnetic_field.values())]
         
         if Bmax is None and Bmin is None:
             B_max, B_min = max(Bs), min(Bs)
@@ -598,7 +598,7 @@ class Result(DessiaObject):
             
         for element, B in element_to_magnetic_field.items():
             B.plot(amplitude=amplitude, origin=element.center, ax=ax,
-                   color=B_to_color[B.Norm()], normalize=True)
+                   color=B_to_color[B.norm()], normalize=True)
             
         norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
@@ -620,7 +620,7 @@ class Result(DessiaObject):
         element_to_magnetic_field = self.magnetic_field_per_element()
         
         color_map = ((0,0,1), (1,0,0))
-        Bs = [B.Norm() for B in list(element_to_magnetic_field.values())]
+        Bs = [B.norm() for B in list(element_to_magnetic_field.values())]
         
         if Bmax is None:
             B_max, B_min = max(Bs), min(Bs)
@@ -640,7 +640,7 @@ class Result(DessiaObject):
         
         for group in self.mesh.elements_groups:
             for element in group.elements:
-                element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].Norm()], fill=True)
+                element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].norm()], fill=True)
         
         norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm) 
