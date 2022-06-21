@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Feb 19 18:05:42 2020
-
 @author: ringhausen
 """
 import matplotlib as mpl
@@ -16,10 +15,8 @@ import math
 from scipy import sparse
 from scipy import linalg
 import time 
-
 from dessia_common import DessiaObject
 from typing import TypeVar, List, Tuple
-
 cdict = {'red':  [(0.0, 0.0, 0.0),
                    (1.0, 1.0, 1.0)],
          'green': [(0.0, 0.0, 0.0),
@@ -27,9 +24,20 @@ cdict = {'red':  [(0.0, 0.0, 0.0),
          'blue':  [(0.0, 1.0, 1.0),
                    (1.0, 0.0, 0.0)]}
 blue_red = LinearSegmentedColormap('BLueRed', cdict)
-
 MU = 4*math.pi*1e-7
-
+class MagneticElementsGroup(vmmesh.ElementsGroup):
+    # _standalone_in_db = False
+    # _non_serializable_attributes = []
+    # _non_eq_attributes = ['name']
+    # _non_hash_attributes = ['name']
+    # _generic_eq = True
+    def __init__(self, elements: List[vmmesh.TriangularElement],
+                 mu_total: float, name: str):
+        vmmesh.ElementsGroup.__init__(self, elements=elements, name=name)
+        self.mu_total = mu_total
+        
+        # DessiaObject.__init__(self, name=name)
+    
 class ConstantLoad(DessiaObject):
     """ 
     Sets a load on the selected elements by imposing a source value for the \
@@ -40,7 +48,8 @@ class ConstantLoad(DessiaObject):
     :param value: Set the elements' current density vector J value.
     :type value: float
     """
-    def __init__(self, elements:List[vmmesh.TriangularElement], value:float):
+    def __init__(self, elements: List[vmmesh.TriangularElement],
+                 value: float):
         self.elements = elements
         self.value = value
         
@@ -48,9 +57,7 @@ class ConstantLoad(DessiaObject):
         total_area = sum([elem.area for elem in self.elements])
         for element in self.elements:
             self.value_per_element.append(value * element.area/total_area)
-
         DessiaObject.__init__(self, name='')
-
 class SingleNodeLoad(DessiaObject):
     """ 
     Forces the value of the vector potential A at a node. To set a magnetic wall \
@@ -61,7 +68,7 @@ class SingleNodeLoad(DessiaObject):
     :param value: Set the node's vector potential A value.
     :type value: float
     """
-    def __init__(self, node:vm.Point2D, value:float):
+    def __init__(self, node: vm.Point2D, value: float):
         self.node = node
         self.value = value
         
@@ -80,7 +87,9 @@ class MagnetLoad(DessiaObject):
     :param magnetization_vector: Set the elements' magnetization vector M.
     :type magnetization_vector: volmdlr.Vector2D object
     """
-    def __init__(self, elements:List[vmmesh.TriangularElement], non_contour_nodes:List[vm.Point2D], magnetization_vector:vm.Vector2D):
+    def __init__(self, elements: List[vmmesh.TriangularElement],
+                 non_contour_nodes: List[vm.Point2D],
+                 magnetization_vector: vm.Vector2D):
         self.elements = elements
         self.non_contour_nodes = non_contour_nodes
         self.magnetization_vector = magnetization_vector
@@ -88,11 +97,6 @@ class MagnetLoad(DessiaObject):
         self.element_magnetization_vector = magnetization_vector / len(elements)
         
         DessiaObject.__init__(self, name='')
-        
-#        self.magnetization_vector_per_element = []
-#        total_area = sum([elem.area for elem in self.elements])
-#        for element in self.elements:
-#            self.magnetization_vector_per_element.append(magnetization_vector * element.area/total_area)
         
     def contour_linear_elements(self):
         linear_elements_count = {}
@@ -104,12 +108,11 @@ class MagnetLoad(DessiaObject):
                     linear_elements_count[linear_element] += 1
         contour_linear_elements = []
         for linear_element, count in linear_elements_count.items():
-            if count == 1 and (linear_element.points[0] not in self.non_contour_nodes \
-            or linear_element.points[1] not in self.non_contour_nodes):
+            if count == 1 \
+             and (linear_element.points[0] not in self.non_contour_nodes \
+             or linear_element.points[1] not in self.non_contour_nodes):
                 contour_linear_elements.append(linear_element)
         return contour_linear_elements
-
-
 class ContinuityCondition(DessiaObject):
     """ 
     The continuity conditions link the value of vector potential A between two \
@@ -124,13 +127,12 @@ class ContinuityCondition(DessiaObject):
     If value is equal to -1, the continuity condition is antiperiodic. A(node1) = value*A(node2).
     :type value: int
     """
-    def __init__(self, node1:vm.Point2D, node2:vm.Point2D, value):
+    def __init__(self, node1: vm.Point2D, node2: vm.Point2D, value):
         self.node1 = node1
         self.node2 = node2 
         self.value = value
         
         DessiaObject.__init__(self, name='')
-
 class FiniteElementAnalysis(DessiaObject):
     """
     :param mesh: The meshing of the machine.
@@ -144,9 +146,13 @@ class FiniteElementAnalysis(DessiaObject):
     :param continuity_conditions: The list of continuity conditions applied to the nodes.
     :type continuity_conditions: List of ContinuityCondition objects
     """
-    def __init__(self, mesh:vmmesh.Mesh, element_loads:List[ConstantLoad], node_loads:List[SingleNodeLoad], magnet_loads:List[MagnetLoad], continuity_conditions:List[ContinuityCondition]):
+    def __init__(self, mesh: vmmesh.Mesh,
+                 element_loads: List[ConstantLoad],
+                 node_loads: List[SingleNodeLoad],
+                 magnet_loads: List[MagnetLoad],
+                 continuity_conditions: List[ContinuityCondition]):
         self.mesh = mesh
-        self.element_loads = element_loads # current density J
+        self.element_loads = element_loads  # current density J
         self.node_loads = node_loads 
         self.magnet_loads = magnet_loads
         self.continuity_conditions = continuity_conditions
@@ -196,15 +202,19 @@ class FiniteElementAnalysis(DessiaObject):
             index1 = self.mesh.node_to_index[condition.node1]
             index2 = self.mesh.node_to_index[condition.node2]
             
-            row_ind.extend((len(self.mesh.nodes)+len(self.node_loads) + i, index1, len(self.mesh.nodes)+len(self.node_loads) + i, index2))
-            col_ind.extend((index1, len(self.mesh.nodes)+len(self.node_loads) + i, index2, len(self.mesh.nodes)+len(self.node_loads) + i))
+            row_ind.extend((len(self.mesh.nodes)+len(self.node_loads)+i,
+                            index1,
+                            len(self.mesh.nodes)+len(self.node_loads)+i,
+                            index2))
+            col_ind.extend((index1,
+                            len(self.mesh.nodes)+len(self.node_loads)+i,
+                            index2,
+                            len(self.mesh.nodes)+len(self.node_loads)+i))
             data.extend((1, 1, -condition.value, -condition.value))
             
         matrix = sparse.csr_matrix((data, (row_ind, col_ind)))
-
         return matrix
             
-    
     def create_source_matrix(self):
         matrix = npy.zeros((len(self.mesh.nodes)+self.nb_loads+len(self.continuity_conditions), 1))
         for load in self.element_loads:
@@ -249,7 +259,8 @@ class FiniteElementAnalysis(DessiaObject):
                 indexes = [self.mesh.node_to_index[linear_element.points[0]],
                            self.mesh.node_to_index[linear_element.points[1]]]
                 length = linear_element.length()
-                dl = vm.Vector2D([-linear_element.interior_normal[1], linear_element.interior_normal[0]])
+                dl = vm.Vector2D([-linear_element.interior_normal[1],
+                                  linear_element.interior_normal[0]])
                 matrix[indexes[0]][0] += magnet_load.magnetization_vector.Dot(dl) * length/2
                 matrix[indexes[1]][0] += magnet_load.magnetization_vector.Dot(dl) * length/2
                 
@@ -275,7 +286,9 @@ class FiniteElementAnalysis(DessiaObject):
         K_sparse = self.create_matrix()
         F = self.create_source_matrix()
         try:
-            X = sparse.linalg.spsolve(K_sparse, F, permc_spec='NATURAL', use_umfpack=True)
+            X = sparse.linalg.spsolve(K_sparse, F,
+                                      permc_spec='NATURAL',
+                                      use_umfpack=True)
         except sparse.linalg.MatrixRankWarning:
             print('MatricRankWarning')
             raise NotImplementedError
@@ -309,7 +322,7 @@ class FiniteElementAnalysis(DessiaObject):
         else:
             fig = plt.gcf()
         
-        color_map = ((0,0,1), (1,0,0))
+        color_map = ((0, 0, 1), (1, 0, 0))
         permeabilities = []
         for elements_group in self.mesh.elements_groups:
             permeabilities.append(elements_group.mu_total)
@@ -323,8 +336,8 @@ class FiniteElementAnalysis(DessiaObject):
                      color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
             colors.append(color)
         
-        norm = mpl.colors.Normalize(vmin=mu_min,vmax=mu_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm) #plt.get_cmap('jet_r')
+        norm = mpl.colors.Normalize(vmin=mu_min, vmax=mu_max)
+        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)  #plt.get_cmap('jet_r')
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(mu_min, mu_max, 10))
         cbar.set_label('permeability')
@@ -363,8 +376,8 @@ class FiniteElementAnalysis(DessiaObject):
             ax = self.mesh.plot()
             
         for i, continuity_condition in enumerate(self.continuity_conditions):
-            continuity_condition.node1.MPLPlot(ax=ax, color='C{}'.format(i%10))
-            continuity_condition.node2.MPLPlot(ax=ax, color='C{}'.format(i%10))
+            continuity_condition.node1.MPLPlot(ax=ax, color='C{}'.format(i % 10))
+            continuity_condition.node2.MPLPlot(ax=ax, color='C{}'.format(i % 10))
         return ax
                 
     
@@ -380,7 +393,7 @@ class Result(DessiaObject):
     _non_eq_attributes = ['name']
     _non_hash_attributes = ['name']
     _generic_eq = True
-    def __init__(self, mesh:vmmesh.Mesh, result_vector:List[float]):
+    def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float]):
         self.mesh = mesh
         self.result_vector = result_vector
         
@@ -400,15 +413,15 @@ class Result(DessiaObject):
                 c2 = element_form_functions[1][2]
                 b3 = element_form_functions[2][1]
                 c3 = element_form_functions[2][2]
-                B_x = float(  c1*self.result_vector[indexes[0]] + c2*self.result_vector[indexes[1]] + c3*self.result_vector[indexes[2]])
-                B_y = float(- b1*self.result_vector[indexes[0]] - b2*self.result_vector[indexes[1]] - b3*self.result_vector[indexes[2]])
+                B_x = float(c1*self.result_vector[indexes[0]] + c2*self.result_vector[indexes[1]] + c3*self.result_vector[indexes[2]])
+                B_y = float(-b1*self.result_vector[indexes[0]] - b2*self.result_vector[indexes[1]] - b3*self.result_vector[indexes[2]])
                 element_to_magnetic_field[element] = vm.Vector2D((B_x, B_y))
         return element_to_magnetic_field
     
     def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor, nb_notches):
         """ 
         Computes the resistant magnetic torque when the rotor is blocked and \
-        the current inside the stator is evolving.
+        the current inside the stator is evolving. Unit : N.m.
         Uses Arkkio's method, based on the Maxwell Stress Tensor.
         
         :param air_gap_elements_group_name: The name given to the gap's ElementsGroup.
@@ -445,9 +458,6 @@ class Result(DessiaObject):
             e_teta = vm.Vector2D((-e_r[1], e_r[0]))
             B_r = vector_B.Dot(e_r)
             B_teta = vector_B.Dot(e_teta)
-            
-            
-            
             r_Br_Bteta = element_center.Norm() * B_r * B_teta
 #            r_Br_Bteta = r * B_r * B_teta
             dS = element.area 
@@ -470,8 +480,8 @@ class Result(DessiaObject):
         Returns a list made of sigma_r_r, sigma_r_theta and sigma_theta_theta, \
         since sigma_r_theta = sigma_theta_r.
         
-        :param nb_notches: The element on which the tensor is computed.
-        :type nb_notches: a TriangularElement object
+        :param element: The element on which the tensor is computed.
+        :type element: a TriangularElement object
         """
         element_to_magnetic_field = self.magnetic_field_per_element()
         vector_B = element_to_magnetic_field[element]
@@ -487,7 +497,6 @@ class Result(DessiaObject):
         sigma_tetateta = 1/MU * B_teta**2 - 1/(2*MU) * vector_B.Norm()**2
         sigma_rr_rteta_tetateta = [sigma_rr, sigma_rteta, sigma_tetateta]
         return sigma_rr_rteta_tetateta
-
     def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
         if ax is None:
             fig, ax = plt.subplots()
@@ -495,7 +504,6 @@ class Result(DessiaObject):
         else:
             fig = plt.gcf()
             # self.mesh.plot(ax=ax)
-
         element_to_magnetic_field = self.magnetic_field_per_element()
         
         for elements_group in self.mesh.elements_groups:
@@ -551,8 +559,8 @@ class Result(DessiaObject):
         cbar.set_label('Br*Btetha')
         
         return ax
-
-    def plot_magnetic_field_vectors(self, ax=None, amplitude=0.005, Bmax=None, Bmin=None):
+    def plot_magnetic_field_vectors(self, ax=None, amplitude=0.005,
+                                    Bmax=None, Bmin=None):
         """
         Plots the mesh with a field of vectors representing the induction field \
         and its direction inside the Machine. 
@@ -589,7 +597,8 @@ class Result(DessiaObject):
             B_to_color[B] = color
             
         for element, B in element_to_magnetic_field.items():
-            B.plot(amplitude=amplitude, origin=element.center, ax=ax, color=B_to_color[B.Norm()], normalize=True)
+            B.plot(amplitude=amplitude, origin=element.center, ax=ax,
+                   color=B_to_color[B.Norm()], normalize=True)
             
         norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
@@ -608,7 +617,6 @@ class Result(DessiaObject):
             fig, ax = plt.subplots()
         else:
             fig = plt.gcf()
-
         element_to_magnetic_field = self.magnetic_field_per_element()
         
         color_map = ((0,0,1), (1,0,0))
@@ -648,7 +656,6 @@ class Result(DessiaObject):
         else:
             fig = plt.gcf()
         ax.set_aspect('equal')
-        
         
         from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
         import matplotlib.cm as cm
