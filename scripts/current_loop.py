@@ -7,13 +7,13 @@ Created on Tue Apr 21 17:39:02 2020
 # import electric_machines.core as em
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
-import matplotlib.pyplot as plt 
+# import matplotlib.pyplot as plt 
 import math
 import finite_elements
 import finite_elements as fe
 import finite_elements.elements
 import finite_elements.loads
-import finite_elements.elements_analysis
+import finite_elements.analysis
 
 MU = 4*math.pi*1e-7
 
@@ -160,7 +160,7 @@ for node in mesh.nodes:
         node_loads.append(fe.loads.SingleNodeLoad(node, 0))
 element_load = [fe.loads.ConstantLoad(mesh.elements_groups[0].elements, intensity),
                 fe.loads.ConstantLoad(mesh.elements_groups[1].elements, -intensity)]
-analysis = fe.elements_analysis.FiniteElementAnalysis(mesh, element_load, node_loads, [], [])
+analysis = fe.analysis.FiniteElementAnalysis(mesh, element_load, node_loads, [], [])
 result = analysis.solve()
 ax = mesh.elements_groups[0].plot()
 mesh.elements_groups[1].plot(ax=ax)

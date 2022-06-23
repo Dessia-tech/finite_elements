@@ -7,7 +7,7 @@ Created on Mon Feb 24 16:18:29 2020
 import finite_elements as fe
 import finite_elements.elements
 import finite_elements.loads
-import finite_elements.elements_analysis
+import finite_elements.analysis
 import volmdlr.mesh as mesh 
 import volmdlr as vm
 import math
@@ -41,7 +41,7 @@ node_loads = []
 for node in mesh.nodes:
     if math.isclose(node[0], phase1+phase2+phase3, abs_tol=1e-6):
         node_loads.append(fe.loads.SingleNodeLoad(node, 0))
-analysis = fe.elements_analysis.FiniteElementAnalysis(mesh, elements_loads, node_loads, [], [])
+analysis = fe.analysis.FiniteElementAnalysis(mesh, elements_loads, node_loads, [], [])
 analysis.plot_elements_loads()
 analysis.plot_elements_permeability()
 results = analysis.solve()

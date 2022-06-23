@@ -4,11 +4,14 @@
 Created on Thu Apr 16 18:08:16 2020
 @author: ringhausen
 """
-import electric_machines.core as em
+# import electric_machines.core as em
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
 import math
-import electric_machines.electromag_finite_elements as fe
+import finite_elements as fe
+import finite_elements.loads
+import finite_elements.analysis
+
 MU = 4*math.pi*1e-7
 def create_magnet(horizontal_resolution, vertical_resolution, mu_r_magnet):
     
@@ -99,9 +102,9 @@ for node in mesh.nodes:
     or math.isclose(node[0], 1, abs_tol=1e-6) \
     or math.isclose(node[1], -1, abs_tol=1e-6) \
     or math.isclose(node[1], 1, abs_tol=1e-6):
-        node_loads.append(fe.SingleNodeLoad(node, 0))
-magnet_loads = [fe.MagnetLoad(mesh.elements_groups[0].elements, [], -1/MU * magnet.remanent_induction * vm.Y2D)]
-analysis = fe.FiniteElementAnalysis(mesh, [], node_loads, magnet_loads, [])
+        node_loads.append(fe.loads.SingleNodeLoad(node, 0))
+magnet_loads = [fe.loads.MagnetLoad(mesh.elements_groups[0].elements, [], -1/MU * magnet.remanent_induction * vm.Y2D)]
+analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, magnet_loads, [])
 result = analysis.solve()
 ax = mesh.elements_groups[0].plot()
 result.plot_magnetic_field_vectors(ax=ax, amplitude=0.05)
