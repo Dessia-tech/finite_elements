@@ -19,6 +19,7 @@ from dessia_common import DessiaObject
 from typing import List #Tuple, TypeVar
 from finite_elements.loads import ConstantLoad, SingleNodeLoad, MagnetLoad, ContinuityCondition
 from finite_elements.results import Result
+from finite_elements.core import blue_red
 
 
 class FiniteElementAnalysis(DessiaObject):
