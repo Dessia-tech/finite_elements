@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Module containing objects related to different finite elements analysis results
+Module containing objects related to finite elements analysis results
 """
 
 import matplotlib as mpl
@@ -309,7 +309,7 @@ class Result(DessiaObject):
                 x_center, y_center = element.center
                 x.append(x_center)
                 y.append(y_center)
-                Z.append(element_to_magnetic_field[element].Norm())
+                Z.append(element_to_magnetic_field[element].norm())
         
         tri = Triangulation(x, y)
         
