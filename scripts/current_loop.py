@@ -10,8 +10,15 @@ import volmdlr.mesh as vmmesh
 import matplotlib.pyplot as plt 
 import math
 import finite_elements
-import finite_elements.electromag as fe
+import finite_elements as fe
+import finite_elements.elements
+import finite_elements.loads
+import finite_elements.elements_analysis
+
 MU = 4*math.pi*1e-7
+
+# %% Method
+
 def create_loop(vertical_resolution, horizontal_resolution, mu_r_loop, box_multiplier, offset_radius):
     
 ############################## LEFT WIRE ##############################
@@ -45,11 +52,11 @@ def create_loop(vertical_resolution, horizontal_resolution, mu_r_loop, box_multi
     for i in range(len(all_points_left)-horizontal_resolution-2):
         if (i+1) % (horizontal_resolution+1) == 0 and i != 0:
             continue
-        elem1 = vmmesh.TriangularElement([all_points_left[i], all_points_left[i+1], all_points_left[i+horizontal_resolution+2]])
-        elem2 = vmmesh.TriangularElement([all_points_left[i], all_points_left[i+horizontal_resolution+1], all_points_left[i+horizontal_resolution+2]])
+        elem1 = vmmesh.TriangularElement2D([all_points_left[i], all_points_left[i+1], all_points_left[i+horizontal_resolution+2]])
+        elem2 = vmmesh.TriangularElement2D([all_points_left[i], all_points_left[i+horizontal_resolution+1], all_points_left[i+horizontal_resolution+2]])
         elements.extend([elem1, elem2])
         
-    left_elem_group = fe.MagneticElementsGroup(elements, mu_r_loop*MU, 'Left wire')
+    left_elem_group = fe.elements.MagneticElementsGroup(elements, mu_r_loop*MU, 'Left wire')
 ############################## RIGHT WIRE ##############################    
     
     pt_low_left = vm.Point2D(0.25, -0.125/2) + vm.Point2D(0.125*offset_radius, 0)
@@ -81,11 +88,11 @@ def create_loop(vertical_resolution, horizontal_resolution, mu_r_loop, box_multi
     for i in range(len(all_points_right)-horizontal_resolution-2):
         if (i+1) % (horizontal_resolution+1) == 0 and i != 0:
             continue
-        elem1 = vmmesh.TriangularElement([all_points_right[i], all_points_right[i+1], all_points_right[i+horizontal_resolution+2]])
-        elem2 = vmmesh.TriangularElement([all_points_right[i], all_points_right[i+horizontal_resolution+1], all_points_right[i+horizontal_resolution+2]])
+        elem1 = vmmesh.TriangularElement2D([all_points_right[i], all_points_right[i+1], all_points_right[i+horizontal_resolution+2]])
+        elem2 = vmmesh.TriangularElement2D([all_points_right[i], all_points_right[i+horizontal_resolution+1], all_points_right[i+horizontal_resolution+2]])
         elements.extend([elem1, elem2])
         
-    right_elem_group = fe.MagneticElementsGroup(elements, mu_r_loop*MU, 'Right wire')
+    right_elem_group = fe.elements.MagneticElementsGroup(elements, mu_r_loop*MU, 'Right wire')
     
 ############################## BOX ##############################
     
@@ -126,13 +133,16 @@ def create_loop(vertical_resolution, horizontal_resolution, mu_r_loop, box_multi
         elif all_points[i] in all_points_right[:-int(horizontal_resolution/16)-1] \
         and not math.isclose(all_points[i][0], 0.25+0.125 + 0.125*offset_radius, abs_tol=1e-6):
             continue
-        elem1 = vmmesh.TriangularElement([all_points[i], all_points[i+1], all_points[i+horizontal_resolution+2]])
-        elem2 = vmmesh.TriangularElement([all_points[i], all_points[i+horizontal_resolution+1], all_points[i+horizontal_resolution+2]])
+        elem1 = vmmesh.TriangularElement2D([all_points[i], all_points[i+1], all_points[i+horizontal_resolution+2]])
+        elem2 = vmmesh.TriangularElement2D([all_points[i], all_points[i+horizontal_resolution+1], all_points[i+horizontal_resolution+2]])
         elements.extend([elem1, elem2])
         
-    box_elem_group = fe.MagneticElementsGroup(elements, MU, 'Box')
+    box_elem_group = fe.elements.MagneticElementsGroup(elements, MU, 'Box')
     
     return vmmesh.Mesh([left_elem_group, right_elem_group, box_elem_group])
+
+# %% Example
+
 # Set intensity
 intensity = 1000
 box_multiplier = 3
@@ -147,10 +157,10 @@ for node in mesh.nodes:
     or math.isclose(node[0], 1 * box_multiplier, abs_tol=1e-6) \
     or math.isclose(node[1], -1 * box_multiplier, abs_tol=1e-6) \
     or math.isclose(node[1], 1 * box_multiplier, abs_tol=1e-6):
-        node_loads.append(fe.SingleNodeLoad(node, 0))
-element_load = [fe.ConstantLoad(mesh.elements_groups[0].elements, intensity),
-                fe.ConstantLoad(mesh.elements_groups[1].elements, -intensity)]
-analysis = fe.FiniteElementAnalysis(mesh, element_load, node_loads, [], [])
+        node_loads.append(fe.loads.SingleNodeLoad(node, 0))
+element_load = [fe.loads.ConstantLoad(mesh.elements_groups[0].elements, intensity),
+                fe.loads.ConstantLoad(mesh.elements_groups[1].elements, -intensity)]
+analysis = fe.elements_analysis.FiniteElementAnalysis(mesh, element_load, node_loads, [], [])
 result = analysis.solve()
 ax = mesh.elements_groups[0].plot()
 mesh.elements_groups[1].plot(ax=ax)
