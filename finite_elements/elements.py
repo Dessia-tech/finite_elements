@@ -19,13 +19,13 @@ import volmdlr.mesh as vmmesh
 from typing import List #Tuple, TypeVar
 
 
-class MagneticElement(vmmesh.TriangularElement2D):
+class MagneticElement2D(vmmesh.TriangularElement2D):
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
     # _non_hash_attributes = ['name']
     # _generic_eq = True
-    def __init__(self, triangular_element: vmmesh.TriangularElement,
+    def __init__(self, triangular_element: vmmesh.TriangularElement2D,
                  mu_total: float, name : str = ''):
         self.triangular_element = triangular_element
         vmmesh.TriangularElement2D.__init__(self, points=triangular_element.points)
@@ -33,13 +33,15 @@ class MagneticElement(vmmesh.TriangularElement2D):
 
         # DessiaObject.__init__(self, name=name)
 
+
+
 class MagneticElementsGroup(vmmesh.ElementsGroup):
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
     # _non_hash_attributes = ['name']
     # _generic_eq = True
-    def __init__(self, magnetic_elements: List[MagneticElement],
+    def __init__(self, magnetic_elements: List[MagneticElement2D],
                  mu_total: float, name: str):
         self.magnetic_elements = magnetic_elements
         self.triangular_elements = self._triangular_elements()
