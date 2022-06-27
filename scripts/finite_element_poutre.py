@@ -25,7 +25,8 @@ for i in range(phase1):
     elements_phase1.extend([element1, element2])
 
 magnetic_elements = [fe.elements.MagneticElement2D(element, mu1) for element in elements_phase1]
-group_phase1 = fe.elements.MagneticElementsGroup(magnetic_elements, mu1, 'phase1')
+# group_phase1 = fe.elements.MagneticElementsGroup(magnetic_elements, mu1, 'phase1')
+group_phase1 = mesh.ElementsGroup(magnetic_elements, 'phase1')
 
 elements_phase2 = []
 for i in range(phase1, phase1+phase2):
@@ -34,7 +35,8 @@ for i in range(phase1, phase1+phase2):
     elements_phase2.extend([element1, element2])
 
 magnetic_elements = [fe.elements.MagneticElement2D(element, mu2) for element in elements_phase2]
-group_phase2 = fe.elements.MagneticElementsGroup(magnetic_elements, mu2, 'phase2')
+# group_phase2 = fe.elements.MagneticElementsGroup(magnetic_elements, mu2, 'phase2')
+group_phase2 = mesh.ElementsGroup(magnetic_elements, 'phase2')
 
 
 elements_phase3 = []
@@ -44,7 +46,8 @@ for i in range(phase1+phase2, phase1+phase2+phase3):
     elements_phase3.extend([element1, element2])
 
 magnetic_elements = [fe.elements.MagneticElement2D(element, mu3) for element in elements_phase3]
-group_phase3 = fe.elements.MagneticElementsGroup(magnetic_elements, mu3, 'phase3')
+# group_phase3 = fe.elements.MagneticElementsGroup(magnetic_elements, mu3, 'phase3')
+group_phase3 = mesh.ElementsGroup(magnetic_elements, 'phase3')
 
 mesh = mesh.Mesh([group_phase1, group_phase2, group_phase3])
 elements_loads = [fe.loads.ConstantLoad(group_phase1.elements[0:2], 1e10)]
