@@ -17,6 +17,7 @@ from scipy import sparse
 # import time 
 from dessia_common import DessiaObject
 from typing import List #Tuple, TypeVar
+import finite_elements.elements
 from finite_elements.loads import ConstantLoad, SingleNodeLoad, MagnetLoad, ContinuityCondition
 from finite_elements.results import Result
 from finite_elements.core import blue_red
@@ -49,36 +50,43 @@ class FiniteElementAnalysis(DessiaObject):
         self.nb_loads = len(node_loads)
         
         DessiaObject.__init__(self, name='')
-        
+
     def create_matrix(self):
         row_ind = []
         col_ind = []
         data = []
-        
+
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
-                element_form_functions = element.form_functions
                 indexes = [self.mesh.node_to_index[element.points[0]],
                            self.mesh.node_to_index[element.points[1]],
                            self.mesh.node_to_index[element.points[2]]]
-                b1 = element_form_functions[0][1]
-                c1 = element_form_functions[0][2]
-                b2 = element_form_functions[1][1]
-                c2 = element_form_functions[1][2]
-                b3 = element_form_functions[2][1]
-                c3 = element_form_functions[2][2]
+                elementary_matrix = finite_elements.elements.MagneticElement2D(triangular_element=element, mu_total=elements_group.mu_total).elementary_matrix(indexes)
+                row_ind.extend(elementary_matrix[1])
+                col_ind.extend(elementary_matrix[2])
+                data.extend(elementary_matrix[0])
+                # element_form_functions = element.form_functions
+                # indexes = [self.mesh.node_to_index[element.points[0]],
+                #            self.mesh.node_to_index[element.points[1]],
+                #            self.mesh.node_to_index[element.points[2]]]
+                # b1 = element_form_functions[0][1]
+                # c1 = element_form_functions[0][2]
+                # b2 = element_form_functions[1][1]
+                # c2 = element_form_functions[1][2]
+                # b3 = element_form_functions[2][1]
+                # c3 = element_form_functions[2][2]
                 
-                row_ind.extend((indexes[0], indexes[0], indexes[0], indexes[1], indexes[1], indexes[1], indexes[2], indexes[2], indexes[2]))
-                col_ind.extend((indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2]))
-                data.extend((1/elements_group.mu_total * (b1**2 + c1**2) * element.area, 
-                             1/elements_group.mu_total * (b1*b2 + c1*c2) * element.area,
-                             1/elements_group.mu_total * (b1*b3 + c1*c3) * element.area,
-                             1/elements_group.mu_total * (b1*b2 + c1*c2) * element.area,
-                             1/elements_group.mu_total * (b2**2 + c2**2) * element.area,
-                             1/elements_group.mu_total * (b2*b3 + c2*c3) * element.area,
-                             1/elements_group.mu_total * (b1*b3 + c1*c3) * element.area,
-                             1/elements_group.mu_total * (b2*b3 + c2*c3) * element.area,
-                             1/elements_group.mu_total * (b3**2 + c3**2) * element.area))
+                # row_ind.extend((indexes[0], indexes[0], indexes[0], indexes[1], indexes[1], indexes[1], indexes[2], indexes[2], indexes[2]))
+                # col_ind.extend((indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2]))
+                # data.extend((1/elements_group.mu_total * (b1**2 + c1**2) * element.area,
+                #              1/elements_group.mu_total * (b1*b2 + c1*c2) * element.area,
+                #              1/elements_group.mu_total * (b1*b3 + c1*c3) * element.area,
+                #              1/elements_group.mu_total * (b1*b2 + c1*c2) * element.area,
+                #              1/elements_group.mu_total * (b2**2 + c2**2) * element.area,
+                #              1/elements_group.mu_total * (b2*b3 + c2*c3) * element.area,
+                #              1/elements_group.mu_total * (b1*b3 + c1*c3) * element.area,
+                #              1/elements_group.mu_total * (b2*b3 + c2*c3) * element.area,
+                #              1/elements_group.mu_total * (b3**2 + c3**2) * element.area))
                 
         for i, load in enumerate(self.node_loads):
             index = self.mesh.node_to_index[load.node]
@@ -111,34 +119,38 @@ class FiniteElementAnalysis(DessiaObject):
                 indexes = [self.mesh.node_to_index[element.points[0]],
                            self.mesh.node_to_index[element.points[1]],
                            self.mesh.node_to_index[element.points[2]]]
+
+                elementary_source_matrix = finite_elements.elements.MagneticElement2D(
+                    triangular_element=element,
+                    mu_total=element.mu_total).elementary_source_matrix(indexes)
+
+                # x1 = element.points[0][0]
+                # y1 = element.points[0][1]
+                # x2 = element.points[1][0]
+                # y2 = element.points[1][1]
+                # x3 = element.points[2][0]
+                # y3 = element.points[2][1]
                 
-                x1 = element.points[0][0]
-                y1 = element.points[0][1]
-                x2 = element.points[1][0]
-                y2 = element.points[1][1]
-                x3 = element.points[2][0]
-                y3 = element.points[2][1]
+                # det_jacobien = abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))
                 
-                det_jacobien = abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))
+                # element_form_functions = element.form_functions
+                # a1 = element_form_functions[0][0]
+                # b1 = element_form_functions[0][1]
+                # c1 = element_form_functions[0][2]
+                # a2 = element_form_functions[1][0]
+                # b2 = element_form_functions[1][1]
+                # c2 = element_form_functions[1][2]
+                # a3 = element_form_functions[2][0]
+                # b3 = element_form_functions[2][1]
+                # c3 = element_form_functions[2][2]
                 
-                element_form_functions = element.form_functions
-                a1 = element_form_functions[0][0]
-                b1 = element_form_functions[0][1]
-                c1 = element_form_functions[0][2]
-                a2 = element_form_functions[1][0]
-                b2 = element_form_functions[1][1]
-                c2 = element_form_functions[1][2]
-                a3 = element_form_functions[2][0]
-                b3 = element_form_functions[2][1]
-                c3 = element_form_functions[2][2]
+                # double_integral_N1_dS = det_jacobien*(a1 + 0.5*b1*x2 + 0.5*c1*y2 + 0.5*b1*x3 + 0.5*c1*y3)
+                # double_integral_N2_dS = det_jacobien*(a2 + 0.5*b2*x2 + 0.5*c2*y2 + 0.5*b2*x3 + 0.5*c2*y3)
+                # double_integral_N3_dS = det_jacobien*(a3 + 0.5*b3*x2 + 0.5*c3*y2 + 0.5*b3*x3 + 0.5*c3*y3)
                 
-                double_integral_N1_dS = det_jacobien*(a1 + 0.5*b1*x2 + 0.5*c1*y2 + 0.5*b1*x3 + 0.5*c1*y3)
-                double_integral_N2_dS = det_jacobien*(a2 + 0.5*b2*x2 + 0.5*c2*y2 + 0.5*b2*x3 + 0.5*c2*y3)
-                double_integral_N3_dS = det_jacobien*(a3 + 0.5*b3*x2 + 0.5*c3*y2 + 0.5*b3*x3 + 0.5*c3*y3)
-                
-                matrix[indexes[0]][0] += load.value * double_integral_N1_dS 
-                matrix[indexes[1]][0] += load.value * double_integral_N2_dS 
-                matrix[indexes[2]][0] += load.value * double_integral_N3_dS
+                matrix[indexes[0]][0] += load.value * elementary_source_matrix[0]
+                matrix[indexes[1]][0] += load.value * elementary_source_matrix[1]
+                matrix[indexes[2]][0] += load.value * elementary_source_matrix[2]
                 
         for i, load in enumerate(self.node_loads):
             matrix[len(self.mesh.nodes) + i][0] += load.value
