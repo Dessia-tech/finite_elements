@@ -61,7 +61,9 @@ class FiniteElementAnalysis(DessiaObject):
                 indexes = [self.mesh.node_to_index[element.points[0]],
                            self.mesh.node_to_index[element.points[1]],
                            self.mesh.node_to_index[element.points[2]]]
-                elementary_matrix = finite_elements.elements.MagneticElement2D(triangular_element=element, mu_total=elements_group.mu_total).elementary_matrix(indexes)
+                elementary_matrix = finite_elements.elements.MagneticElement2D(
+                    triangular_element=element,
+                    mu_total=element.mu_total).elementary_matrix(indexes)
                 row_ind.extend(elementary_matrix[1])
                 col_ind.extend(elementary_matrix[2])
                 data.extend(elementary_matrix[0])
@@ -226,15 +228,15 @@ class FiniteElementAnalysis(DessiaObject):
         color_map = ((0, 0, 1), (1, 0, 0))
         permeabilities = []
         for elements_group in self.mesh.elements_groups:
-            permeabilities.append(elements_group.mu_total)
+            permeabilities.append(elements_group.elements[0].mu_total)
         mu_max = max(permeabilities)
         mu_min = min(permeabilities)
         colors = []
         for elements_group in self.mesh.elements_groups:
-            x = (elements_group.mu_total - mu_min) / (mu_max - mu_min)
+            x = (elements_group.elements[0].mu_total - mu_min) / (mu_max - mu_min)
             color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x, 
-                     color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
-                     color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
+                      color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
+                      color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
             colors.append(color)
         
         norm = mpl.colors.Normalize(vmin=mu_min, vmax=mu_max)
