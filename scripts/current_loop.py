@@ -56,8 +56,9 @@ def create_loop(vertical_resolution, horizontal_resolution, mu_r_loop, box_multi
         elem2 = vmmesh.TriangularElement2D([all_points_left[i], all_points_left[i+horizontal_resolution+1], all_points_left[i+horizontal_resolution+2]])
         elements.extend([elem1, elem2])
 
-    magnetic_elements = [fe.elements.MagneticElement2D(element, mu_r_loop*MU) for element in elements]
-    left_elem_group = fe.elements.MagneticElementsGroup(magnetic_elements, mu_r_loop*MU, 'Left wire')
+    magnetic_elements_left = [fe.elements.MagneticElement2D(element, mu_r_loop*MU) for element in elements]
+    left_elem_group = vmmesh.ElementsGroup(magnetic_elements_left, 'Left wire')
+    # left_elem_group = fe.elements.MagneticElementsGroup(magnetic_elements, mu_r_loop*MU, 'Left wire')
 
 ############################## RIGHT WIRE ##############################    
     
@@ -94,8 +95,9 @@ def create_loop(vertical_resolution, horizontal_resolution, mu_r_loop, box_multi
         elem2 = vmmesh.TriangularElement2D([all_points_right[i], all_points_right[i+horizontal_resolution+1], all_points_right[i+horizontal_resolution+2]])
         elements.extend([elem1, elem2])
 
-    magnetic_elements = [fe.elements.MagneticElement2D(element, mu_r_loop*MU) for element in elements]
-    right_elem_group = fe.elements.MagneticElementsGroup(magnetic_elements, mu_r_loop*MU, 'Right wire')
+    magnetic_elements_right = [fe.elements.MagneticElement2D(element, mu_r_loop*MU) for element in elements]
+    right_elem_group = vmmesh.ElementsGroup(magnetic_elements_right, 'Right wire')
+    # right_elem_group = fe.elements.MagneticElementsGroup(magnetic_elements, mu_r_loop*MU, 'Right wire')
     
 ############################## BOX ##############################
     
@@ -140,8 +142,9 @@ def create_loop(vertical_resolution, horizontal_resolution, mu_r_loop, box_multi
         elem2 = vmmesh.TriangularElement2D([all_points[i], all_points[i+horizontal_resolution+1], all_points[i+horizontal_resolution+2]])
         elements.extend([elem1, elem2])
     
-    magnetic_elements = [fe.elements.MagneticElement2D(element, MU) for element in elements]
-    box_elem_group = fe.elements.MagneticElementsGroup(magnetic_elements, MU, 'Box')
+    magnetic_elements_box = [fe.elements.MagneticElement2D(element, MU) for element in elements]
+    box_elem_group = vmmesh.ElementsGroup(magnetic_elements_box, 'Box')
+    # box_elem_group = fe.elements.MagneticElementsGroup(magnetic_elements, MU, 'Box')
 
     return vmmesh.Mesh([left_elem_group, right_elem_group, box_elem_group])
 
