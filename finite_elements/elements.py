@@ -33,6 +33,37 @@ class MagneticElement2D(vmmesh.TriangularElement2D):
 
         # DessiaObject.__init__(self, name=name)
 
+    def elementary_matrix(self):
+        """
+        Create the elementary matrix of the MagneticElement2D
+
+        :return: (data, row_ind, col_ind)
+        """
+
+        element_form_functions = self.triangular_element.form_functions
+        indexes = [self.mesh.node_to_index[self.triangular_element.points[0]],
+                   self.mesh.node_to_index[self.triangular_element.points[1]],
+                   self.mesh.node_to_index[self.triangular_element.points[2]]]
+        b1 = element_form_functions[0][1]
+        c1 = element_form_functions[0][2]
+        b2 = element_form_functions[1][1]
+        c2 = element_form_functions[1][2]
+        b3 = element_form_functions[2][1]
+        c3 = element_form_functions[2][2]
+
+        row_ind = (indexes[0], indexes[0], indexes[0], indexes[1], indexes[1], indexes[1], indexes[2], indexes[2], indexes[2])
+        col_ind = (indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2])
+        data = (1/self.mu_total * (b1**2 + c1**2) * self.triangular_element.area,
+                1/self.mu_total * (b1*b2 + c1*c2) * self.triangular_element.area,
+                1/self.mu_total * (b1*b3 + c1*c3) * self.triangular_element.area,
+                1/self.mu_total * (b1*b2 + c1*c2) * self.triangular_element.area,
+                1/self.mu_total * (b2**2 + c2**2) * self.triangular_element.area,
+                1/self.mu_total * (b2*b3 + c2*c3) * self.triangular_element.area,
+                1/self.mu_total * (b1*b3 + c1*c3) * self.triangular_element.area,
+                1/self.mu_total * (b2*b3 + c2*c3) * self.triangular_element.area,
+                1/self.mu_total * (b3**2 + c3**2) * self.triangular_element.area)
+
+        return (data, row_ind, col_ind)
 
 
 class MagneticElementsGroup(vmmesh.ElementsGroup):
