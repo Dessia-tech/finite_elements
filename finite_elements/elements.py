@@ -154,12 +154,9 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement):
 
     def stiffness_matrix(self):
 
-        x, y = [], []
 
-        for (i,j) in [(1,2), (2,0), (0,1)]:
-            y.append(self.points[i].y-self.points[j].y)
-        for (i,j) in [(2,1), (0,2), (1,0)]:
-            x.append(self.points[i].x-self.points[j].x)
+        y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
+        x = [(self.points[i].x-self.points[j].x) for (i,j) in [(2,1), (0,2), (1,0)]]
 
         det_jacobian = (self.points[0].x-self.points[2].x)*(self.points[1].y-self.points[2].y) - (self.points[0].y-self.points[2].y)*(self.points[1].x-self.points[2].x)
 
