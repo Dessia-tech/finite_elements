@@ -32,28 +32,11 @@ MU = 4*math.pi*1e-7
 
 def global_matrix_positions(dimension, nodes_number):
 
-    if dimension == 2:
-        return global_matrix_positions2d(nodes_number)
-    if dimension == 3:
-        return global_matrix_positions3d(nodes_number)
-
-def global_matrix_positions3d(nodes_number):
-
     positions = {}
     count = 0
     for i in range(nodes_number):
-        for j in range(3):
+        for j in range(dimension):
             positions[(i, j)] = count
             count += 1
 
-    return positions
-
-def global_matrix_positions2d(nodes_number):
-
-    positions = {}
-    count = 0
-    for i in range(nodes_number):
-        for j in range(2):
-            positions[(i, j)] = count
-            count += 1
     return positions
