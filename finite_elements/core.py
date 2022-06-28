@@ -42,8 +42,10 @@ def global_matrix_positions3d(nodes_number):
     positions = {}
     count = 0
     for i in range(nodes_number):
-        positions[i] = {'x':count, 'y':count+1, 'z':count+2}
-        count +=3
+        for j in range(3):
+            positions[(i, j)] = count
+            count += 1
+
     return positions
 
 def global_matrix_positions2d(nodes_number):
@@ -51,6 +53,7 @@ def global_matrix_positions2d(nodes_number):
     positions = {}
     count = 0
     for i in range(nodes_number):
-        positions[i] = {'x':count, 'y':count+1}
-        count +=2
+        for j in range(2):
+            positions[(i, j)] = count
+            count += 1
     return positions
