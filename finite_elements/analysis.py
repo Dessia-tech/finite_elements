@@ -51,6 +51,27 @@ class FiniteElementAnalysis(DessiaObject):
         
         DessiaObject.__init__(self, name='')
 
+    def get_row_col_indices(self, element, dim, number_nodes):
+
+        indexes = [self.mesh.node_to_index[element.points[0]],
+                   self.mesh.node_to_index[element.points[1]],
+                   self.mesh.node_to_index[element.points[2]]]
+
+        positions = finite_elements.core.global_matrix_positions(dimension=dim, nodes_number=number_nodes)
+
+        row_ind, col = [], []
+        for index in indexes:
+            for i in range(dim):
+                row_ind.extend(len(indexes)*dim * [positions[(index, i)]])
+                col.append(positions[(index, i)])
+
+        col_ind = []
+        for index in indexes:
+            for i in range(dim):
+                col_ind.extend(col)
+
+        return row_ind, col_ind
+
     def create_matrix(self):
         row_ind = []
         col_ind = []
@@ -61,12 +82,29 @@ class FiniteElementAnalysis(DessiaObject):
                 indexes = [self.mesh.node_to_index[element.points[0]],
                            self.mesh.node_to_index[element.points[1]],
                            self.mesh.node_to_index[element.points[2]]]
-                elementary_matrix = finite_elements.elements.MagneticElement2D(
-                    triangular_element=element,
-                    mu_total=element.mu_total).elementary_matrix(indexes)
-                row_ind.extend(elementary_matrix[1])
-                col_ind.extend(elementary_matrix[2])
-                data.extend(elementary_matrix[0])
+
+                if type(element) == finite_elements.elements.MagneticElement2D:
+                    elementary_matrix = finite_elements.elements.MagneticElement2D(
+                        triangular_element=element,
+                        mu_total=element.mu_total).elementary_matrix(indexes)
+                    data.extend(elementary_matrix[0])
+                    row_ind_n, col_ind_n = self.get_row_col_indices(element, dim=1, number_nodes=len(self.mesh.nodes))
+
+                    row_ind.extend(row_ind_n)
+                    col_ind.extend(col_ind_n)
+
+                else:
+                    elementary_matrix = element.elementary_matrix()
+                    data.extend(elementary_matrix)
+                    row_ind_n, col_ind_n = self.get_row_col_indices(element, dim=2, number_nodes=len(self.mesh.nodes))
+
+                    row_ind.extend(row_ind_n)
+                    col_ind.extend(col_ind_n)
+
+                # row_ind.extend(elementary_matrix[1])
+                # col_ind.extend(elementary_matrix[2])
+                # data.extend(elementary_matrix[0])
+
                 # element_form_functions = element.form_functions
                 # indexes = [self.mesh.node_to_index[element.points[0]],
                 #            self.mesh.node_to_index[element.points[1]],
@@ -77,7 +115,7 @@ class FiniteElementAnalysis(DessiaObject):
                 # c2 = element_form_functions[1][2]
                 # b3 = element_form_functions[2][1]
                 # c3 = element_form_functions[2][2]
-                
+
                 # row_ind.extend((indexes[0], indexes[0], indexes[0], indexes[1], indexes[1], indexes[1], indexes[2], indexes[2], indexes[2]))
                 # col_ind.extend((indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2]))
                 # data.extend((1/elements_group.mu_total * (b1**2 + c1**2) * element.area,
@@ -89,7 +127,7 @@ class FiniteElementAnalysis(DessiaObject):
                 #              1/elements_group.mu_total * (b1*b3 + c1*c3) * element.area,
                 #              1/elements_group.mu_total * (b2*b3 + c2*c3) * element.area,
                 #              1/elements_group.mu_total * (b3**2 + c3**2) * element.area))
-                
+
         for i, load in enumerate(self.node_loads):
             index = self.mesh.node_to_index[load.node]
             
