@@ -136,7 +136,7 @@ class SolidMechanicsElement(DessiaObject):
         DessiaObject.__init__(self, name=name)
 
 
-class SolidMechanicsTriangularElement2D(SolidMechanicsElement):
+class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.TriangularElement2D):
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -148,6 +148,7 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement):
 
         SolidMechanicsElement.__init__(self, mesh_element,
                                        elasticity_modulus, poisson_ratio)
+        vmmesh.TriangularElement2D.__init__(self, points=mesh_element.points)
 
         # DessiaObject.__init__(self, name=name)
 
