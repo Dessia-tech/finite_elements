@@ -99,21 +99,21 @@ class MagneticElement2D(vmmesh.TriangularElement2D):
         return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
 
 
-class MagneticElementsGroup(vmmesh.ElementsGroup):
-    # _standalone_in_db = False
-    # _non_serializable_attributes = []
-    # _non_eq_attributes = ['name']
-    # _non_hash_attributes = ['name']
-    # _generic_eq = True
-    def __init__(self, magnetic_elements: List[MagneticElement2D],
-                 mu_total: float, name: str):
-        self.magnetic_elements = magnetic_elements
-        self.triangular_elements = self._triangular_elements()
-        vmmesh.ElementsGroup.__init__(self, elements=self.triangular_elements, name=name)
-        self.mu_total = mu_total
+# class MagneticElementsGroup(vmmesh.ElementsGroup):
+#     # _standalone_in_db = False
+#     # _non_serializable_attributes = []
+#     # _non_eq_attributes = ['name']
+#     # _non_hash_attributes = ['name']
+#     # _generic_eq = True
+#     def __init__(self, magnetic_elements: List[MagneticElement2D],
+#                  mu_total: float, name: str):
+#         self.magnetic_elements = magnetic_elements
+#         self.triangular_elements = self._triangular_elements()
+#         vmmesh.ElementsGroup.__init__(self, elements=self.triangular_elements, name=name)
+#         self.mu_total = mu_total
 
-        # DessiaObject.__init__(self, name=name)
+#         # DessiaObject.__init__(self, name=name)
 
-    def _triangular_elements(self):
-        return [element.triangular_element for element in self.magnetic_elements]
+#     def _triangular_elements(self):
+#         return [element.triangular_element for element in self.magnetic_elements]
 
