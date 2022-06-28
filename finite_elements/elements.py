@@ -153,7 +153,7 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
         # DessiaObject.__init__(self, name=name)
 
 
-    def stiffness_matrix(self):
+    def elementary_matrix(self):
 
 
         y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
@@ -178,4 +178,4 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
 
         stiffness_matrix = self.area * (npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
 
-        return stiffness_matrix
+        return stiffness_matrix.flatten()
