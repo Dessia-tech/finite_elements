@@ -144,7 +144,9 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
     # _generic_eq = True
     def __init__(self, mesh_element: vmmesh.TriangularElement2D,
                  elasticity_modulus, poisson_ratio,
+                 thickness: float = 1.0,
                  name : str = ''):
+        self.thickness = thickness
 
         SolidMechanicsElement.__init__(self, mesh_element,
                                        elasticity_modulus, poisson_ratio)
@@ -152,10 +154,7 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
 
         # DessiaObject.__init__(self, name=name)
 
-
-    def elementary_matrix(self):
-
-
+    def b_matrix(self):
         y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
         x = [(self.points[i].x-self.points[j].x) for (i,j) in [(2,1), (0,2), (1,0)]]
 
@@ -167,6 +166,9 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
 
         b_matrix = (1/det_jacobian) * npy.array(data).reshape(3,6)
 
+        return b_matrix
+
+    def d_matrix(self):
         elasticity_modulus = self.elasticity_modulus
         poisson_ratio = self.poisson_ratio
 
@@ -176,6 +178,33 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
 
         d_matrix = (elasticity_modulus/(1 - (poisson_ratio)**2)) * npy.array(data).reshape(3,3)
 
-        stiffness_matrix = self.area * (npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
+        return d_matrix
+
+    def elementary_matrix(self):
+
+        b_matrix = self.b_matrix()
+        d_matrix = self.d_matrix()
+
+        # y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
+        # x = [(self.points[i].x-self.points[j].x) for (i,j) in [(2,1), (0,2), (1,0)]]
+
+        # det_jacobian = (self.points[0].x-self.points[2].x)*(self.points[1].y-self.points[2].y) - (self.points[0].y-self.points[2].y)*(self.points[1].x-self.points[2].x)
+
+        # data = [y[0], 0, y[1], 0, y[2], 0,
+        #         0, x[0], 0, x[1], 0, x[2],
+        #         x[0], y[0], x[1], y[1], x[2], y[2]]
+
+        # b_matrix = (1/det_jacobian) * npy.array(data).reshape(3,6)
+
+        # elasticity_modulus = self.elasticity_modulus
+        # poisson_ratio = self.poisson_ratio
+
+        # data = [1, poisson_ratio, 0,
+        #         poisson_ratio, 1, 0,
+        #         0, 0, (1-poisson_ratio)/2]
+
+        # d_matrix = (elasticity_modulus/(1 - (poisson_ratio)**2)) * npy.array(data).reshape(3,3)
+
+        stiffness_matrix = self.thickness * self.area * (npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
 
         return stiffness_matrix.flatten()
