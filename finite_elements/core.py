@@ -37,7 +37,7 @@ def global_matrix_positions(dimension, nodes_number):
     if dimension == 3:
         return global_matrix_positions3d(nodes_number)
 
-def global_matrix_positions2d(nodes_number):
+def global_matrix_positions3d(nodes_number):
 
     positions = {}
     count = 0
@@ -46,7 +46,7 @@ def global_matrix_positions2d(nodes_number):
         count +=3
     return positions
 
-def global_matrix_positions3d(nodes_number):
+def global_matrix_positions2d(nodes_number):
 
     positions = {}
     count = 0
