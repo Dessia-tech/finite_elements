@@ -84,9 +84,10 @@ class FiniteElementAnalysis(DessiaObject):
                            self.mesh.node_to_index[element.points[2]]]
 
                 if type(element) == finite_elements.elements.MagneticElement2D:
-                    elementary_matrix = finite_elements.elements.MagneticElement2D(
-                        triangular_element=element,
-                        mu_total=element.mu_total).elementary_matrix(indexes)
+                    # elementary_matrix = finite_elements.elements.MagneticElement2D(
+                    #     triangular_element=element,
+                    #     mu_total=element.mu_total).elementary_matrix(indexes)
+                    elementary_matrix = element.elementary_matrix(indexes)
                     data.extend(elementary_matrix[0])
                     row_ind_n, col_ind_n = self.get_row_col_indices(element, dim=1, number_nodes=len(self.mesh.nodes))
 
@@ -97,7 +98,7 @@ class FiniteElementAnalysis(DessiaObject):
                     elementary_matrix = element.elementary_matrix()
                     data.extend(elementary_matrix)
                     row_ind_n, col_ind_n = self.get_row_col_indices(element, dim=2, number_nodes=len(self.mesh.nodes))
-
+                    print(row_ind_n, col_ind_n)
                     row_ind.extend(row_ind_n)
                     col_ind.extend(col_ind_n)
 
