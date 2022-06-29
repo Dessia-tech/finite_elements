@@ -65,11 +65,14 @@ class FiniteElementAnalysis(DessiaObject):
                 row_ind.extend(row_ind_n)
                 col_ind.extend(col_ind_n)
 
+        positions = finite_elements.core.global_matrix_positions(dimension=element.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+
         for i, load in enumerate(self.node_loads):
             index = self.mesh.node_to_index[load.node]
-            
-            row_ind.extend((len(self.mesh.nodes) + i, index))
-            col_ind.extend((index, len(self.mesh.nodes) + i))
+
+            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, positions[(index, load.dimension)]))
+            col_ind.extend((positions[(index, load.dimension)], len(self.mesh.nodes) * self.dimension + i))
             data.extend((1, 1))
             
         for i, condition in enumerate(self.continuity_conditions):
@@ -154,14 +157,14 @@ class FiniteElementAnalysis(DessiaObject):
                    self.mesh.node_to_index[element.points[1]],
                    self.mesh.node_to_index[element.points[2]]]
 
-        positions = finite_elements.core.global_matrix_positions(dimension=element.dimension,
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
 
         row_ind, col = [], []
         for index in indexes:
             for i in range(element.dimension):
-                row_ind.extend(len(indexes)*element.dimension * [positions[(index, i)]])
-                col.append(positions[(index, i)])
+                row_ind.extend(len(indexes)*element.dimension * [positions[(index, i+1)]])
+                col.append(positions[(index, i+1)])
 
         col_ind = []
         for index in indexes:

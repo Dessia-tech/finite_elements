@@ -36,7 +36,7 @@ def global_matrix_positions(dimension, nodes_number):
     count = 0
     for i in range(nodes_number):
         for j in range(dimension):
-            positions[(i, j)] = count
+            positions[(i, j+1)] = count
             count += 1
 
     return positions
