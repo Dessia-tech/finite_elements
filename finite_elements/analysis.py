@@ -18,7 +18,8 @@ from scipy import sparse
 from dessia_common import DessiaObject
 from typing import List #Tuple, TypeVar
 import finite_elements.elements
-from finite_elements.loads import ConstantLoad, SingleNodeLoad, MagnetLoad, ContinuityCondition
+from finite_elements.loads import ConstantLoad, SingleNodeLoad, MagnetLoad
+from finite_elements.conditions import ContinuityCondition
 from finite_elements.results import Result
 from finite_elements.core import blue_red
 

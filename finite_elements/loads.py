@@ -39,6 +39,7 @@ class ConstantLoad(DessiaObject):
         for element in self.elements:
             self.value_per_element.append(value * element.area/total_area)
         DessiaObject.__init__(self, name='')
+
 class SingleNodeLoad(DessiaObject):
     """ 
     Forces the value of the vector potential A at a node. To set a magnetic wall \
@@ -49,9 +50,10 @@ class SingleNodeLoad(DessiaObject):
     :param value: Set the node's vector potential A value.
     :type value: float
     """
-    def __init__(self, node: vm.Point2D, value: float):
+    def __init__(self, node: vm.Point2D, value: float, dimension):
         self.node = node
         self.value = value
+        self.dimension = dimension
         
         DessiaObject.__init__(self, name='')
         
@@ -94,24 +96,3 @@ class MagnetLoad(DessiaObject):
              or linear_element.points[1] not in self.non_contour_nodes):
                 contour_linear_elements.append(linear_element)
         return contour_linear_elements
-
-class ContinuityCondition(DessiaObject):
-    """ 
-    The continuity conditions link the value of vector potential A between two \
-    nodes. It is used to describe periodic or antiperiodic conditions inside the \
-    mesh. 
-    
-    :param node1: The first node.
-    :type node1: volmdlr.Point2D object
-    :param node2: The second node.
-    :type node2: volmdlr.Point2D object
-    :param value: If value is equal to 1, the continuity condition is periodic. \
-    If value is equal to -1, the continuity condition is antiperiodic. A(node1) = value*A(node2).
-    :type value: int
-    """
-    def __init__(self, node1: vm.Point2D, node2: vm.Point2D, value):
-        self.node1 = node1
-        self.node2 = node2 
-        self.value = value
-        
-        DessiaObject.__init__(self, name='')
