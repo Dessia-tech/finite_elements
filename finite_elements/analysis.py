@@ -51,27 +51,6 @@ class FiniteElementAnalysis(DessiaObject):
         
         DessiaObject.__init__(self, name='')
 
-    def get_row_col_indices(self, element, dim, number_nodes):
-
-        indexes = [self.mesh.node_to_index[element.points[0]],
-                   self.mesh.node_to_index[element.points[1]],
-                   self.mesh.node_to_index[element.points[2]]]
-
-        positions = finite_elements.core.global_matrix_positions(dimension=dim, nodes_number=number_nodes)
-
-        row_ind, col = [], []
-        for index in indexes:
-            for i in range(dim):
-                row_ind.extend(len(indexes)*dim * [positions[(index, i)]])
-                col.append(positions[(index, i)])
-
-        col_ind = []
-        for index in indexes:
-            for i in range(dim):
-                col_ind.extend(col)
-
-        return row_ind, col_ind
-
     def create_matrix(self):
         row_ind = []
         col_ind = []
@@ -81,7 +60,7 @@ class FiniteElementAnalysis(DessiaObject):
             for element in elements_group.elements:
 
                 data.extend(element.elementary_matrix())
-                row_ind_n, col_ind_n = self.get_row_col_indices(element, dim=element.dimension, number_nodes=len(self.mesh.nodes))
+                row_ind_n, col_ind_n = self.get_row_col_indices(element)
 
                 row_ind.extend(row_ind_n)
                 col_ind.extend(col_ind_n)
@@ -164,7 +143,29 @@ class FiniteElementAnalysis(DessiaObject):
                 matrix[indexes[1]][0] += magnet_load.magnetization_vector.Dot(dl) * length/2
                 
         return matrix
-    
+
+    def get_row_col_indices(self, element):
+
+        indexes = [self.mesh.node_to_index[element.points[0]],
+                   self.mesh.node_to_index[element.points[1]],
+                   self.mesh.node_to_index[element.points[2]]]
+
+        positions = finite_elements.core.global_matrix_positions(dimension=element.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+
+        row_ind, col = [], []
+        for index in indexes:
+            for i in range(element.dimension):
+                row_ind.extend(len(indexes)*element.dimension * [positions[(index, i)]])
+                col.append(positions[(index, i)])
+
+        col_ind = []
+        for index in indexes:
+            for i in range(element.dimension):
+                col_ind.extend(col)
+
+        return row_ind, col_ind
+
     def solve(self):
         """
         Solve the matix equation : F = K.X, where X is the unknown vector. \
