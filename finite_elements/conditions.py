@@ -19,10 +19,12 @@ class BoundaryCondition(DessiaObject):
     _non_eq_attributes = ['name']
     _non_hash_attributes = ['name']
     _generic_eq = True
-    def __init__(self,
-                 name : str = ''):
+    def __init__(self, node: vm.Point2D, value: float, dimension):
+        self.node = node
+        self.value = value
+        self.dimension = dimension
 
-        DessiaObject.__init__(self, name=name)
+        DessiaObject.__init__(self, name='')
 
 
 class ContinuityCondition(DessiaObject):
