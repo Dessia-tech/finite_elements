@@ -12,7 +12,6 @@ import finite_elements as fe
 import finite_elements.elements
 import finite_elements.loads
 import finite_elements.analysis
-import math
 
 # %% Mesh2D
 
@@ -24,9 +23,12 @@ triangles = [mesh.TriangularElement2D([vm.Point2D(3,0),vm.Point2D(3,2),vm.Point2
 solid_elments2d = [fe.elements.SolidMechanicsTriangularElement2D(
     triangle, elasticity_modulus, poisson_ratio, thickness) for triangle in triangles]
 
-group_solid_elments2d = mesh.ElementsGroup(solid_elments2d, '')
+# group_solid_elments2d = mesh.ElementsGroup(solid_elments2d, '')
+# mesh = mesh.Mesh([group_solid_elments2d])
 
-mesh = mesh.Mesh([group_solid_elments2d])
+group_solid_elments2d = [mesh.ElementsGroup([solid_elment], '') for solid_elment in solid_elments2d]
+mesh = mesh.Mesh(group_solid_elments2d)
+
 
 # %%
 
@@ -37,3 +39,4 @@ analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, [], [])
 m = analysis.create_matrix()
 
 results = analysis.solve()
+
