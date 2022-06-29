@@ -86,53 +86,6 @@ class FiniteElementAnalysis(DessiaObject):
                 row_ind.extend(row_ind_n)
                 col_ind.extend(col_ind_n)
 
-
-                # if type(element) == finite_elements.elements.MagneticElement2D:
-                #     # elementary_matrix = finite_elements.elements.MagneticElement2D(
-                #     #     triangular_element=element,
-                #     #     mu_total=element.mu_total).elementary_matrix(indexes)
-                #     elementary_matrix = element.elementary_matrix()
-                #     data.extend(elementary_matrix)
-                #     row_ind_n, col_ind_n = self.get_row_col_indices(element, dim=element.dim, number_nodes=len(self.mesh.nodes))
-
-                #     row_ind.extend(row_ind_n)
-                #     col_ind.extend(col_ind_n)
-
-                # else:
-                #     elementary_matrix = element.elementary_matrix()
-                #     data.extend(elementary_matrix)
-                #     row_ind_n, col_ind_n = self.get_row_col_indices(element, dim=element.dim, number_nodes=len(self.mesh.nodes))
-                #     print(row_ind_n, col_ind_n)
-                #     row_ind.extend(row_ind_n)
-                #     col_ind.extend(col_ind_n)
-
-                # row_ind.extend(elementary_matrix[1])
-                # col_ind.extend(elementary_matrix[2])
-                # data.extend(elementary_matrix[0])
-
-                # element_form_functions = element.form_functions
-                # indexes = [self.mesh.node_to_index[element.points[0]],
-                #            self.mesh.node_to_index[element.points[1]],
-                #            self.mesh.node_to_index[element.points[2]]]
-                # b1 = element_form_functions[0][1]
-                # c1 = element_form_functions[0][2]
-                # b2 = element_form_functions[1][1]
-                # c2 = element_form_functions[1][2]
-                # b3 = element_form_functions[2][1]
-                # c3 = element_form_functions[2][2]
-
-                # row_ind.extend((indexes[0], indexes[0], indexes[0], indexes[1], indexes[1], indexes[1], indexes[2], indexes[2], indexes[2]))
-                # col_ind.extend((indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2], indexes[0], indexes[1], indexes[2]))
-                # data.extend((1/elements_group.mu_total * (b1**2 + c1**2) * element.area,
-                #              1/elements_group.mu_total * (b1*b2 + c1*c2) * element.area,
-                #              1/elements_group.mu_total * (b1*b3 + c1*c3) * element.area,
-                #              1/elements_group.mu_total * (b1*b2 + c1*c2) * element.area,
-                #              1/elements_group.mu_total * (b2**2 + c2**2) * element.area,
-                #              1/elements_group.mu_total * (b2*b3 + c2*c3) * element.area,
-                #              1/elements_group.mu_total * (b1*b3 + c1*c3) * element.area,
-                #              1/elements_group.mu_total * (b2*b3 + c2*c3) * element.area,
-                #              1/elements_group.mu_total * (b3**2 + c3**2) * element.area))
-
         for i, load in enumerate(self.node_loads):
             index = self.mesh.node_to_index[load.node]
             
