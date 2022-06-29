@@ -23,16 +23,18 @@ triangles = [mesh.TriangularElement2D([vm.Point2D(3,0),vm.Point2D(3,2),vm.Point2
 solid_elments2d = [fe.elements.SolidMechanicsTriangularElement2D(
     triangle, elasticity_modulus, poisson_ratio, thickness) for triangle in triangles]
 
-# group_solid_elments2d = mesh.ElementsGroup(solid_elments2d, '')
-# mesh = mesh.Mesh([group_solid_elments2d])
+group_solid_elments2d = mesh.ElementsGroup(solid_elments2d, '')
+mesh = mesh.Mesh([group_solid_elments2d])
 
-group_solid_elments2d = [mesh.ElementsGroup([solid_elment], '') for solid_elment in solid_elments2d]
-mesh = mesh.Mesh(group_solid_elments2d)
+# group_solid_elments2d = [mesh.ElementsGroup([solid_elment], '') for solid_elment in solid_elments2d]
+# mesh = mesh.Mesh(group_solid_elments2d)
 
+mesh.node_to_index[mesh.nodes[3]] = 2
+mesh.node_to_index[mesh.nodes[2]] = 3
 
 # %%
 
-node_loads = [] #[fe.loads.SingleNodeLoad(mesh.nodes[1], -1000)]
+node_loads = [fe.loads.SingleNodeLoad(mesh.nodes[1], -1000, 2)]
 
 analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, [], [])
 
