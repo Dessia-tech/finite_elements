@@ -144,6 +144,10 @@ class FiniteElementAnalysis(DessiaObject):
                 
         return matrix
 
+    @property
+    def dimension(self):
+        return self.mesh.elements_groups[0].elements[0].dimension
+
     def get_row_col_indices(self, element):
 
         indexes = [self.mesh.node_to_index[element.points[0]],
