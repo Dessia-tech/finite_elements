@@ -34,6 +34,10 @@ class MagneticElement2D(vmmesh.TriangularElement2D):
 
         # DessiaObject.__init__(self, name=name)
 
+    @property
+    def dimension(self):
+        return 1
+
     def elementary_matrix(self, indexes):
         """
         Create the elementary matrix of the MagneticElement2D
@@ -179,6 +183,10 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
         d_matrix = (elasticity_modulus/(1 - (poisson_ratio)**2)) * npy.array(data).reshape(3,3)
 
         return d_matrix
+
+    @property
+    def dimension(self):
+        return 2
 
     def elementary_matrix(self):
 
