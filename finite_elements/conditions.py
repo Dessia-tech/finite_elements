@@ -11,6 +11,7 @@ import volmdlr.mesh as vmmesh
 # from scipy import linalg
 # import time 
 from dessia_common import DessiaObject
+# from typing import List
 
 
 class BoundaryCondition(DessiaObject):
@@ -19,12 +20,43 @@ class BoundaryCondition(DessiaObject):
     _non_eq_attributes = ['name']
     _non_hash_attributes = ['name']
     _generic_eq = True
-    def __init__(self, node: vm.Point2D, value: float, dimension):
-        self.node = node
+
+    def __init__(self, application, value: float, dimension, name: str = ''):
+        self.application = application
         self.value = value
         self.dimension = dimension
 
         DessiaObject.__init__(self, name='')
+
+
+class NodeBoundaryCondition(BoundaryCondition):
+    # _standalone_in_db = False
+    # _non_serializable_attributes = []
+    # _non_eq_attributes = ['name']
+    # _non_hash_attributes = ['name']
+    # _generic_eq = True
+
+    def __init__(self, application: vm.Point2D, value: float, dimension, name: str = ''):
+        self.application = application
+        self.value = value
+        self.dimension = dimension
+
+        BoundaryCondition.__init__(self, application, value, dimension, name='')
+
+
+class ElementBoundaryCondition(BoundaryCondition):
+    # _standalone_in_db = False
+    # _non_serializable_attributes = []
+    # _non_eq_attributes = ['name']
+    # _non_hash_attributes = ['name']
+    # _generic_eq = True
+
+    def __init__(self, application: vmmesh.TriangularElement, value: float, dimension, name: str = ''):
+        self.application = application
+        self.value = value
+        self.dimension = dimension
+
+        BoundaryCondition.__init__(self, application, value, dimension, name='')
 
 
 class ContinuityCondition(DessiaObject):
