@@ -101,9 +101,7 @@ class FiniteElementAnalysis(DessiaObject):
                            self.mesh.node_to_index[element.points[1]],
                            self.mesh.node_to_index[element.points[2]]]
 
-                elementary_source_matrix = finite_elements.elements.MagneticElement2D(
-                    triangular_element=element,
-                    mu_total=element.mu_total).elementary_source_matrix(indexes)
+                elementary_source_matrix = element.elementary_source_matrix(indexes)
 
                 # x1 = element.points[0][0]
                 # y1 = element.points[0][1]
