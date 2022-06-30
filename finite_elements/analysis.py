@@ -43,8 +43,12 @@ class FiniteElements(DessiaObject):
 
         DessiaObject.__init__(self, name='')
 
+    @property
+    def elements_name(self):
+        return self.mesh.elements_groups[0].elements[0].__class__.__name__
+
     def matrix_node_loads(self):
-        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        name = re.findall('.[^A-Z]*', self.elements_name)[0].lower()
         method_name = f'matrix_node_loads_{name}'
 
         if hasattr(self, method_name):
@@ -77,7 +81,7 @@ class FiniteElements(DessiaObject):
 
     def matrix_continuity_conditions(self):
 
-        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        name = re.findall('.[^A-Z]*', self.elements_name)[0].lower()
         method_name = f'matrix_continuity_conditions_{name}'
 
         if hasattr(self, method_name):
@@ -113,7 +117,7 @@ class FiniteElements(DessiaObject):
 
     def matrix_node_boundary_conditions(self):
 
-        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        name = re.findall('.[^A-Z]*', self.elements_name)[0].lower()
         method_name = f'matrix_node_boundary_conditions_{name}'
 
         if hasattr(self, method_name):
@@ -146,7 +150,7 @@ class FiniteElements(DessiaObject):
 
     def source_matrix_node_loads(self):
 
-        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        name = re.findall('.[^A-Z]*', self.elements_name)[0].lower()
         method_name = f'source_matrix_node_loads_{name}'
 
         if hasattr(self, method_name):
@@ -179,7 +183,7 @@ class FiniteElements(DessiaObject):
 
     def source_matrix_magnet_loads(self):
 
-        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        name = re.findall('.[^A-Z]*', self.elements_name)[0].lower()
         method_name = f'source_matrix_magnet_loads_{name}'
 
         if hasattr(self, method_name):
@@ -212,7 +216,7 @@ class FiniteElements(DessiaObject):
 
     def source_matrix_node_boundary_conditions(self):
 
-        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        name = re.findall('.[^A-Z]*', self.elements_name)[0].lower()
         method_name = f'source_matrix_node_boundary_conditions_{name}'
 
         if hasattr(self, method_name):
