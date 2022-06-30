@@ -12,6 +12,7 @@ import finite_elements as fe
 import finite_elements.elements
 import finite_elements.loads
 import finite_elements.analysis
+import finite_elements.conditions
 
 # %% Mesh2D
 
@@ -35,8 +36,13 @@ mesh.node_to_index[mesh.nodes[2]] = 3
 # %%
 
 node_loads = [fe.loads.SingleNodeLoad(mesh.nodes[1], -1000, 2)]
+node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(3,0), 0, 2),
+                            finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(0,2), 0, 1),
+                            finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(0,2), 0, 2),
+                            finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(0,0), 0, 1),
+                            finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(0,0), 0, 2)]
 
-analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, [], [])
+analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, [], [], node_boundary_conditions, [])
 
 m = analysis.create_matrix()
 
