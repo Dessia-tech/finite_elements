@@ -13,9 +13,10 @@ import volmdlr as vm
 import volmdlr.mesh as vmmesh
 # import math
 from scipy import sparse
-from scipy.sparse import csr_matrix
+# from scipy.sparse import csr_matrix
 # from scipy import linalg
 # import time 
+import re
 from dessia_common import DessiaObject
 from typing import List #Tuple, TypeVar
 import finite_elements.elements
@@ -43,8 +44,8 @@ class FiniteElements(DessiaObject):
         DessiaObject.__init__(self, name='')
 
     def matrix_node_loads(self):
-
-        method_name = f'matrix_node_loads_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        method_name = f'matrix_node_loads_{name}'
 
         if hasattr(self, method_name):
             data, row_ind, col_ind = getattr(self, method_name)()
@@ -71,12 +72,13 @@ class FiniteElements(DessiaObject):
 
         return (data, row_ind, col_ind)
 
-    def matrix_node_loads_solidmec(self):
+    def matrix_node_loads_solid(self):
         return [], [], []
 
     def matrix_continuity_conditions(self):
 
-        method_name = f'matrix_continuity_conditions_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        method_name = f'matrix_continuity_conditions_{name}'
 
         if hasattr(self, method_name):
             data, row_ind, col_ind = getattr(self, method_name)()
@@ -106,12 +108,13 @@ class FiniteElements(DessiaObject):
 
         return (data, row_ind, col_ind)
 
-    def matrix_continuity_conditions_solidmec(self):
+    def matrix_continuity_conditions_solid(self):
         return [], [], []
 
     def matrix_node_boundary_conditions(self):
 
-        method_name = f'matrix_node_boundary_conditions_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        method_name = f'matrix_node_boundary_conditions_{name}'
 
         if hasattr(self, method_name):
             data, row_ind, col_ind = getattr(self, method_name)()
@@ -125,7 +128,7 @@ class FiniteElements(DessiaObject):
     def matrix_node_boundary_conditions_magnetic(self):
         return [], [], []
 
-    def matrix_node_boundary_conditions_solidmec(self):
+    def matrix_node_boundary_conditions_solid(self):
 
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
@@ -143,7 +146,8 @@ class FiniteElements(DessiaObject):
 
     def source_matrix_node_loads(self):
 
-        method_name = f'source_matrix_node_loads_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        method_name = f'source_matrix_node_loads_{name}'
 
         if hasattr(self, method_name):
             data, row_ind = getattr(self, method_name)()
@@ -162,7 +166,7 @@ class FiniteElements(DessiaObject):
 
         return data, row_ind
 
-    def source_matrix_node_loads_solidmec(self):
+    def source_matrix_node_loads_solid(self):
 
         data, row_ind = [], []
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
@@ -175,7 +179,8 @@ class FiniteElements(DessiaObject):
 
     def source_matrix_magnet_loads(self):
 
-        method_name = f'source_matrix_magnet_loads_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        method_name = f'source_matrix_magnet_loads_{name}'
 
         if hasattr(self, method_name):
             data, row_ind = getattr(self, method_name)()
@@ -202,12 +207,13 @@ class FiniteElements(DessiaObject):
 
         return data, row_ind
 
-    def source_matrix_magnet_loads_solidmec(self):
+    def source_matrix_magnet_loads_solid(self):
         return [], []
 
     def source_matrix_node_boundary_conditions(self):
 
-        method_name = f'source_matrix_node_boundary_conditions_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+        name = re.findall('.[^A-Z]*', self.mesh.elements_groups[0].elements[0].__class__.__name__)[0].lower()
+        method_name = f'source_matrix_node_boundary_conditions_{name}'
 
         if hasattr(self, method_name):
             data, row_ind = getattr(self, method_name)()
@@ -221,7 +227,7 @@ class FiniteElements(DessiaObject):
     def source_matrix_node_boundary_conditions_magnetic(self):
         return [], []
 
-    def source_matrix_node_boundary_conditions_solidmec(self):
+    def source_matrix_node_boundary_conditions_solid(self):
         data, row_ind = [], []
 
         for i, node_condition in enumerate(self.node_boundary_conditions):
