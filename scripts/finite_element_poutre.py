@@ -55,7 +55,7 @@ node_loads = []
 for node in mesh.nodes:
     if math.isclose(node[0], phase1+phase2+phase3, abs_tol=1e-6):
         node_loads.append(fe.loads.SingleNodeLoad(node, 0, 1))
-analysis = fe.analysis.FiniteElementAnalysis(mesh, elements_loads, node_loads, [], [])
+analysis = fe.analysis.FiniteElementAnalysis(mesh, elements_loads, node_loads, [], [], [], [])
 analysis.plot_elements_loads()
 analysis.plot_elements_permeability()
 results = analysis.solve()
