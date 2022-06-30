@@ -74,13 +74,13 @@ class FiniteElementAnalysis(DessiaObject):
         positions = finite_elements.core.global_matrix_positions(dimension=element.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
 
-        for i, load in enumerate(self.node_loads):
-            index = self.mesh.node_to_index[load.node]
+        # for i, load in enumerate(self.node_loads):
+        #     index = self.mesh.node_to_index[load.node]
 
-            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, positions[(index, load.dimension)]))
-            col_ind.extend((positions[(index, load.dimension)], len(self.mesh.nodes) * self.dimension + i))
-            data.extend((1, 1))
-            
+        #     row_ind.extend((len(self.mesh.nodes) * self.dimension + i, positions[(index, load.dimension)]))
+        #     col_ind.extend((positions[(index, load.dimension)], len(self.mesh.nodes) * self.dimension + i))
+        #     data.extend((1, 1))
+
         for i, condition in enumerate(self.continuity_conditions):
             index1 = self.mesh.node_to_index[condition.node1]
             index2 = self.mesh.node_to_index[condition.node2]
@@ -94,12 +94,23 @@ class FiniteElementAnalysis(DessiaObject):
                             index2,
                             len(self.mesh.nodes)+len(self.node_loads)+i))
             data.extend((1, 1, -condition.value, -condition.value))
-            
+
+
+        for i, node_condition in enumerate(self.node_boundary_conditions):
+            pos = positions[(self.mesh.node_to_index[node_condition.application],
+                             node_condition.dimension)]
+
+            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
+            col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
+            data.extend((1, 1))
+
         matrix = sparse.csr_matrix((data, (row_ind, col_ind)))
         return matrix
             
     def create_source_matrix(self):
-        matrix = npy.zeros((len(self.mesh.nodes)*self.dimension+self.nb_loads+len(self.continuity_conditions), 1))
+        # matrix = npy.zeros((len(self.mesh.nodes)*self.dimension+self.nb_loads+len(self.continuity_conditions), 1))
+        matrix = npy.zeros((len(self.mesh.nodes)*self.dimension+len(self.continuity_conditions)+len(self.node_boundary_conditions), 1))
+
         for load in self.element_loads:
             for element in load.elements:
                 indexes = [self.mesh.node_to_index[element.points[0]],
@@ -112,9 +123,16 @@ class FiniteElementAnalysis(DessiaObject):
                 matrix[indexes[1]][0] += load.value * elementary_source_matrix[1]
                 matrix[indexes[2]][0] += load.value * elementary_source_matrix[2]
                 
+        # for i, load in enumerate(self.node_loads):
+        #     matrix[len(self.mesh.nodes)*self.dimension + i][0] += load.value
+
+        positions = finite_elements.core.global_matrix_positions(dimension=element.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+
         for i, load in enumerate(self.node_loads):
-            matrix[len(self.mesh.nodes)*self.dimension + i][0] += load.value
-            
+            matrix[positions[(self.mesh.node_to_index[load.node], load.dimension)]][0] += load.value
+
+
         for magnet_load in self.magnet_loads:
             for linear_element in magnet_load.contour_linear_elements():
                 indexes = [self.mesh.node_to_index[linear_element.points[0]],
@@ -124,7 +142,10 @@ class FiniteElementAnalysis(DessiaObject):
                                   linear_element.interior_normal[0]])
                 matrix[indexes[0]][0] += magnet_load.magnetization_vector.Dot(dl) * length/2
                 matrix[indexes[1]][0] += magnet_load.magnetization_vector.Dot(dl) * length/2
-                
+
+        for i, node_condition in enumerate(self.node_boundary_conditions):
+            matrix[len(self.mesh.nodes) * self.dimension + i][0] = 0
+
         return matrix
 
     @property
