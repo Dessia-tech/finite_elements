@@ -167,7 +167,7 @@ for node in mesh.nodes:
         node_loads.append(fe.loads.SingleNodeLoad(node, 0, 1))
 element_load = [fe.loads.ConstantLoad(mesh.elements_groups[0].elements, intensity),
                 fe.loads.ConstantLoad(mesh.elements_groups[1].elements, -intensity)]
-analysis = fe.analysis.FiniteElementAnalysis(mesh, element_load, node_loads, [], [])
+analysis = fe.analysis.FiniteElementAnalysis(mesh, element_load, node_loads, [], [], [], [])
 result = analysis.solve()
 ax = mesh.elements_groups[0].plot()
 mesh.elements_groups[1].plot(ax=ax)
