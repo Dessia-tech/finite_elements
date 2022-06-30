@@ -94,7 +94,7 @@ class FiniteElementAnalysis(DessiaObject):
         return matrix
             
     def create_source_matrix(self):
-        matrix = npy.zeros((len(self.mesh.nodes)+self.nb_loads+len(self.continuity_conditions), 1))
+        matrix = npy.zeros((len(self.mesh.nodes)*self.dimension+self.nb_loads+len(self.continuity_conditions), 1))
         for load in self.element_loads:
             for element in load.elements:
                 indexes = [self.mesh.node_to_index[element.points[0]],
@@ -134,7 +134,7 @@ class FiniteElementAnalysis(DessiaObject):
                 matrix[indexes[2]][0] += load.value * elementary_source_matrix[2]
                 
         for i, load in enumerate(self.node_loads):
-            matrix[len(self.mesh.nodes) + i][0] += load.value
+            matrix[len(self.mesh.nodes)*self.dimension + i][0] += load.value
             
         for magnet_load in self.magnet_loads:
             for linear_element in magnet_load.contour_linear_elements():
