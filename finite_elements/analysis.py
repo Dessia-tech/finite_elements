@@ -24,8 +24,214 @@ from finite_elements.conditions import ContinuityCondition
 from finite_elements.results import Result
 from finite_elements.core import blue_red
 
+class FiniteElements(DessiaObject):
+    def __init__(self, mesh: vmmesh.Mesh,
+                 element_loads: List[ConstantLoad],
+                 node_loads: List[SingleNodeLoad],
+                 magnet_loads: List[MagnetLoad],
+                 continuity_conditions: List[ContinuityCondition],
+                 node_boundary_conditions: List[finite_elements.conditions.NodeBoundaryCondition],
+                 element_boundary_conditions: List[finite_elements.conditions.ElementBoundaryCondition]):
+        self.mesh = mesh
+        self.element_loads = element_loads  # current density J
+        self.node_loads = node_loads 
+        self.magnet_loads = magnet_loads
+        self.continuity_conditions = continuity_conditions
+        self.node_boundary_conditions = node_boundary_conditions
+        self.element_boundary_conditions = element_boundary_conditions
 
-class FiniteElementAnalysis(DessiaObject):
+        DessiaObject.__init__(self, name='')
+
+    def matrix_node_loads(self):
+
+        method_name = f'matrix_node_loads_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+
+        if hasattr(self, method_name):
+            data, row_ind, col_ind = getattr(self, method_name)()
+
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        return (data, row_ind, col_ind)
+
+    def matrix_node_loads_magnetic(self):
+
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+
+        row_ind, col_ind, data = [], [],[]
+        for i, load in enumerate(self.node_loads):
+            index = self.mesh.node_to_index[load.node]
+
+            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, positions[(index, load.dimension)]))
+            col_ind.extend((positions[(index, load.dimension)], len(self.mesh.nodes) * self.dimension + i))
+
+            data.extend((1, 1))
+
+        return (data, row_ind, col_ind)
+
+    def matrix_node_loads_solidmec(self):
+        return [], [], []
+
+    def matrix_continuity_conditions(self):
+
+        method_name = f'matrix_continuity_conditions_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+
+        if hasattr(self, method_name):
+            data, row_ind, col_ind = getattr(self, method_name)()
+
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        return (data, row_ind, col_ind)
+
+    def matrix_continuity_conditions_magnetic(self):
+
+        row_ind, col_ind, data = [], [],[]
+        for i, condition in enumerate(self.continuity_conditions):
+            index1 = self.mesh.node_to_index[condition.node1]
+            index2 = self.mesh.node_to_index[condition.node2]
+            
+            row_ind.extend((len(self.mesh.nodes)+len(self.node_loads)+i,
+                            index1,
+                            len(self.mesh.nodes)+len(self.node_loads)+i,
+                            index2))
+            col_ind.extend((index1,
+                            len(self.mesh.nodes)+len(self.node_loads)+i,
+                            index2,
+                            len(self.mesh.nodes)+len(self.node_loads)+i))
+            data.extend((1, 1, -condition.value, -condition.value))
+
+        return (data, row_ind, col_ind)
+
+    def matrix_continuity_conditions_solidmec(self):
+        return [], [], []
+
+    def matrix_node_boundary_conditions(self):
+
+        method_name = f'matrix_node_boundary_conditions_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+
+        if hasattr(self, method_name):
+            data, row_ind, col_ind = getattr(self, method_name)()
+
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        return (data, row_ind, col_ind)
+
+    def matrix_node_boundary_conditions_magnetic(self):
+        return [], [], []
+
+    def matrix_node_boundary_conditions_solidmec(self):
+
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+
+        row_ind, col_ind, data = [], [],[]
+        for i, node_condition in enumerate(self.node_boundary_conditions):
+            pos = positions[(self.mesh.node_to_index[node_condition.application],
+                             node_condition.dimension)]
+
+            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
+            col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
+            data.extend((1, 1))
+
+        return (data, row_ind, col_ind)
+
+    def source_matrix_node_loads(self):
+
+        method_name = f'source_matrix_node_loads_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+
+        if hasattr(self, method_name):
+            data, row_ind = getattr(self, method_name)()
+
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        return (data, row_ind)
+
+    def source_matrix_node_loads_magnetic(self):
+        data, row_ind = [], []
+        for i, load in enumerate(self.node_loads):
+            data.append(load.value)
+            row_ind.append(len(self.mesh.nodes)*self.dimension + i)
+
+        return data, row_ind
+
+    def source_matrix_node_loads_solidmec(self):
+
+        data, row_ind = [], []
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+        for i, load in enumerate(self.node_loads):
+            data.append(load.value)
+            row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
+
+        return data, row_ind
+
+    def source_matrix_magnet_loads(self):
+
+        method_name = f'source_matrix_magnet_loads_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+
+        if hasattr(self, method_name):
+            data, row_ind = getattr(self, method_name)()
+
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        return (data, row_ind)
+
+    def source_matrix_magnet_loads_magnetic(self):
+        data, row_ind = [], []
+        for magnet_load in self.magnet_loads:
+            for linear_element in magnet_load.contour_linear_elements():
+                indexes = [self.mesh.node_to_index[linear_element.points[0]],
+                           self.mesh.node_to_index[linear_element.points[1]]]
+                length = linear_element.length()
+                dl = vm.Vector2D([-linear_element.interior_normal[1],
+                                  linear_element.interior_normal[0]])
+                data.append(magnet_load.magnetization_vector.Dot(dl) * length/2)
+                data.append(magnet_load.magnetization_vector.Dot(dl) * length/2)
+                row_ind.append(indexes[0])
+                row_ind.append(indexes[1])
+
+        return data, row_ind
+
+    def source_matrix_magnet_loads_solidmec(self):
+        return [], []
+
+    def source_matrix_node_boundary_conditions(self):
+
+        method_name = f'source_matrix_node_boundary_conditions_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
+
+        if hasattr(self, method_name):
+            data, row_ind = getattr(self, method_name)()
+
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        return (data, row_ind)
+
+    def source_matrix_node_boundary_conditions_magnetic(self):
+        return [], []
+
+    def source_matrix_node_boundary_conditions_solidmec(self):
+        data, row_ind = [], []
+
+        for i, node_condition in enumerate(self.node_boundary_conditions):
+            data.append(node_condition.value)
+            row_ind.append(len(self.mesh.nodes) * self.dimension + i)
+
+        return data, row_ind
+
+    
+class FiniteElementAnalysis(FiniteElements):
     """
     :param mesh: The meshing of the machine.
     :type mesh: Mesh object
@@ -55,197 +261,9 @@ class FiniteElementAnalysis(DessiaObject):
 
         self.nb_loads = len(node_loads)
 
-        DessiaObject.__init__(self, name='')
-
-    # def create_matrix(self):
-    #     row_ind = []
-    #     col_ind = []
-    #     data = []
-
-    #     for elements_group in self.mesh.elements_groups:
-    #         for element in elements_group.elements:
-
-    #             data.extend(element.elementary_matrix())
-    #             row_ind_n, col_ind_n = self.get_row_col_indices(element)
-
-    #             row_ind.extend(row_ind_n)
-    #             col_ind.extend(col_ind_n)
-
-    #     positions = finite_elements.core.global_matrix_positions(dimension=element.dimension,
-    #                                                              nodes_number=len(self.mesh.nodes))
-
-    #     # for i, load in enumerate(self.node_loads):
-    #     #     index = self.mesh.node_to_index[load.node]
-
-    #     #     row_ind.extend((len(self.mesh.nodes) * self.dimension + i, positions[(index, load.dimension)]))
-    #     #     col_ind.extend((positions[(index, load.dimension)], len(self.mesh.nodes) * self.dimension + i))
-    #     #     data.extend((1, 1))
-
-    #     for i, condition in enumerate(self.continuity_conditions):
-    #         index1 = self.mesh.node_to_index[condition.node1]
-    #         index2 = self.mesh.node_to_index[condition.node2]
-
-    #         row_ind.extend((len(self.mesh.nodes)+len(self.node_loads)+i,
-    #                         index1,
-    #                         len(self.mesh.nodes)+len(self.node_loads)+i,
-    #                         index2))
-    #         col_ind.extend((index1,
-    #                         len(self.mesh.nodes)+len(self.node_loads)+i,
-    #                         index2,
-    #                         len(self.mesh.nodes)+len(self.node_loads)+i))
-    #         data.extend((1, 1, -condition.value, -condition.value))
-
-
-    #     for i, node_condition in enumerate(self.node_boundary_conditions):
-    #         pos = positions[(self.mesh.node_to_index[node_condition.application],
-    #                          node_condition.dimension)]
-
-    #         row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
-    #         col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
-    #         data.extend((1, 1))
-
-    #     matrix = sparse.csr_matrix((data, (row_ind, col_ind)))
-    #     return matrix
-
-    # def create_source_matrix(self):
-    #     # matrix = npy.zeros((len(self.mesh.nodes)*self.dimension+self.nb_loads+len(self.continuity_conditions), 1))
-    #     matrix = npy.zeros((len(self.mesh.nodes)*self.dimension+len(self.continuity_conditions)+len(self.node_boundary_conditions), 1))
-
-    #     for load in self.element_loads:
-    #         for element in load.elements:
-    #             indexes = [self.mesh.node_to_index[element.points[0]],
-    #                        self.mesh.node_to_index[element.points[1]],
-    #                        self.mesh.node_to_index[element.points[2]]]
-
-    #             elementary_source_matrix = element.elementary_source_matrix(indexes)
-
-    #             matrix[indexes[0]][0] += load.value * elementary_source_matrix[0]
-    #             matrix[indexes[1]][0] += load.value * elementary_source_matrix[1]
-    #             matrix[indexes[2]][0] += load.value * elementary_source_matrix[2]
-
-    #     # for i, load in enumerate(self.node_loads):
-    #     #     matrix[len(self.mesh.nodes)*self.dimension + i][0] += load.value
-
-    #     positions = finite_elements.core.global_matrix_positions(dimension=element.dimension,
-    #                                                              nodes_number=len(self.mesh.nodes))
-
-    #     for i, load in enumerate(self.node_loads):
-    #         matrix[positions[(self.mesh.node_to_index[load.node], load.dimension)]][0] += load.value
-
-
-    #     for magnet_load in self.magnet_loads:
-    #         for linear_element in magnet_load.contour_linear_elements():
-    #             indexes = [self.mesh.node_to_index[linear_element.points[0]],
-    #                        self.mesh.node_to_index[linear_element.points[1]]]
-    #             length = linear_element.length()
-    #             dl = vm.Vector2D([-linear_element.interior_normal[1],
-    #                               linear_element.interior_normal[0]])
-    #             matrix[indexes[0]][0] += magnet_load.magnetization_vector.Dot(dl) * length/2
-    #             matrix[indexes[1]][0] += magnet_load.magnetization_vector.Dot(dl) * length/2
-
-    #     for i, node_condition in enumerate(self.node_boundary_conditions):
-    #         matrix[len(self.mesh.nodes) * self.dimension + i][0] = 0
-
-    #     return matrix
-
-    def elementary_matrix_node_loads(self):
-
-        method_name = f'elementary_matrix_node_loads_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
-
-        if hasattr(self, method_name):
-            data, row_ind, col_ind = getattr(self, method_name)()
-
-        else:
-            raise NotImplementedError(
-                f'Class {self.__class__.__name__} does not implement {method_name}')
-
-        return (data, row_ind, col_ind)
-
-    def elementary_matrix_node_loads_magnetic(self):
-
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
-
-        row_ind, col_ind, data = [], [],[]
-        for i, load in enumerate(self.node_loads):
-            index = self.mesh.node_to_index[load.node]
-
-            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, positions[(index, load.dimension)]))
-            col_ind.extend((positions[(index, load.dimension)], len(self.mesh.nodes) * self.dimension + i))
-
-            data.extend((1, 1))
-
-        return (data, row_ind, col_ind)
-
-    def elementary_matrix_node_loads_solidmec(self):
-        return [], [], []
-
-    def elementary_matrix_continuity_conditions(self):
-
-        method_name = f'elementary_matrix_continuity_conditions_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
-
-        if hasattr(self, method_name):
-            data, row_ind, col_ind = getattr(self, method_name)()
-
-        else:
-            raise NotImplementedError(
-                f'Class {self.__class__.__name__} does not implement {method_name}')
-
-        return (data, row_ind, col_ind)
-
-    def elementary_matrix_continuity_conditions_magnetic(self):
-
-        row_ind, col_ind, data = [], [],[]
-        for i, condition in enumerate(self.continuity_conditions):
-            index1 = self.mesh.node_to_index[condition.node1]
-            index2 = self.mesh.node_to_index[condition.node2]
-            
-            row_ind.extend((len(self.mesh.nodes)+len(self.node_loads)+i,
-                            index1,
-                            len(self.mesh.nodes)+len(self.node_loads)+i,
-                            index2))
-            col_ind.extend((index1,
-                            len(self.mesh.nodes)+len(self.node_loads)+i,
-                            index2,
-                            len(self.mesh.nodes)+len(self.node_loads)+i))
-            data.extend((1, 1, -condition.value, -condition.value))
-
-        return (data, row_ind, col_ind)
-
-    def elementary_matrix_continuity_conditions_solidmec(self):
-        return [], [], []
-
-    def elementary_matrix_node_boundary_conditions(self):
-
-        method_name = f'elementary_matrix_node_boundary_conditions_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
-
-        if hasattr(self, method_name):
-            data, row_ind, col_ind = getattr(self, method_name)()
-
-        else:
-            raise NotImplementedError(
-                f'Class {self.__class__.__name__} does not implement {method_name}')
-
-        return (data, row_ind, col_ind)
-
-    def elementary_matrix_node_boundary_conditions_magnetic(self):
-        return [], [], []
-
-    def elementary_matrix_node_boundary_conditions_solidmec(self):
-
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
-
-        row_ind, col_ind, data = [], [],[]
-        for i, node_condition in enumerate(self.node_boundary_conditions):
-            pos = positions[(self.mesh.node_to_index[node_condition.application],
-                             node_condition.dimension)]
-
-            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
-            col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
-            data.extend((1, 1))
-
-        return (data, row_ind, col_ind)
+        FiniteElements.__init__(self, mesh, element_loads, node_loads, 
+                                magnet_loads, continuity_conditions, 
+                                node_boundary_conditions, element_boundary_conditions)
 
     def create_matrix(self):
         row_ind = []
@@ -255,169 +273,37 @@ class FiniteElementAnalysis(DessiaObject):
         # elementary_matrix
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
-
                 data.extend(element.elementary_matrix())
                 row_ind_n, col_ind_n = self.get_row_col_indices(element)
-
                 row_ind.extend(row_ind_n)
                 col_ind.extend(col_ind_n)
 
-        # positions = finite_elements.core.global_matrix_positions(dimension=element.dimension,
-        #                                                          nodes_number=len(self.mesh.nodes))
-
-        # elementary_matrix_node_loads
-        data_n, row_ind_n, col_ind_n = self.elementary_matrix_node_loads()
+        # matrix_node_loads
+        data_n, row_ind_n, col_ind_n = self.matrix_node_loads()
         data.extend(data_n)
         row_ind.extend(row_ind_n)
         col_ind.extend(col_ind_n)
 
-        # for i, load in enumerate(self.node_loads):
-        #     index = self.mesh.node_to_index[load.node]
-
-        #     row_ind.extend((len(self.mesh.nodes) * self.dimension + i, positions[(index, load.dimension)]))
-        #     col_ind.extend((positions[(index, load.dimension)], len(self.mesh.nodes) * self.dimension + i))
-        #     data.extend((1, 1))
-
-        # elementary_matrix_continuity_conditions
-        data_n, row_ind_n, col_ind_n = self.elementary_matrix_continuity_conditions()
+        # matrix_continuity_conditions
+        data_n, row_ind_n, col_ind_n = self.matrix_continuity_conditions()
         data.extend(data_n)
         row_ind.extend(row_ind_n)
         col_ind.extend(col_ind_n)
 
-        # for i, condition in enumerate(self.continuity_conditions):
-        #     index1 = self.mesh.node_to_index[condition.node1]
-        #     index2 = self.mesh.node_to_index[condition.node2]
-
-        #     row_ind.extend((len(self.mesh.nodes)+len(self.node_loads)+i,
-        #                     index1,
-        #                     len(self.mesh.nodes)+len(self.node_loads)+i,
-        #                     index2))
-        #     col_ind.extend((index1,
-        #                     len(self.mesh.nodes)+len(self.node_loads)+i,
-        #                     index2,
-        #                     len(self.mesh.nodes)+len(self.node_loads)+i))
-        #     data.extend((1, 1, -condition.value, -condition.value))
-
-        # elementary_matrix_node_boundary_conditions
-        data_n, row_ind_n, col_ind_n = self.elementary_matrix_node_boundary_conditions()
+        # matrix_node_boundary_conditions
+        data_n, row_ind_n, col_ind_n = self.matrix_node_boundary_conditions()
         data.extend(data_n)
         row_ind.extend(row_ind_n)
         col_ind.extend(col_ind_n)
-
-        # for i, node_condition in enumerate(self.node_boundary_conditions):
-        #     pos = positions[(self.mesh.node_to_index[node_condition.application],
-        #                      node_condition.dimension)]
-
-        #     row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
-        #     col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
-        #     data.extend((1, 1))
 
         matrix = sparse.csr_matrix((data, (row_ind, col_ind)))
         return matrix
 
-    def elementary_source_matrix_node_loads(self):
-
-        method_name = f'elementary_source_matrix_node_loads_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
-
-        if hasattr(self, method_name):
-            data, row_ind = getattr(self, method_name)()
-
-        else:
-            raise NotImplementedError(
-                f'Class {self.__class__.__name__} does not implement {method_name}')
-
-        return (data, row_ind)
-
-    def elementary_source_matrix_node_loads_magnetic(self):
-        data, row_ind = [], []
-        for i, load in enumerate(self.node_loads):
-            data.append(load.value)
-            row_ind.append(len(self.mesh.nodes)*self.dimension + i)
-
-        return data, row_ind
-
-    def elementary_source_matrix_node_loads_solidmec(self):
-
-        data, row_ind = [], []
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
-        for i, load in enumerate(self.node_loads):
-            data.append(load.value)
-            row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
-
-        return data, row_ind
-
-    def elementary_source_matrix_magnet_loads(self):
-
-        method_name = f'elementary_source_matrix_magnet_loads_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
-
-        if hasattr(self, method_name):
-            data, row_ind = getattr(self, method_name)()
-
-        else:
-            raise NotImplementedError(
-                f'Class {self.__class__.__name__} does not implement {method_name}')
-
-        return (data, row_ind)
-
-    def elementary_source_matrix_magnet_loads_magnetic(self):
-        data, row_ind = [], []
-        for magnet_load in self.magnet_loads:
-            for linear_element in magnet_load.contour_linear_elements():
-                indexes = [self.mesh.node_to_index[linear_element.points[0]],
-                           self.mesh.node_to_index[linear_element.points[1]]]
-                length = linear_element.length()
-                dl = vm.Vector2D([-linear_element.interior_normal[1],
-                                  linear_element.interior_normal[0]])
-                data.append(magnet_load.magnetization_vector.Dot(dl) * length/2)
-                data.append(magnet_load.magnetization_vector.Dot(dl) * length/2)
-                row_ind.append(indexes[0])
-                row_ind.append(indexes[1])
-
-        return data, row_ind
-
-    def elementary_source_matrix_magnet_loads_solidmec(self):
-        return [], []
-
-    def elementary_source_matrix_node_boundary_conditions(self):
-
-        method_name = f'elementary_source_matrix_node_boundary_conditions_{self.mesh.elements_groups[0].elements[0].__class__.__name__[0:8].lower()}'
-
-        if hasattr(self, method_name):
-            data, row_ind = getattr(self, method_name)()
-
-        else:
-            raise NotImplementedError(
-                f'Class {self.__class__.__name__} does not implement {method_name}')
-
-        return (data, row_ind)
-
-    def elementary_source_matrix_node_boundary_conditions_magnetic(self):
-        return [], []
-
-    def elementary_source_matrix_node_boundary_conditions_solidmec(self):
-        data, row_ind = [], []
-
-        for i, node_condition in enumerate(self.node_boundary_conditions):
-            data.append(node_condition.value)
-            row_ind.append(len(self.mesh.nodes) * self.dimension + i)
-
-        return data, row_ind
-
-    def source_matrix_length(self):
-        if isinstance(self.mesh.elements_groups[0].elements[0],
-                      finite_elements.elements.MagneticElement2D):
-            return len(self.mesh.nodes)*self.dimension + self.nb_loads + len(self.continuity_conditions)
-        elif isinstance(self.mesh.elements_groups[0].elements[0],
-                      finite_elements.elements.SolidMechanicsElement):
-            return len(self.mesh.nodes)*self.dimension + len(self.node_boundary_conditions)
-
     def create_source_matrix(self):
-        # matrix = npy.zeros((len(self.mesh.nodes)*self.dimension+self.nb_loads+len(self.continuity_conditions), 1))
-        # matrix = npy.zeros((len(self.mesh.nodes)*self.dimension+len(self.continuity_conditions)+len(self.node_boundary_conditions), 1))
-        print(self.source_matrix_length())
-        matrix = npy.zeros((self.source_matrix_length(), 1))
 
+        matrix = npy.zeros((self.get_source_matrix_length(), 1))
+
+        # elementary_source_matrix
         for load in self.element_loads:
             for element in load.elements:
                 indexes = [self.mesh.node_to_index[element.points[0]],
@@ -431,42 +317,19 @@ class FiniteElementAnalysis(DessiaObject):
                 matrix[indexes[2]][0] += load.value * elementary_source_matrix[2]
 
         # elementary_source_matrix_node_loads
-        data, row_ind = self.elementary_source_matrix_node_loads()
+        data, row_ind = self.source_matrix_node_loads()
         for i, d in enumerate(data):
             matrix[row_ind[i]][0] += d
-
-        # for i, load in enumerate(self.node_loads):
-        #     matrix[len(self.mesh.nodes)*self.dimension + i][0] += load.value
-
-        # positions = finite_elements.core.global_matrix_positions(dimension=element.dimension,
-        #                                                          nodes_number=len(self.mesh.nodes))
-
-        # for i, load in enumerate(self.node_loads):
-        #     matrix[positions[(self.mesh.node_to_index[load.node], load.dimension)]][0] += load.value
 
         # elementary_source_matrix_magnet_loads
-        data, row_ind = self.elementary_source_matrix_magnet_loads()
+        data, row_ind = self.source_matrix_magnet_loads()
         for i, d in enumerate(data):
             matrix[row_ind[i]][0] += d
-
-        # for magnet_load in self.magnet_loads:
-        #     for linear_element in magnet_load.contour_linear_elements():
-        #         indexes = [self.mesh.node_to_index[linear_element.points[0]],
-        #                    self.mesh.node_to_index[linear_element.points[1]]]
-        #         length = linear_element.length()
-        #         dl = vm.Vector2D([-linear_element.interior_normal[1],
-        #                           linear_element.interior_normal[0]])
-        #         matrix[indexes[0]][0] += magnet_load.magnetization_vector.Dot(dl) * length/2
-        #         matrix[indexes[1]][0] += magnet_load.magnetization_vector.Dot(dl) * length/2
-
 
         # node_boundary_conditions
-        data, row_ind = self.elementary_source_matrix_node_boundary_conditions()
+        data, row_ind = self.source_matrix_node_boundary_conditions()
         for i, d in enumerate(data):
             matrix[row_ind[i]][0] += d
-
-        # for i, node_condition in enumerate(self.node_boundary_conditions):
-        #     matrix[len(self.mesh.nodes) * self.dimension + i][0] = 0
 
         return matrix
 
@@ -495,6 +358,14 @@ class FiniteElementAnalysis(DessiaObject):
                 col_ind.extend(col)
 
         return row_ind, col_ind
+
+    def get_source_matrix_length(self):
+        if isinstance(self.mesh.elements_groups[0].elements[0],
+                      finite_elements.elements.MagneticElement2D):
+            return len(self.mesh.nodes)*self.dimension + self.nb_loads + len(self.continuity_conditions)
+        elif isinstance(self.mesh.elements_groups[0].elements[0],
+                      finite_elements.elements.SolidMechanicsElement):
+            return len(self.mesh.nodes)*self.dimension + len(self.node_boundary_conditions)
 
     def apply_boundary_conditions(self, rigidity_matrix, source_matrix):
 
