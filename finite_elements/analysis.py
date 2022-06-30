@@ -102,30 +102,6 @@ class FiniteElementAnalysis(DessiaObject):
                            self.mesh.node_to_index[element.points[2]]]
 
                 elementary_source_matrix = element.elementary_source_matrix(indexes)
-
-                # x1 = element.points[0][0]
-                # y1 = element.points[0][1]
-                # x2 = element.points[1][0]
-                # y2 = element.points[1][1]
-                # x3 = element.points[2][0]
-                # y3 = element.points[2][1]
-                
-                # det_jacobien = abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))
-                
-                # element_form_functions = element.form_functions
-                # a1 = element_form_functions[0][0]
-                # b1 = element_form_functions[0][1]
-                # c1 = element_form_functions[0][2]
-                # a2 = element_form_functions[1][0]
-                # b2 = element_form_functions[1][1]
-                # c2 = element_form_functions[1][2]
-                # a3 = element_form_functions[2][0]
-                # b3 = element_form_functions[2][1]
-                # c3 = element_form_functions[2][2]
-                
-                # double_integral_N1_dS = det_jacobien*(a1 + 0.5*b1*x2 + 0.5*c1*y2 + 0.5*b1*x3 + 0.5*c1*y3)
-                # double_integral_N2_dS = det_jacobien*(a2 + 0.5*b2*x2 + 0.5*c2*y2 + 0.5*b2*x3 + 0.5*c2*y3)
-                # double_integral_N3_dS = det_jacobien*(a3 + 0.5*b3*x2 + 0.5*c3*y2 + 0.5*b3*x3 + 0.5*c3*y3)
                 
                 matrix[indexes[0]][0] += load.value * elementary_source_matrix[0]
                 matrix[indexes[1]][0] += load.value * elementary_source_matrix[1]
