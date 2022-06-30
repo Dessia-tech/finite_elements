@@ -367,51 +367,51 @@ class FiniteElementAnalysis(FiniteElements):
                       finite_elements.elements.SolidMechanicsElement):
             return len(self.mesh.nodes)*self.dimension + len(self.node_boundary_conditions)
 
-    def apply_boundary_conditions(self, rigidity_matrix, source_matrix):
+    # def apply_boundary_conditions(self, rigidity_matrix, source_matrix):
 
-        def delete_from_csr(mat, row_indices=[], col_indices=[]):
-            if not isinstance(mat, csr_matrix):
-                raise ValueError("works only for CSR format -- use .tocsr() first")
+    #     def delete_from_csr(mat, row_indices=[], col_indices=[]):
+    #         if not isinstance(mat, csr_matrix):
+    #             raise ValueError("works only for CSR format -- use .tocsr() first")
 
-            rows, cols = [], []
-            if row_indices:
-                rows = list(row_indices)
-            if col_indices:
-                cols = list(col_indices)
+    #         rows, cols = [], []
+    #         if row_indices:
+    #             rows = list(row_indices)
+    #         if col_indices:
+    #             cols = list(col_indices)
 
-            if len(rows) > 0 and len(cols) > 0:
-                row_mask = npy.ones(mat.shape[0], dtype=bool)
-                row_mask[rows] = False
-                col_mask = npy.ones(mat.shape[1], dtype=bool)
-                col_mask[cols] = False
-                return mat[row_mask][:,col_mask]
-            elif len(rows) > 0:
-                mask = npy.ones(mat.shape[0], dtype=bool)
-                mask[rows] = False
-                return mat[mask]
-            elif len(cols) > 0:
-                mask = npy.ones(mat.shape[1], dtype=bool)
-                mask[cols] = False
-                return mat[:,mask]
-            else:
-                return mat
+    #         if len(rows) > 0 and len(cols) > 0:
+    #             row_mask = npy.ones(mat.shape[0], dtype=bool)
+    #             row_mask[rows] = False
+    #             col_mask = npy.ones(mat.shape[1], dtype=bool)
+    #             col_mask[cols] = False
+    #             return mat[row_mask][:,col_mask]
+    #         elif len(rows) > 0:
+    #             mask = npy.ones(mat.shape[0], dtype=bool)
+    #             mask[rows] = False
+    #             return mat[mask]
+    #         elif len(cols) > 0:
+    #             mask = npy.ones(mat.shape[1], dtype=bool)
+    #             mask[cols] = False
+    #             return mat[:,mask]
+    #         else:
+    #             return mat
 
-        node_boundary_conditions = [(self.mesh.node_to_index[node_condition.application],
-                    node_condition.dimension) for node_condition in self.node_boundary_conditions]
-        node_boundary_conditions=sorted(node_boundary_conditions, key=lambda i: (i[0], i[1]), reverse=True)
+    #     node_boundary_conditions = [(self.mesh.node_to_index[node_condition.application],
+    #                 node_condition.dimension) for node_condition in self.node_boundary_conditions]
+    #     node_boundary_conditions=sorted(node_boundary_conditions, key=lambda i: (i[0], i[1]), reverse=True)
 
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+    #     positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+    #                                                              nodes_number=len(self.mesh.nodes))
 
-        row_indices, col_indices = [], []
-        for node_condition in node_boundary_conditions:
-            row_indices.append(positions[node_condition])
-            col_indices.append(positions[node_condition])
+    #     row_indices, col_indices = [], []
+    #     for node_condition in node_boundary_conditions:
+    #         row_indices.append(positions[node_condition])
+    #         col_indices.append(positions[node_condition])
 
-        rigidity_matrix = delete_from_csr(rigidity_matrix, row_indices, col_indices)
-        source_matrix = npy.delete(source_matrix, row_indices, axis=0)
+    #     rigidity_matrix = delete_from_csr(rigidity_matrix, row_indices, col_indices)
+    #     source_matrix = npy.delete(source_matrix, row_indices, axis=0)
 
-        return rigidity_matrix, source_matrix
+    #     return rigidity_matrix, source_matrix
 
     def solve(self):
         """
@@ -432,8 +432,6 @@ class FiniteElementAnalysis(FiniteElements):
         # print('avant')
         K_sparse = self.create_matrix()
         F = self.create_source_matrix()
-
-        # K_sparse, F = self.apply_boundary_conditions(K_sparse, F)
 
         try:
             X = sparse.linalg.spsolve(K_sparse, F,
