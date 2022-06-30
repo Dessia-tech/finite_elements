@@ -41,12 +41,16 @@ class FiniteElementAnalysis(DessiaObject):
                  element_loads: List[ConstantLoad],
                  node_loads: List[SingleNodeLoad],
                  magnet_loads: List[MagnetLoad],
-                 continuity_conditions: List[ContinuityCondition]):
+                 continuity_conditions: List[ContinuityCondition],
+                 node_boundary_conditions: List[finite_elements.conditions.NodeBoundaryCondition],
+                 element_boundary_conditions: List[finite_elements.conditions.ElementBoundaryCondition]):
         self.mesh = mesh
         self.element_loads = element_loads  # current density J
         self.node_loads = node_loads 
         self.magnet_loads = magnet_loads
         self.continuity_conditions = continuity_conditions
+        self.node_boundary_conditions = node_boundary_conditions
+        self.element_boundary_conditions = element_boundary_conditions
         
         self.nb_loads = len(node_loads)
         
@@ -148,6 +152,26 @@ class FiniteElementAnalysis(DessiaObject):
 
         return row_ind, col_ind
 
+    def apply_boundary_conditions(self, rigidity_matrix, source_matrix):
+
+        node_boundary_conditions = [(self.mesh.node_to_index[node_condition.application],
+                    node_condition.dimension) for node_condition in self.node_boundary_conditions]
+        node_boundary_conditions=sorted(node_boundary_conditions, key=lambda i: (i[0], i[1]), reverse=True)
+
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+
+        for node_condition in node_boundary_conditions:
+            for i in range(rigidity_matrix.shape[1]):
+                rigidity_matrix[positions[node_condition], i] = 0
+            for i in range(rigidity_matrix.shape[0]):
+                rigidity_matrix[i, positions[node_condition]] = 0
+
+            for i in range(source_matrix.shape[0]):
+                source_matrix[positions[node_condition]] = 0
+
+        return rigidity_matrix, source_matrix
+
     def solve(self):
         """
         Solve the matix equation : F = K.X, where X is the unknown vector. \
@@ -167,6 +191,9 @@ class FiniteElementAnalysis(DessiaObject):
         # print('avant')
         K_sparse = self.create_matrix()
         F = self.create_source_matrix()
+
+        K_sparse, F = self.apply_boundary_conditions(K_sparse, F)
+
         try:
             X = sparse.linalg.spsolve(K_sparse, F,
                                       permc_spec='NATURAL',
