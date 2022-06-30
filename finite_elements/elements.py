@@ -18,6 +18,7 @@ import volmdlr.mesh as vmmesh
 from dessia_common import DessiaObject
 # from typing import List #Tuple, TypeVar
 import numpy as npy
+import finite_elements.core
 
 
 class MagneticElement2D(vmmesh.TriangularElement2D):
