@@ -19,6 +19,8 @@ from dessia_common import DessiaObject
 from typing import List #Tuple, TypeVar
 from finite_elements.core import MU, blue_red
 import finite_elements.core
+from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
+import matplotlib.cm as cm
 
 
 class Result(DessiaObject):
@@ -298,12 +300,9 @@ class Result(DessiaObject):
         else:
             fig = plt.gcf()
         ax.set_aspect('equal')
-        
-        from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
-        import matplotlib.cm as cm
-            
+
         element_to_magnetic_field = self.magnetic_field_per_element()
-        
+
         x = []
         y = []
         Z = []
@@ -313,10 +312,9 @@ class Result(DessiaObject):
                 x.append(x_center)
                 y.append(y_center)
                 Z.append(element_to_magnetic_field[element].norm())
-        
+
         tri = Triangulation(x, y)
-        
-        
+
         #-----------------------------------------------------------------------------
         # Improving the triangulation before high-res plots: removing flat triangles
         #-----------------------------------------------------------------------------
@@ -324,12 +322,12 @@ class Result(DessiaObject):
         min_circle_ratio = -1 
         mask = TriAnalyzer(tri).get_flat_tri_mask(min_circle_ratio)
         tri.set_mask(mask)
-        
+
         # refining the data
         refiner = UniformTriRefiner(tri)
         subdiv = 3
         tri_refi, z_test_refi = refiner.refine_field(Z, subdiv=subdiv)
-        
+
         levels = npy.arange(0., 1., 0.05)
         cmap = cm.get_cmap(name='Blues', lut=None)
         ax.tricontour(tri_refi, z_test_refi, levels=levels, #cmap=cmap,
@@ -338,7 +336,7 @@ class Result(DessiaObject):
 #        ax.triplot(tri, color='0.7')
 #        ax.tricontour(x, y, Z)
         return ax 
-    
+
     def plot_potential_vector(self, ax=None):
         """
         Plots the mesh with colored triangular elements representing the \
