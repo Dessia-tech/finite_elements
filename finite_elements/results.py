@@ -217,43 +217,23 @@ class Result(DessiaObject):
             fig, ax = plt.subplots()
         else:
             fig = plt.gcf()
-            
+
         element_to_magnetic_field = self.magnetic_field_per_element()
-            
-        color_map = ((0,0,1), (1,0,0))
         Bs = [B.norm() for B in list(element_to_magnetic_field.values())]
-        
-        if Bmax is None and Bmin is None:
-            B_max, B_min = max(Bs), min(Bs)
-        elif Bmax is not None and Bmin is None:
-            B_max, B_min = Bmax, min(Bs)
-        elif Bmax is None and Bmin is not None:
-            B_max, B_min = max(Bs), Bmin
-        else:
-            B_max, B_min = Bmax, Bmin
-            
-        B_to_color = {}
-        for B in Bs:
-            if B > B_max:
-                x = 1
-            else:
-                x = (B - B_min) / (B_max - B_min)
-            
-            color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x, 
-                     color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
-                     color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
-            B_to_color[B] = color
-            
+
+        B_max, B_min = finite_elements.core.get_bmin_bmax(Bs, Bmin, Bmax)
+        B_to_color = finite_elements.core.get_colors(Bs, B_max=B_max, B_min=B_min)
+
         for element, B in element_to_magnetic_field.items():
             B.plot(amplitude=amplitude, origin=element.center, ax=ax,
                    color=B_to_color[B.norm()], normalize=True)
-            
+
         norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10))
         cbar.set_label('Magnetic Field in Tesla')
-        
+
         return ax
     
     def plot_magnetic_field(self, ax=None, Bmax=None):
@@ -266,26 +246,11 @@ class Result(DessiaObject):
         else:
             fig = plt.gcf()
         element_to_magnetic_field = self.magnetic_field_per_element()
-        
-        color_map = ((0,0,1), (1,0,0))
         Bs = [B.norm() for B in list(element_to_magnetic_field.values())]
         
-        if Bmax is None:
-            B_max, B_min = max(Bs), min(Bs)
-        else:
-            B_max, B_min = Bmax, min(Bs)
-        
-        B_to_color = {}
-        for B in Bs:
-            if B > B_max:
-                x = 1
-            else:
-                x = (B - B_min) / (B_max - B_min)
-            color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x, 
-                     color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
-                     color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
-            B_to_color[B] = color
-        
+        B_max, B_min = finite_elements.core.get_bmin_bmax(Bs, Bmin=None, Bmax=Bmax)
+        B_to_color = finite_elements.core.get_colors(Bs, B_max=B_max, B_min=B_min)
+
         for group in self.mesh.elements_groups:
             for element in group.elements:
                 element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].norm()], fill=True)
