@@ -140,20 +140,8 @@ class Result(DessiaObject):
         sigma_rr_rteta_tetateta = [sigma_rr, sigma_rteta, sigma_tetateta]
         return sigma_rr_rteta_tetateta
 
-    def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
-        if ax is None:
-            fig, ax = plt.subplots()
-            # ax = self.mesh.plot()
-        else:
-            fig = plt.gcf()
-            # self.mesh.plot(ax=ax)
+    def brbtetha(self, gap_elements_group):
         element_to_magnetic_field = self.magnetic_field_per_element()
-        
-        for elements_group in self.mesh.elements_groups:
-            if elements_group.name == air_gap_elements_group_name:
-                gap_elements_group = elements_group
-                break
-        
         all_BrBtetha = []
         for element in gap_elements_group.elements:
             vector_B = element_to_magnetic_field[element]
@@ -166,7 +154,23 @@ class Result(DessiaObject):
             B_teta = vector_B.Dot(e_teta)
             
             all_BrBtetha.append(B_r * B_teta)
-        
+        return all_BrBtetha
+
+    def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
+        if ax is None:
+            fig, ax = plt.subplots()
+            # ax = self.mesh.plot()
+        else:
+            fig = plt.gcf()
+            # self.mesh.plot(ax=ax)
+
+        for elements_group in self.mesh.elements_groups:
+            if elements_group.name == air_gap_elements_group_name:
+                gap_elements_group = elements_group
+                break
+
+        all_BrBtetha = self.brbtetha(gap_elements_group)
+
         # color_map = ((0,0,1), (1,0,0))
         jet = plt.get_cmap('jet')
         # Bs = [B.Norm() for B in list(element_to_magnetic_field.values())]
