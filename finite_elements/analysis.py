@@ -47,6 +47,12 @@ class FiniteElements(DessiaObject):
     def elements_name(self):
         return self.mesh.elements_groups[0].elements[0].__class__.__name__
 
+    def elements_permeability(self):
+
+        permeabilities = [elements_group.elements[0].mu_total for elements_group in self.mesh.elements_groups]
+
+        return permeabilities
+
     def matrix_node_loads(self):
         name = re.findall('.[^A-Z]*', self.elements_name)[0].lower()
         method_name = f'matrix_node_loads_{name}'
@@ -481,9 +487,11 @@ class FiniteElementAnalysis(FiniteElements):
             fig = plt.gcf()
         
         color_map = ((0, 0, 1), (1, 0, 0))
-        permeabilities = []
-        for elements_group in self.mesh.elements_groups:
-            permeabilities.append(elements_group.elements[0].mu_total)
+
+        permeabilities = self.elements_permeability()
+        # permeabilities = []
+        # for elements_group in self.mesh.elements_groups:
+        #     permeabilities.append(elements_group.elements[0].mu_total)
         mu_max = max(permeabilities)
         mu_min = min(permeabilities)
         colors = []
