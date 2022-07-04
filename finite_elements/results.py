@@ -255,6 +255,12 @@ class Result(DessiaObject):
 
         return vmmesh.Mesh(group_solid_elments2d)
 
+    def plot_deformed_mesh(self, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        ax = self.deformed_mesh().plot()
+
     def plot_displacement_field_vectors_per_node(self, ax=None, amplitude=0.05):
         if ax is None:
             fig, ax = plt.subplots()
