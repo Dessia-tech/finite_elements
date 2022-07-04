@@ -162,6 +162,17 @@ class Result(DessiaObject):
             all_BrBtetha.append(B_r * B_teta)
         return all_BrBtetha
 
+    def stress_per_element(self):
+        element_to_stress = {}
+        for elements_group in self.mesh.elements_groups:
+            for element in elements_group.elements:
+                b_matrix = element.b_matrix()
+                d_matrix = element.d_matrix()
+                q = self.result_vector
+                element_to_stress[element] = (npy.matmul(npy.matmul(d_matrix, b_matrix), q))
+
+        return element_to_stress
+
     def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
         if ax is None:
             fig, ax = plt.subplots()
