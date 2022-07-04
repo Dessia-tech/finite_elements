@@ -21,6 +21,7 @@ from finite_elements.core import MU, blue_red
 import finite_elements.core
 from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
 import matplotlib.cm as cm
+import finite_elements.elements as elements
 
 
 class Result(DessiaObject):
@@ -224,6 +225,14 @@ class Result(DessiaObject):
             displacement_field_vectors.append(vm.Vector2D(*displacement))
 
         return displacement_field_vectors
+
+    def deformed_nodes(self):
+        displacement_field_vectors = self.displacement_field_vectors_per_node()
+        deformed_nodes = []
+        for i, node in enumerate(self.mesh.nodes):
+            deformed_nodes.append(node + displacement_field_vectors[i])
+
+        return deformed_nodes
 
     def plot_displacement_field_vectors_per_node(self, ax=None, amplitude=0.05):
         if ax is None:
