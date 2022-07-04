@@ -8,7 +8,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 # from matplotlib.colors import LinearSegmentedColormap
 import numpy as npy
-import matplotlib.tri as mtri
+# import matplotlib.tri as mtri
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
 # import math
@@ -18,6 +18,7 @@ import volmdlr.mesh as vmmesh
 from dessia_common import DessiaObject
 from typing import List #Tuple, TypeVar
 from finite_elements.core import MU, blue_red
+import finite_elements.core
 
 
 class Result(DessiaObject):
@@ -136,6 +137,7 @@ class Result(DessiaObject):
         sigma_tetateta = 1/MU * B_teta**2 - 1/(2*MU) * vector_B.Norm()**2
         sigma_rr_rteta_tetateta = [sigma_rr, sigma_rteta, sigma_tetateta]
         return sigma_rr_rteta_tetateta
+
     def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
         if ax is None:
             fig, ax = plt.subplots()
@@ -198,6 +200,7 @@ class Result(DessiaObject):
         cbar.set_label('Br*Btetha')
         
         return ax
+
     def plot_magnetic_field_vectors(self, ax=None, amplitude=0.005,
                                     Bmax=None, Bmin=None):
         """
@@ -341,24 +344,11 @@ class Result(DessiaObject):
         Plots the mesh with colored triangular elements representing the \
         intensity of the magnetic potential inside the Machine. 
         """
-        x_list = []
-        y_list = []
-        for node in self.mesh.nodes:
-            x_list.append(node[0])
-            y_list.append(node[1])
-        triangles = []
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                triangles.append([self.mesh.node_to_index[element.points[0]], 
-                                  self.mesh.node_to_index[element.points[1]],
-                                  self.mesh.node_to_index[element.points[2]]])
-            
-        x = npy.asarray(x_list)
-        y = npy.asarray(y_list)
-        z = npy.asarray([p[0] for p in self.result_vector[:len(self.mesh.nodes)]])
+
+        triang = finite_elements.core.get_triangulation(self.mesh)
+        z = npy.asarray([p for p in self.result_vector[:len(self.mesh.nodes)]]) #p[0]
         z_min, z_max = min(z), max(z)
-        triang = mtri.Triangulation(x, y, triangles)
-        
+
         if ax is None:
             fig, ax = plt.subplots()
         else:
@@ -366,11 +356,11 @@ class Result(DessiaObject):
         ax.tricontourf(triang, z, cmap=blue_red)
         ax.triplot(triang, 'k-')
         ax.set_title('Triangular grid')
-        
+
         norm = mpl.colors.Normalize(vmin=z_min,vmax=z_max)
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(z_min, z_max, 10))
         cbar.set_label('Potential Vector')
-        
+
         return ax
