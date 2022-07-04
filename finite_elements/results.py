@@ -234,6 +234,27 @@ class Result(DessiaObject):
 
         return deformed_nodes
 
+    def deformed_mesh(self):
+        deformed_nodes = self.deformed_nodes()
+        group_solid_elments2d = []
+        for elements_group in self.mesh.elements_groups:
+            solid_elments2d = []
+            for element in elements_group.elements:
+                indexes = [self.mesh.node_to_index[element.points[0]],
+                           self.mesh.node_to_index[element.points[1]],
+                           self.mesh.node_to_index[element.points[2]]]
+
+                triangle = vmmesh.TriangularElement2D([deformed_nodes[indexes[0]],
+                                                       deformed_nodes[indexes[1]],
+                                                       deformed_nodes[indexes[2]]])
+
+                solid_elments2d.append(elements.SolidMechanicsTriangularElement2D(
+                    triangle, element.elasticity_modulus, element.poisson_ratio, element.thickness))
+
+            group_solid_elments2d.append(vmmesh.ElementsGroup(solid_elments2d, ''))
+
+        return vmmesh.Mesh(group_solid_elments2d)
+
     def plot_displacement_field_vectors_per_node(self, ax=None, amplitude=0.05):
         if ax is None:
             fig, ax = plt.subplots()
