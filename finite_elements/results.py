@@ -209,6 +209,22 @@ class Result(DessiaObject):
 
         return element_to_strain
 
+    def displacement_field_vectors_per_node(self):
+        nodes_number = len(self.mesh.nodes)
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=nodes_number)
+
+        displacement_field_vectors = []
+        q = self.result_vector
+
+        for node in range(0, nodes_number):
+            displacement = []
+            for i in range(self.dimension):
+                displacement.append(q[positions[(node, i+1)]])
+            displacement_field_vectors.append(vm.Vector2D(*displacement))
+
+        return displacement_field_vectors
+
     def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
         if ax is None:
             fig, ax = plt.subplots()
