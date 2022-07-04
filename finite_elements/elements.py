@@ -145,8 +145,10 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
     def __init__(self, mesh_element: vmmesh.TriangularElement2D,
                  elasticity_modulus, poisson_ratio,
                  thickness: float = 1.0,
+                 displacements = None,
                  name : str = ''):
         self.thickness = thickness
+        self.displacements = displacements
 
         SolidMechanicsElement.__init__(self, mesh_element,
                                        elasticity_modulus, poisson_ratio)
@@ -212,3 +214,12 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
         stiffness_matrix = self.thickness * self.area * (npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
 
         return stiffness_matrix.flatten()
+
+    def stress_per_node(self):
+        b_matrix = self.b_matrix()
+        d_matrix = self.d_matrix()
+        q = self.displacements
+
+        stress = (npy.matmul(npy.matmul(d_matrix, b_matrix), q))
+
+        return stress
