@@ -215,7 +215,7 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
 
         return stiffness_matrix.flatten()
 
-    def stress_per_node(self):
+    def stress(self):
         b_matrix = self.b_matrix()
         d_matrix = self.d_matrix()
         q = self.displacements
@@ -223,3 +223,11 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
         stress = (npy.matmul(npy.matmul(d_matrix, b_matrix), q))
 
         return stress
+
+    def strain(self):
+        b_matrix = self.b_matrix()
+        q = self.displacements
+
+        strain = npy.matmul(b_matrix, q)
+
+        return strain
