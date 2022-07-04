@@ -59,7 +59,13 @@ class Result(DessiaObject):
                 B_y = float(-b1*self.result_vector[indexes[0]] - b2*self.result_vector[indexes[1]] - b3*self.result_vector[indexes[2]])
                 element_to_magnetic_field[element] = vm.Vector2D(B_x, B_y)
         return element_to_magnetic_field
-    
+
+    def magnetic_field_norm(self):
+        element_to_magnetic_field = self.magnetic_field_per_element()
+        Bs = [B.norm() for B in list(element_to_magnetic_field.values())]
+
+        return Bs
+
     def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor, nb_notches):
         """ 
         Computes the resistant magnetic torque when the rotor is blocked and \
@@ -219,7 +225,7 @@ class Result(DessiaObject):
             fig = plt.gcf()
 
         element_to_magnetic_field = self.magnetic_field_per_element()
-        Bs = [B.norm() for B in list(element_to_magnetic_field.values())]
+        Bs = self.magnetic_field_norm()
 
         B_max, B_min = finite_elements.core.get_bmin_bmax(Bs, Bmin, Bmax)
         B_to_color = finite_elements.core.get_colors(Bs, B_max=B_max, B_min=B_min)
@@ -246,7 +252,7 @@ class Result(DessiaObject):
         else:
             fig = plt.gcf()
         element_to_magnetic_field = self.magnetic_field_per_element()
-        Bs = [B.norm() for B in list(element_to_magnetic_field.values())]
+        Bs =  self.magnetic_field_norm()
         
         B_max, B_min = finite_elements.core.get_bmin_bmax(Bs, Bmin=None, Bmax=Bmax)
         B_to_color = finite_elements.core.get_colors(Bs, B_max=B_max, B_min=B_min)
