@@ -162,24 +162,50 @@ class Result(DessiaObject):
             all_BrBtetha.append(B_r * B_teta)
         return all_BrBtetha
 
+    @property
+    def dimension(self):
+        return self.mesh.elements_groups[0].elements[0].dimension
+
     def stress_per_element(self):
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+        q = self.result_vector
+
         element_to_stress = {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
+                displacements = []
                 b_matrix = element.b_matrix()
                 d_matrix = element.d_matrix()
-                q = self.result_vector
-                element_to_stress[element] = (npy.matmul(npy.matmul(d_matrix, b_matrix), q))
+                indexes = [self.mesh.node_to_index[element.points[0]],
+                           self.mesh.node_to_index[element.points[1]],
+                           self.mesh.node_to_index[element.points[2]]]
+                for index in indexes:
+                    for i in range(self.dimension):
+                        displacements.append(q[positions[(index, i+1)]])
+
+                element_to_stress[element] = (npy.matmul(npy.matmul(d_matrix, b_matrix), displacements))
 
         return element_to_stress
 
     def strain_per_element(self):
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+        q = self.result_vector
+
         element_to_strain = {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
+                displacements = []
                 b_matrix = element.b_matrix()
-                q = self.result_vector
-                element_to_strain[element] = (npy.matmul(b_matrix, q))
+                indexes = [self.mesh.node_to_index[element.points[0]],
+                           self.mesh.node_to_index[element.points[1]],
+                           self.mesh.node_to_index[element.points[2]]]
+                for index in indexes:
+                    for i in range(self.dimension):
+                        displacements.append(q[positions[(index, i+1)]])
+
+                element_to_strain[element] = (npy.matmul(b_matrix, displacements))
 
         return element_to_strain
 
