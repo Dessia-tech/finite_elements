@@ -173,6 +173,16 @@ class Result(DessiaObject):
 
         return element_to_stress
 
+    def strain_per_element(self):
+        element_to_strain = {}
+        for elements_group in self.mesh.elements_groups:
+            for element in elements_group.elements:
+                b_matrix = element.b_matrix()
+                q = self.result_vector
+                element_to_strain[element] = (npy.matmul(b_matrix, q))
+
+        return element_to_strain
+
     def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
         if ax is None:
             fig, ax = plt.subplots()
