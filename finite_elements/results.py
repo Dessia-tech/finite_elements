@@ -225,14 +225,14 @@ class Result(DessiaObject):
 
         return displacement_field_vectors
 
-    def plot_displacement_field_vectors_per_node(self, ax=None):
+    def plot_displacement_field_vectors_per_node(self, ax=None, amplitude=0.05):
         if ax is None:
             fig, ax = plt.subplots()
 
         ax = self.mesh.plot()
         displacement_field_vectors = self.displacement_field_vectors_per_node()
         for i, vector in enumerate(displacement_field_vectors):
-            vector.plot(amplitude=1, origin=self.mesh.nodes[i], ax=ax)
+            vector.plot(amplitude=0.05, origin=self.mesh.nodes[i], ax=ax, normalize=True)
 
     def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
         if ax is None:
