@@ -355,9 +355,10 @@ class FiniteElementAnalysis(FiniteElements):
 
     def get_row_col_indices(self, element):
 
-        indexes = [self.mesh.node_to_index[element.points[0]],
-                   self.mesh.node_to_index[element.points[1]],
-                   self.mesh.node_to_index[element.points[2]]]
+        indexes = [self.mesh.node_to_index[point] for point in element.points]
+        # indexes = [self.mesh.node_to_index[element.points[0]],
+        #            self.mesh.node_to_index[element.points[1]],
+        #            self.mesh.node_to_index[element.points[2]]]
 
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
