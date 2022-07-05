@@ -246,7 +246,7 @@ class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.Tetrahedr
 
         SolidMechanicsElement.__init__(self, mesh_element,
                                        elasticity_modulus, poisson_ratio)
-        vmmesh.TriangularElement2D.__init__(self, points=mesh_element.points)
+        vmmesh.TetrahedralElement.__init__(self, points=mesh_element.points)
 
         # DessiaObject.__init__(self, name=name)
 
@@ -295,9 +295,9 @@ class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.Tetrahedr
              - self.points[1].x * (self.points[2].z - self.points[0].z) \
              + self.points[2].x * (self.points[1].z - self.points[0].z)
 
-        c4 = - self.points[0].y * (self.points[2].z - self.points[1].z) \
-             + self.points[1].y * (self.points[2].z - self.points[0].z) \
-             - self.points[2].y * (self.points[1].z - self.points[0].z)
+        c4 = - self.points[0].x * (self.points[2].y - self.points[1].y) \
+             + self.points[1].x * (self.points[2].y - self.points[0].y) \
+             - self.points[2].x * (self.points[1].y - self.points[0].y)
 
         coeff_v = \
             (self.points[1].x - self.points[0].x) \
