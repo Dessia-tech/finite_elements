@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jun 28 2022
+Created on Tue Jul 05 2022
 
 @author: s.bendjebla
 """
@@ -26,3 +26,9 @@ solid_elment3d = fe.elements.SolidMechanicsTetrahedralElement3D(
     poisson_ratio = poisson_ratio)
 
 stiffness_matrix = solid_elment3d.elementary_matrix()
+
+analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [])
+
+m = analysis.create_matrix()
+
+results = analysis.solve()
