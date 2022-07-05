@@ -271,9 +271,9 @@ class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.Tetrahedr
              - self.points[2].x * (self.points[3].z - self.points[0].z) \
              + self.points[3].x * (self.points[2].z - self.points[0].z)
 
-        c2 = - self.points[0].x * (self.points[3].z - self.points[2].z) \
-             + self.points[2].x * (self.points[3].z - self.points[0].z) \
-             - self.points[3].x * (self.points[2].z - self.points[0].z)
+        c2 = - self.points[0].x * (self.points[3].y - self.points[2].y) \
+             + self.points[2].x * (self.points[3].y - self.points[0].y) \
+             - self.points[3].x * (self.points[2].y - self.points[0].y)
 
         a3 = self.points[0].y * (self.points[3].z - self.points[1].z) \
             - self.points[1].y * (self.points[3].z - self.points[0].z) \
@@ -283,9 +283,9 @@ class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.Tetrahedr
              + self.points[1].x * (self.points[3].z - self.points[0].z) \
              - self.points[3].x * (self.points[1].z - self.points[0].z)
 
-        c3 = self.points[0].x * (self.points[3].z - self.points[1].z) \
-            - self.points[1].x * (self.points[3].z - self.points[0].z) \
-            + self.points[3].x * (self.points[1].z - self.points[0].z)
+        c3 = self.points[0].x * (self.points[3].y - self.points[1].y) \
+            - self.points[1].x * (self.points[3].y - self.points[0].y) \
+            + self.points[3].x * (self.points[1].y - self.points[0].y)
 
         a4 = - self.points[0].y * (self.points[2].z - self.points[1].z) \
              + self.points[1].y * (self.points[2].z - self.points[0].z) \
