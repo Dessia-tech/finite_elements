@@ -338,3 +338,7 @@ class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.Tetrahedr
         d_matrix = coeff * npy.array(data).reshape(6,6)
 
         return d_matrix
+
+    @property
+    def dimension(self):
+        return 3
