@@ -249,3 +249,21 @@ class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.Tetrahedr
         vmmesh.TriangularElement2D.__init__(self, points=mesh_element.points)
 
         # DessiaObject.__init__(self, name=name)
+
+    def d_matrix(self):
+        elasticity_modulus = self.elasticity_modulus
+        poisson_ratio = self.poisson_ratio
+        coeff_a = 1 - poisson_ratio
+        coeff_b = (1 - 2 * poisson_ratio)/2
+
+        data = [coeff_a, poisson_ratio, poisson_ratio, 0, 0, 0,
+                poisson_ratio, coeff_a, poisson_ratio, 0, 0, 0,
+                poisson_ratio, poisson_ratio, coeff_a, 0, 0, 0,
+                0, 0, 0, coeff_b, 0, 0,
+                0, 0, 0, 0, coeff_b, 0,
+                0, 0, 0, 0, 0, coeff_b]
+
+        coeff = (elasticity_modulus/((1 + poisson_ratio) * (1 - 2*poisson_ratio)))
+        d_matrix = coeff * npy.array(data).reshape(6,6)
+
+        return d_matrix
