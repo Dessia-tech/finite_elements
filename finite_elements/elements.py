@@ -250,6 +250,77 @@ class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.Tetrahedr
 
         # DessiaObject.__init__(self, name=name)
 
+    def b_matrix(self):
+        a1 = self.points[1].y * (self.points[3].z - self.points[2].z) \
+            - self.points[2].y * (self.points[3].z - self.points[1].z) \
+            + self.points[3].y * (self.points[2].z - self.points[1].z)
+
+        b1 = - self.points[1].x * (self.points[3].z - self.points[2].z) \
+             + self.points[2].x * (self.points[3].z - self.points[1].z) \
+             - self.points[3].x * (self.points[2].z - self.points[1].z)
+
+        c1 = self.points[1].x * (self.points[3].y - self.points[2].y) \
+             - self.points[2].x * (self.points[3].y - self.points[1].y) \
+             + self.points[3].x * (self.points[2].y - self.points[1].y)
+
+        a2 = - self.points[0].y * (self.points[3].z - self.points[2].z) \
+             + self.points[2].y * (self.points[3].z - self.points[0].z) \
+             - self.points[3].y * (self.points[2].z - self.points[0].z)
+
+        b2 = self.points[0].x * (self.points[3].z - self.points[2].z) \
+             - self.points[2].x * (self.points[3].z - self.points[0].z) \
+             + self.points[3].x * (self.points[2].z - self.points[0].z)
+
+        c2 = - self.points[0].x * (self.points[3].z - self.points[2].z) \
+             + self.points[2].x * (self.points[3].z - self.points[0].z) \
+             - self.points[3].x * (self.points[2].z - self.points[0].z)
+
+        a3 = self.points[0].y * (self.points[3].z - self.points[1].z) \
+            - self.points[1].y * (self.points[3].z - self.points[0].z) \
+            + self.points[3].y * (self.points[1].z - self.points[0].z)
+
+        b3 = - self.points[0].x * (self.points[3].z - self.points[1].z) \
+             + self.points[1].x * (self.points[3].z - self.points[0].z) \
+             - self.points[3].x * (self.points[1].z - self.points[0].z)
+
+        c3 = self.points[0].x * (self.points[3].z - self.points[1].z) \
+            - self.points[1].x * (self.points[3].z - self.points[0].z) \
+            + self.points[3].x * (self.points[1].z - self.points[0].z)
+
+        a4 = - self.points[0].y * (self.points[2].z - self.points[1].z) \
+             + self.points[1].y * (self.points[2].z - self.points[0].z) \
+             - self.points[2].y * (self.points[1].z - self.points[0].z)
+
+        b4 = self.points[0].x * (self.points[2].z - self.points[1].z) \
+             - self.points[1].x * (self.points[2].z - self.points[0].z) \
+             + self.points[2].x * (self.points[1].z - self.points[0].z)
+
+        c4 = - self.points[0].y * (self.points[2].z - self.points[1].z) \
+             + self.points[1].y * (self.points[2].z - self.points[0].z) \
+             - self.points[2].y * (self.points[1].z - self.points[0].z)
+
+        coeff_v = \
+            (self.points[1].x - self.points[0].x) \
+                * (((self.points[2].y - self.points[0].y) * (self.points[3].z - self.points[0].z)) \
+                   - ((self.points[3].y - self.points[0].y) * (self.points[2].z - self.points[0].z))) \
+            + (self.points[1].y - self.points[0].y) \
+                * (((self.points[2].z - self.points[0].z) * (self.points[3].x - self.points[0].x)) \
+                    - ((self.points[3].z - self.points[0].z) * (self.points[2].x - self.points[0].x))) \
+            + (self.points[1].z - self.points[0].z) \
+                * (((self.points[2].x - self.points[0].x) * (self.points[3].y - self.points[0].y)) \
+                    - ((self.points[3].x - self.points[0].x) * (self.points[2].y - self.points[0].y)))
+
+        data = [a1, 0, 0, a2, 0, 0, a3, 0, 0, a4, 0, 0,
+                0, b1, 0, 0, b2, 0, 0, b3, 0, 0, b4, 0,
+                0, 0, c1, 0, 0, c2, 0, 0, c3, 0, 0, c4,
+                b1, a1, 0, b2, a2, 0, b3, a3, 0, b4, a4, 0,
+                0, c1, b1, 0, c2, b2, 0, c3, b3, 0, c4, b4,
+                c1, 0, a1, c2, 0, a2, c3, 0, a3, c4, 0, a4]
+
+        b_matrix = (1/coeff_v) * npy.array(data).reshape(6, 12)
+
+        return b_matrix
+
     def d_matrix(self):
         elasticity_modulus = self.elasticity_modulus
         poisson_ratio = self.poisson_ratio
