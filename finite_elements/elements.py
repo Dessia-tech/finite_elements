@@ -342,3 +342,12 @@ class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.Tetrahedr
     @property
     def dimension(self):
         return 3
+
+    def elementary_matrix(self):
+
+        b_matrix = self.b_matrix()
+        d_matrix = self.d_matrix()
+
+        stiffness_matrix = self.volume * (npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
+
+        return stiffness_matrix.flatten()
