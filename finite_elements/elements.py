@@ -231,3 +231,21 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
         strain = npy.matmul(b_matrix, q)
 
         return strain
+
+class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.TetrahedralElement):
+    # _standalone_in_db = False
+    # _non_serializable_attributes = []
+    # _non_eq_attributes = ['name']
+    # _non_hash_attributes = ['name']
+    # _generic_eq = True
+    def __init__(self, mesh_element: vmmesh.TetrahedralElement,
+                 elasticity_modulus, poisson_ratio,
+                 displacements = None,
+                 name : str = ''):
+        self.displacements = displacements
+
+        SolidMechanicsElement.__init__(self, mesh_element,
+                                       elasticity_modulus, poisson_ratio)
+        vmmesh.TriangularElement2D.__init__(self, points=mesh_element.points)
+
+        # DessiaObject.__init__(self, name=name)
