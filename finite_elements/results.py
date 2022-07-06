@@ -300,12 +300,13 @@ class Result(DessiaObject):
         titles = [['axial_stress_x', 'axial_stress_y', 'shear_stress_xy'],
                   ['axial_strain_x', 'axial_strain_y', 'shear_strain_xy']]
 
+        deformed_mesh = self.deformed_mesh()
+
         for i, st in enumerate([stress, strain]):
             for j, s in enumerate(stress_strain[i]):
                 B_max, B_min = finite_elements.core.get_bmin_bmax(s, Bmin=None, Bmax=None)
                 B_to_color = finite_elements.core.get_colors(s, B_max=B_max, B_min=B_min)
-                # fig, ax = plt.subplots()
-                for group in self.mesh.elements_groups:
+                for group in deformed_mesh.elements_groups:
                     for element in group.elements:
                         element.plot(ax=axs[i, j], color=B_to_color[st[element][j]], fill=True)
 
