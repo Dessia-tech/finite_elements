@@ -329,7 +329,7 @@ class Result(DessiaObject):
         if ax is None:
             fig, ax = plt.subplots()
 
-        ax = self.mesh.plot()
+        self.mesh.plot(ax)
         displacement_field_vectors = self.displacement_field_vectors_per_node()
         for i, vector in enumerate(displacement_field_vectors):
             vector.plot(amplitude=amplitude, origin=self.mesh.nodes[i], ax=ax, normalize=True)
