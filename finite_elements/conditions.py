@@ -64,6 +64,20 @@ class ElementBoundaryCondition(BoundaryCondition):
 
         return node_boundary_conditions
 
+class EdgeBoundaryCondition(BoundaryCondition):
+    # _standalone_in_db = False
+    # _non_serializable_attributes = []
+    # _non_eq_attributes = ['name']
+    # _non_hash_attributes = ['name']
+    # _generic_eq = True
+
+    def __init__(self, application, value: float, dimension, name: str = ''):
+        self.application = application #Element
+        self.value = value
+        self.dimension = dimension
+
+        BoundaryCondition.__init__(self, application, value, dimension, name='')
+
 
 class ContinuityCondition(DessiaObject):
     """ 
