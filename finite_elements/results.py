@@ -270,6 +270,21 @@ class Result(DessiaObject):
 
         return axial_stress_x, axial_stress_y, shear_stress_xy
 
+    def strain(self):
+        """
+        axial_strain_x, axial_strain_y, shear_strain_xy
+        """
+
+        strain = self.strain_per_element()
+        axial_strain_x, axial_strain_y, shear_strain_xy = [], [], []
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                axial_strain_x.append(strain[element][0])
+                axial_strain_y.append(strain[element][1])
+                shear_strain_xy.append(strain[element][2])
+
+        return axial_strain_x, axial_strain_y, shear_strain_xy
+
     def plot_stress_strain(self, ax=None):
         if ax is None:
             fig, axs = plt.subplots(2, 3)
