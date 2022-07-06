@@ -285,39 +285,37 @@ class Result(DessiaObject):
 
         return axial_strain_x, axial_strain_y, shear_strain_xy
 
-    def plot_stress_strain(self, ax=None):
-        if ax is None:
+    def plot_stress_strain(self, axs=None):
+        if axs is None:
             fig, axs = plt.subplots(2, 3)
 
         stress = self.stress_per_element()
         strain = self.strain_per_element()
-        axial_stress_x, axial_stress_y, shear_stress_xy = [], [], []
-        axial_strain_x, axial_strain_y, shear_strain_xy = [], [], []
+        axial_stress_x, axial_stress_y, shear_stress_xy = self.stress()
+        axial_strain_x, axial_strain_y, shear_strain_xy = self.strain()
 
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                axial_stress_x.append(stress[element][0])
-                axial_stress_y.append(stress[element][1])
-                shear_stress_xy.append(stress[element][2])
+        stress_strain = [[axial_stress_x, axial_stress_y, shear_stress_xy],
+                         [axial_strain_x, axial_strain_y, shear_strain_xy]]
 
-                axial_strain_x.append(strain[element][0])
-                axial_strain_y.append(strain[element][1])
-                shear_strain_xy.append(strain[element][2])
+        titles = [['axial_stress_x', 'axial_stress_y', 'shear_stress_xy'],
+                  ['axial_strain_x', 'axial_strain_y', 'shear_strain_xy']]
 
-        B_max, B_min = finite_elements.core.get_bmin_bmax(axial_stress_x, Bmin=None, Bmax=None)
-        B_to_color = finite_elements.core.get_colors(axial_stress_x, B_max=B_max, B_min=B_min)
+        for i, st in enumerate([stress, strain]):
+            for j, s in enumerate(stress_strain[i]):
+                B_max, B_min = finite_elements.core.get_bmin_bmax(s, Bmin=None, Bmax=None)
+                B_to_color = finite_elements.core.get_colors(s, B_max=B_max, B_min=B_min)
+                # fig, ax = plt.subplots()
+                for group in self.mesh.elements_groups:
+                    for element in group.elements:
+                        element.plot(ax=axs[i, j], color=B_to_color[st[element][j]], fill=True)
 
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                element.plot(ax=ax, color=B_to_color[stress[element][0]], fill=True)
+                norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
+                sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+                sm.set_array([])
+                cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10), ax=axs[i][j])
+                cbar.set_label(titles[i][j])
 
-        norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10))
-        cbar.set_label('axial_stress_x')
-
-        return ax
+        return axs
 
     def plot_deformed_mesh(self, ax=None):
         if ax is None:
