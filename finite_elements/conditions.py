@@ -36,13 +36,12 @@ class NodeBoundaryCondition(BoundaryCondition):
     # _non_hash_attributes = ['name']
     # _generic_eq = True
 
-    def __init__(self, application: vm.Point2D, value: float, dimension, name: str = ''):
-        self.application = application
+    def __init__(self, application, value: float, dimension, name: str = ''):
+        self.application = application #Node
         self.value = value
         self.dimension = dimension
 
         BoundaryCondition.__init__(self, application, value, dimension, name='')
-
 
 class ElementBoundaryCondition(BoundaryCondition):
     # _standalone_in_db = False
@@ -51,8 +50,8 @@ class ElementBoundaryCondition(BoundaryCondition):
     # _non_hash_attributes = ['name']
     # _generic_eq = True
 
-    def __init__(self, application: vmmesh.TriangularElement, value: float, dimension, name: str = ''):
-        self.application = application
+    def __init__(self, application, value: float, dimension, name: str = ''):
+        self.application = application #Element
         self.value = value
         self.dimension = dimension
 
