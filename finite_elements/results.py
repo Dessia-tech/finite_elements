@@ -306,9 +306,9 @@ class Result(DessiaObject):
             for j, s in enumerate(stress_strain[i]):
                 B_max, B_min = finite_elements.core.get_bmin_bmax(s, Bmin=None, Bmax=None)
                 B_to_color = finite_elements.core.get_colors(s, B_max=B_max, B_min=B_min)
-                for group in deformed_mesh.elements_groups:
-                    for element in group.elements:
-                        element.plot(ax=axs[i, j], color=B_to_color[st[element][j]], fill=True)
+                for g, group in enumerate(deformed_mesh.elements_groups):
+                    for e, element in enumerate(group.elements):
+                        element.plot(ax=axs[i, j], color=B_to_color[st[self.mesh.elements_groups[g].elements[e]][j]], fill=True)
 
                 norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
                 sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
