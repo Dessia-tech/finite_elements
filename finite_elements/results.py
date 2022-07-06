@@ -255,6 +255,21 @@ class Result(DessiaObject):
 
         return vmmesh.Mesh(group_solid_elments2d)
 
+    def stress(self):
+        """
+        axial_stress_x, axial_stress_y, shear_stress_xy
+        """
+
+        stress = self.stress_per_element()
+        axial_stress_x, axial_stress_y, shear_stress_xy = [], [], []
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                axial_stress_x.append(stress[element][0])
+                axial_stress_y.append(stress[element][1])
+                shear_stress_xy.append(stress[element][2])
+
+        return axial_stress_x, axial_stress_y, shear_stress_xy
+
     def plot_stress_strain(self, ax=None):
         if ax is None:
             fig, axs = plt.subplots(2, 3)
