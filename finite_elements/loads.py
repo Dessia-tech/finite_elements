@@ -40,6 +40,15 @@ class ConstantLoad(DessiaObject):
             self.value_per_element.append(value * element.area/total_area)
         DessiaObject.__init__(self, name='')
 
+class SingleEdgeLoad(DessiaObject):
+    def __init__(self, edge, value, dimension):
+        self.edge = edge
+        self.value = value
+        self.dimension = dimension
+
+        DessiaObject.__init__(self, name='')
+
+
 class SingleNodeLoad(DessiaObject):
     """ 
     Forces the value of the vector potential A at a node. To set a magnetic wall \
