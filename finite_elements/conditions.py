@@ -78,6 +78,13 @@ class EdgeBoundaryCondition(BoundaryCondition):
 
         BoundaryCondition.__init__(self, application, value, dimension, name='')
 
+    def to_node_boundary_condition(self):
+        node_boundary_conditions = [NodeBoundaryCondition(
+            point, self.value, self.dimension) \
+                for point in [self.application.start, self.application.end]]
+
+        return node_boundary_conditions
+
 
 class ContinuityCondition(DessiaObject):
     """ 
