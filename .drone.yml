@@ -5,18 +5,18 @@ name: default
 
 steps:
 - name: install, build doc run scripts
-  image: python:3.7
+  image: python:3.8
   commands:
   - git fetch --tags 
   - python setup.py install
 
 - name: develop
-  image: python:3.7
+  image: python:3.8
   commands:
   - python setup.py develop
 
 - name: sdist
-  image: python:3.7
+  image: python:3.8
   commands:
   - python setup.py sdist
 
