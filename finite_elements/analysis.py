@@ -376,17 +376,21 @@ class FiniteElementAnalysis(FiniteElements):
         matrix = npy.zeros((self.get_source_matrix_length(), 1))
 
         # elementary_source_matrix
-        for load in self.element_loads:
-            for element in load.elements:
-                indexes = [self.mesh.node_to_index[element.points[0]],
-                           self.mesh.node_to_index[element.points[1]],
-                           self.mesh.node_to_index[element.points[2]]]
+        data, row_ind = self.source_matrix_element_loads()
+        for i, d in enumerate(data):
+            matrix[row_ind[i]][0] += d
 
-                elementary_source_matrix = element.elementary_source_matrix(indexes)
+        # for load in self.element_loads:
+        #     for element in load.elements:
+        #         indexes = [self.mesh.node_to_index[element.points[0]],
+        #                    self.mesh.node_to_index[element.points[1]],
+        #                    self.mesh.node_to_index[element.points[2]]]
 
-                matrix[indexes[0]][0] += load.value * elementary_source_matrix[0]
-                matrix[indexes[1]][0] += load.value * elementary_source_matrix[1]
-                matrix[indexes[2]][0] += load.value * elementary_source_matrix[2]
+        #         elementary_source_matrix = element.elementary_source_matrix(indexes)
+
+        #         matrix[indexes[0]][0] += load.value * elementary_source_matrix[0]
+        #         matrix[indexes[1]][0] += load.value * elementary_source_matrix[1]
+        #         matrix[indexes[2]][0] += load.value * elementary_source_matrix[2]
 
         # elementary_source_matrix_node_loads
         data, row_ind = self.source_matrix_node_loads()
