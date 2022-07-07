@@ -154,6 +154,62 @@ class FiniteElements(DessiaObject):
 
         return (data, row_ind, col_ind)
 
+    def source_matrix_element_loads(self):
+
+        name = re.findall('.[^A-Z]*', self.elements_name)[0].lower()
+        method_name = f'source_matrix_node_loads_{name}'
+
+        if hasattr(self, method_name):
+            data, row_ind = getattr(self, method_name)()
+
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        return (data, row_ind)
+
+    def source_matrix_element_loads_magnetic(self):
+        data, row_ind = [], []
+
+        for load in self.element_loads:
+            for element in load.elements:
+                indexes = [self.mesh.node_to_index[element.points[0]],
+                           self.mesh.node_to_index[element.points[1]],
+                           self.mesh.node_to_index[element.points[2]]]
+
+                elementary_source_matrix = element.elementary_source_matrix(indexes)
+
+                data.append(load.value * elementary_source_matrix[0])
+                data.append(load.value * elementary_source_matrix[1])
+                data.append(load.value * elementary_source_matrix[2])
+
+                row_ind.append(indexes[0])
+                row_ind.append(indexes[1])
+                row_ind.append(indexes[2])
+
+        return data, row_ind
+
+    def source_matrix_element_loads_solid(self):
+        data, row_ind = [], []
+
+        # for load in self.element_loads:
+        #     for element in load.elements:
+        #         indexes = [self.mesh.node_to_index[element.points[0]],
+        #                    self.mesh.node_to_index[element.points[1]],
+        #                    self.mesh.node_to_index[element.points[2]]]
+
+        #         elementary_source_matrix = element.elementary_source_matrix(indexes)
+
+        #         data.append(load.value * elementary_source_matrix[0])
+        #         data.append(load.value * elementary_source_matrix[1])
+        #         data.append(load.value * elementary_source_matrix[2])
+
+        #         row_ind.append(indexes[0])
+        #         row_ind.append(indexes[1])
+        #         row_ind.append(indexes[2])
+
+        return data, row_ind
+
     def source_matrix_node_loads(self):
 
         name = re.findall('.[^A-Z]*', self.elements_name)[0].lower()
