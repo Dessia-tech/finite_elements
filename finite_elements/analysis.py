@@ -219,7 +219,6 @@ class FiniteElementAnalysis(FiniteElements):
 
         # elements_loads
         source_c_matrix_elements_loads = self.source_c_matrix_elements_loads()
-        data, row_ind = self.source_matrix_element_loads()
         for i, d in enumerate(source_c_matrix_elements_loads[0]):
             matrix[source_c_matrix_elements_loads[1][i]][0] += d
 
