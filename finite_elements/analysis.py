@@ -228,25 +228,38 @@ class FiniteElementAnalysis(FiniteElements):
     def create_source_matrix(self):
         matrix = npy.zeros((self.get_source_matrix_length(), 1))
 
-        # elements_loads
-        source_c_matrix_elements_loads = self.source_c_matrix_elements_loads()
-        for i, d in enumerate(source_c_matrix_elements_loads[0]):
-            matrix[source_c_matrix_elements_loads[1][i]][0] += d
+        # # elements_loads
+        # source_c_matrix_elements_loads = self.source_c_matrix_elements_loads()
+        # for i, d in enumerate(source_c_matrix_elements_loads[0]):
+        #     matrix[source_c_matrix_elements_loads[1][i]][0] += d
 
-        # node_loads
-        source_c_matrix_node_loads = self.source_c_matrix_node_loads()
-        for i, d in enumerate(source_c_matrix_node_loads[0]):
-            matrix[source_c_matrix_node_loads[1][i]][0] += d
+        # # node_loads
+        # source_c_matrix_node_loads = self.source_c_matrix_node_loads()
+        # for i, d in enumerate(source_c_matrix_node_loads[0]):
+        #     matrix[source_c_matrix_node_loads[1][i]][0] += d
 
-        # magnet_loads
-        source_c_matrix_magnet_loads = self.source_c_matrix_magnet_loads()
-        for i, d in enumerate(source_c_matrix_magnet_loads[0]):
-            matrix[source_c_matrix_magnet_loads[1][i]][0] += d
+        # # magnet_loads
+        # source_c_matrix_magnet_loads = self.source_c_matrix_magnet_loads()
+        # for i, d in enumerate(source_c_matrix_magnet_loads[0]):
+        #     matrix[source_c_matrix_magnet_loads[1][i]][0] += d
 
-        # boundary_conditions
-        source_c_matrix_node_boundary_conditions = self.source_c_matrix_node_boundary_conditions()
-        for i, d in enumerate(source_c_matrix_node_boundary_conditions[0]):
-            matrix[source_c_matrix_node_boundary_conditions[1][i]][0] += d
+        # # boundary_conditions
+        # source_c_matrix_node_boundary_conditions = self.source_c_matrix_node_boundary_conditions()
+        # for i, d in enumerate(source_c_matrix_node_boundary_conditions[0]):
+        #     matrix[source_c_matrix_node_boundary_conditions[1][i]][0] += d
+
+        method_names = ['source_c_matrix_elements_loads', 'source_c_matrix_node_loads',
+                        'source_c_matrix_magnet_loads', 'source_c_matrix_node_boundary_conditions']
+
+        for method_name in method_names:
+            if hasattr(self, method_name):
+                result = getattr(self, method_name)()
+                for i, d in enumerate(result[0]):
+                    matrix[result[1][i]][0] += d
+
+            else:
+                raise NotImplementedError(
+                    f'Class {self.__class__.__name__} does not implement {method_name}')
 
         return matrix
 
