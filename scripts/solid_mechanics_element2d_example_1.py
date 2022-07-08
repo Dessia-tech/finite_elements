@@ -54,3 +54,4 @@ results.plot_deformed_mesh()
 
 results.plot_stress_strain()
 
+elasticity_result = fe.results.ElasticityResults(results.mesh, results.result_vector)
