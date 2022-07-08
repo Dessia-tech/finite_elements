@@ -119,7 +119,7 @@ class MagneticElement2D(vmmesh.TriangularElement2D):
 #         return [element.triangular_element for element in self.magnetic_elements]
 
 
-class SolidMechanicsElement(DessiaObject):
+class ElasticityElement(DessiaObject):
     _standalone_in_db = False
     _non_serializable_attributes = []
     _non_eq_attributes = ['name']
@@ -136,7 +136,7 @@ class SolidMechanicsElement(DessiaObject):
         DessiaObject.__init__(self, name=name)
 
 
-class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.TriangularElement2D):
+class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2D):
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -150,7 +150,7 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
         self.thickness = thickness
         self.displacements = displacements
 
-        SolidMechanicsElement.__init__(self, mesh_element,
+        ElasticityElement.__init__(self, mesh_element,
                                        elasticity_modulus, poisson_ratio)
         vmmesh.TriangularElement2D.__init__(self, points=mesh_element.points)
 
@@ -232,7 +232,7 @@ class SolidMechanicsTriangularElement2D(SolidMechanicsElement, vmmesh.Triangular
 
         return strain
 
-class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.TetrahedralElement):
+class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElement):
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -244,7 +244,7 @@ class SolidMechanicsTetrahedralElement3D(SolidMechanicsElement, vmmesh.Tetrahedr
                  name : str = ''):
         self.displacements = displacements
 
-        SolidMechanicsElement.__init__(self, mesh_element,
+        ElasticityElement.__init__(self, mesh_element,
                                        elasticity_modulus, poisson_ratio)
         vmmesh.TetrahedralElement.__init__(self, points=mesh_element.points)
 
