@@ -82,7 +82,7 @@ class FiniteElements(DessiaObject):
 
         return (data, row_ind, col_ind)
 
-    def matrix_node_loads_solid(self):
+    def matrix_node_loads_elasticity(self):
         return [], [], []
 
     def matrix_continuity_conditions(self):
@@ -118,7 +118,7 @@ class FiniteElements(DessiaObject):
 
         return (data, row_ind, col_ind)
 
-    def matrix_continuity_conditions_solid(self):
+    def matrix_continuity_conditions_elasticity(self):
         return [], [], []
 
     def matrix_node_boundary_conditions(self):
@@ -138,7 +138,7 @@ class FiniteElements(DessiaObject):
     def matrix_node_boundary_conditions_magnetic(self):
         return [], [], []
 
-    def matrix_node_boundary_conditions_solid(self):
+    def matrix_node_boundary_conditions_elasticity(self):
 
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
@@ -189,7 +189,7 @@ class FiniteElements(DessiaObject):
 
         return data, row_ind
 
-    def source_matrix_element_loads_solid(self):
+    def source_matrix_element_loads_elasticity(self):
         data, row_ind = [], []
 
         # for load in self.element_loads:
@@ -232,7 +232,7 @@ class FiniteElements(DessiaObject):
 
         return data, row_ind
 
-    def source_matrix_node_loads_solid(self):
+    def source_matrix_node_loads_elasticity(self):
 
         data, row_ind = [], []
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
@@ -273,7 +273,7 @@ class FiniteElements(DessiaObject):
 
         return data, row_ind
 
-    def source_matrix_magnet_loads_solid(self):
+    def source_matrix_magnet_loads_elasticity(self):
         return [], []
 
     def source_matrix_node_boundary_conditions(self):
@@ -293,7 +293,7 @@ class FiniteElements(DessiaObject):
     def source_matrix_node_boundary_conditions_magnetic(self):
         return [], []
 
-    def source_matrix_node_boundary_conditions_solid(self):
+    def source_matrix_node_boundary_conditions_elasticity(self):
         data, row_ind = [], []
 
         for i, node_condition in enumerate(self.node_boundary_conditions):
@@ -441,7 +441,7 @@ class FiniteElementAnalysis(FiniteElements):
                       finite_elements.elements.MagneticElement2D):
             return len(self.mesh.nodes)*self.dimension + self.nb_loads + len(self.continuity_conditions)
         elif isinstance(self.mesh.elements_groups[0].elements[0],
-                      finite_elements.elements.SolidMechanicsElement):
+                      finite_elements.elements.ElasticityElement):
             return len(self.mesh.nodes)*self.dimension + len(self.node_boundary_conditions)
 
     # def apply_boundary_conditions(self, rigidity_matrix, source_matrix):
