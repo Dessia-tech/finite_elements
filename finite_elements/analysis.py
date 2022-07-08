@@ -372,7 +372,16 @@ class FiniteElementAnalysis(FiniteElements):
                 element.plot(ax=ax, color=colors[i], fill=True)
                 
         return ax
-    
+
+    def plot_continuity_condition(self, ax=None):
+        if ax is None:
+            ax = self.mesh.plot()
+
+        for i, continuity_condition in enumerate(self.continuity_conditions):
+            continuity_condition.node1.MPLPlot(ax=ax, color='C{}'.format(i % 10))
+            continuity_condition.node2.MPLPlot(ax=ax, color='C{}'.format(i % 10))
+        return ax
+
     def plot_magnet_loads(self, ax=None):
         """ 
         Plots the mesh. The triangular elements are filled red if they are a \
@@ -395,13 +404,4 @@ class FiniteElementAnalysis(FiniteElements):
         
         print(self.magnet_loads)
         
-        return ax
-    
-    def plot_continuity_condition(self, ax=None):
-        if ax is None:
-            ax = self.mesh.plot()
-            
-        for i, continuity_condition in enumerate(self.continuity_conditions):
-            continuity_condition.node1.MPLPlot(ax=ax, color='C{}'.format(i % 10))
-            continuity_condition.node2.MPLPlot(ax=ax, color='C{}'.format(i % 10))
         return ax

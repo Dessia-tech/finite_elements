@@ -30,6 +30,36 @@ blue_red = LinearSegmentedColormap('BLueRed', cdict)
 
 MU = 4*math.pi*1e-7
 
+
+def get_bmin_bmax(Bs, Bmax=None, Bmin=None):
+    if Bmax is None and Bmin is None:
+        B_max, B_min = max(Bs), min(Bs)
+    elif Bmax is not None and Bmin is None:
+        B_max, B_min = Bmax, min(Bs)
+    elif Bmax is None and Bmin is not None:
+        B_max, B_min = max(Bs), Bmin
+    else:
+        B_max, B_min = Bmax, Bmin
+
+    return B_max, B_min
+
+def get_colors(Bs, B_max=None, B_min=None):
+    color_map = ((0,0,1), (1,0,0))
+
+    B_to_color = {}
+    for B in Bs:
+        if B > B_max:
+            x = 1
+        else:
+            x = (B - B_min) / (B_max - B_min)
+
+        color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x,
+                 color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
+                 color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
+        B_to_color[B] = color
+
+    return B_to_color
+
 def global_matrix_positions(dimension, nodes_number):
 
     positions = {}
@@ -58,32 +88,3 @@ def get_triangulation(mesh):
     triang = mtri.Triangulation(x, y, triangles)
 
     return triang
-
-def get_colors(Bs, B_max=None, B_min=None):
-    color_map = ((0,0,1), (1,0,0))
-
-    B_to_color = {}
-    for B in Bs:
-        if B > B_max:
-            x = 1
-        else:
-            x = (B - B_min) / (B_max - B_min)
-
-        color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x,
-                 color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
-                 color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
-        B_to_color[B] = color
-
-    return B_to_color
-
-def get_bmin_bmax(Bs, Bmax=None, Bmin=None):
-    if Bmax is None and Bmin is None:
-        B_max, B_min = max(Bs), min(Bs)
-    elif Bmax is not None and Bmin is None:
-        B_max, B_min = Bmax, min(Bs)
-    elif Bmax is None and Bmin is not None:
-        B_max, B_min = max(Bs), Bmin
-    else:
-        B_max, B_min = Bmax, Bmin
-
-    return B_max, B_min

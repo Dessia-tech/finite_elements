@@ -215,6 +215,14 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
         return stiffness_matrix.flatten()
 
+    def strain(self):
+        b_matrix = self.b_matrix()
+        q = self.displacements
+
+        strain = npy.matmul(b_matrix, q)
+
+        return strain
+
     def stress(self):
         b_matrix = self.b_matrix()
         d_matrix = self.d_matrix()
@@ -224,13 +232,6 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
         return stress
 
-    def strain(self):
-        b_matrix = self.b_matrix()
-        q = self.displacements
-
-        strain = npy.matmul(b_matrix, q)
-
-        return strain
 
 class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElement):
     # _standalone_in_db = False
@@ -249,77 +250,6 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
         vmmesh.TetrahedralElement.__init__(self, points=mesh_element.points)
 
         # DessiaObject.__init__(self, name=name)
-
-    # def b_matrix(self):
-    #     a1 = self.points[1].y * (self.points[3].z - self.points[2].z) \
-    #         - self.points[2].y * (self.points[3].z - self.points[1].z) \
-    #         + self.points[3].y * (self.points[2].z - self.points[1].z)
-
-    #     b1 = - self.points[1].x * (self.points[3].z - self.points[2].z) \
-    #          + self.points[2].x * (self.points[3].z - self.points[1].z) \
-    #          - self.points[3].x * (self.points[2].z - self.points[1].z)
-
-    #     c1 = self.points[1].x * (self.points[3].y - self.points[2].y) \
-    #          - self.points[2].x * (self.points[3].y - self.points[1].y) \
-    #          + self.points[3].x * (self.points[2].y - self.points[1].y)
-
-    #     a2 = - self.points[0].y * (self.points[3].z - self.points[2].z) \
-    #          + self.points[2].y * (self.points[3].z - self.points[0].z) \
-    #          - self.points[3].y * (self.points[2].z - self.points[0].z)
-
-    #     b2 = self.points[0].x * (self.points[3].z - self.points[2].z) \
-    #          - self.points[2].x * (self.points[3].z - self.points[0].z) \
-    #          + self.points[3].x * (self.points[2].z - self.points[0].z)
-
-    #     c2 = - self.points[0].x * (self.points[3].y - self.points[2].y) \
-    #          + self.points[2].x * (self.points[3].y - self.points[0].y) \
-    #          - self.points[3].x * (self.points[2].y - self.points[0].y)
-
-    #     a3 = self.points[0].y * (self.points[3].z - self.points[1].z) \
-    #         - self.points[1].y * (self.points[3].z - self.points[0].z) \
-    #         + self.points[3].y * (self.points[1].z - self.points[0].z)
-
-    #     b3 = - self.points[0].x * (self.points[3].z - self.points[1].z) \
-    #          + self.points[1].x * (self.points[3].z - self.points[0].z) \
-    #          - self.points[3].x * (self.points[1].z - self.points[0].z)
-
-    #     c3 = self.points[0].x * (self.points[3].y - self.points[1].y) \
-    #         - self.points[1].x * (self.points[3].y - self.points[0].y) \
-    #         + self.points[3].x * (self.points[1].y - self.points[0].y)
-
-    #     a4 = - self.points[0].y * (self.points[2].z - self.points[1].z) \
-    #          + self.points[1].y * (self.points[2].z - self.points[0].z) \
-    #          - self.points[2].y * (self.points[1].z - self.points[0].z)
-
-    #     b4 = self.points[0].x * (self.points[2].z - self.points[1].z) \
-    #          - self.points[1].x * (self.points[2].z - self.points[0].z) \
-    #          + self.points[2].x * (self.points[1].z - self.points[0].z)
-
-    #     c4 = - self.points[0].x * (self.points[2].y - self.points[1].y) \
-    #          + self.points[1].x * (self.points[2].y - self.points[0].y) \
-    #          - self.points[2].x * (self.points[1].y - self.points[0].y)
-
-    #     coeff_v = \
-    #         (self.points[1].x - self.points[0].x) \
-    #             * (((self.points[2].y - self.points[0].y) * (self.points[3].z - self.points[0].z)) \
-    #                - ((self.points[3].y - self.points[0].y) * (self.points[2].z - self.points[0].z))) \
-    #         + (self.points[1].y - self.points[0].y) \
-    #             * (((self.points[2].z - self.points[0].z) * (self.points[3].x - self.points[0].x)) \
-    #                 - ((self.points[3].z - self.points[0].z) * (self.points[2].x - self.points[0].x))) \
-    #         + (self.points[1].z - self.points[0].z) \
-    #             * (((self.points[2].x - self.points[0].x) * (self.points[3].y - self.points[0].y)) \
-    #                 - ((self.points[3].x - self.points[0].x) * (self.points[2].y - self.points[0].y)))
-
-    #     data = [a1, 0, 0, a2, 0, 0, a3, 0, 0, a4, 0, 0,
-    #             0, b1, 0, 0, b2, 0, 0, b3, 0, 0, b4, 0,
-    #             0, 0, c1, 0, 0, c2, 0, 0, c3, 0, 0, c4,
-    #             b1, a1, 0, b2, a2, 0, b3, a3, 0, b4, a4, 0,
-    #             0, c1, b1, 0, c2, b2, 0, c3, b3, 0, c4, b4,
-    #             c1, 0, a1, c2, 0, a2, c3, 0, a3, c4, 0, a4]
-
-    #     b_matrix = (1/coeff_v) * npy.array(data).reshape(6, 12)
-
-    #     return b_matrix
 
     def b_matrix(self):
 

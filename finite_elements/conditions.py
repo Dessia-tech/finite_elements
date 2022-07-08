@@ -49,27 +49,6 @@ class NodeBoundaryCondition(BoundaryCondition):
     def source_c_matrix(self):
         return self.value
 
-class ElementBoundaryCondition(BoundaryCondition):
-    # _standalone_in_db = False
-    # _non_serializable_attributes = []
-    # _non_eq_attributes = ['name']
-    # _non_hash_attributes = ['name']
-    # _generic_eq = True
-
-    def __init__(self, application, value: float, dimension, name: str = ''):
-        self.application = application #Element
-        self.value = value
-        self.dimension = dimension
-
-        BoundaryCondition.__init__(self, application, value, dimension, name='')
-
-    def to_node_boundary_condition(self):
-        node_boundary_conditions = [NodeBoundaryCondition(
-            point, self.value, self.dimension) \
-                for point in self.application.points]
-
-        return node_boundary_conditions
-
 class EdgeBoundaryCondition(BoundaryCondition):
     # _standalone_in_db = False
     # _non_serializable_attributes = []
@@ -88,6 +67,28 @@ class EdgeBoundaryCondition(BoundaryCondition):
         node_boundary_conditions = [NodeBoundaryCondition(
             point, self.value, self.dimension) \
                 for point in [self.application.start, self.application.end]]
+
+        return node_boundary_conditions
+
+
+class ElementBoundaryCondition(BoundaryCondition):
+    # _standalone_in_db = False
+    # _non_serializable_attributes = []
+    # _non_eq_attributes = ['name']
+    # _non_hash_attributes = ['name']
+    # _generic_eq = True
+
+    def __init__(self, application, value: float, dimension, name: str = ''):
+        self.application = application #Element
+        self.value = value
+        self.dimension = dimension
+
+        BoundaryCondition.__init__(self, application, value, dimension, name='')
+
+    def to_node_boundary_condition(self):
+        node_boundary_conditions = [NodeBoundaryCondition(
+            point, self.value, self.dimension) \
+                for point in self.application.points]
 
         return node_boundary_conditions
 
