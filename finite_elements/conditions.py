@@ -43,6 +43,12 @@ class NodeBoundaryCondition(BoundaryCondition):
 
         BoundaryCondition.__init__(self, application, value, dimension, name='')
 
+    def c_matrix(self):
+        return (1, 1)
+
+    def source_c_matrix(self):
+        return self.value
+
 class ElementBoundaryCondition(BoundaryCondition):
     # _standalone_in_db = False
     # _non_serializable_attributes = []
