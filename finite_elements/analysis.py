@@ -20,15 +20,15 @@ import re
 from dessia_common import DessiaObject
 from typing import List #Tuple, TypeVar
 import finite_elements.elements
-from finite_elements.loads import ConstantLoad, SingleNodeLoad, MagnetLoad
+from finite_elements.loads import ElementsLoad, NodeLoad, MagnetLoad
 from finite_elements.conditions import ContinuityCondition
 from finite_elements.results import Result
 from finite_elements.core import blue_red
 
 class FiniteElements(DessiaObject):
     def __init__(self, mesh: vmmesh.Mesh,
-                 element_loads: List[ConstantLoad],
-                 node_loads: List[SingleNodeLoad],
+                 element_loads: List[ElementsLoad],
+                 node_loads: List[NodeLoad],
                  magnet_loads: List[MagnetLoad],
                  continuity_conditions: List[ContinuityCondition],
                  node_boundary_conditions: List[finite_elements.conditions.NodeBoundaryCondition],
@@ -317,8 +317,8 @@ class FiniteElementAnalysis(FiniteElements):
     :type continuity_conditions: List of ContinuityCondition objects
     """
     def __init__(self, mesh: vmmesh.Mesh,
-                 element_loads: List[ConstantLoad],
-                 node_loads: List[SingleNodeLoad],
+                 element_loads: List[ElementsLoad],
+                 node_loads: List[NodeLoad],
                  magnet_loads: List[MagnetLoad],
                  continuity_conditions: List[ContinuityCondition],
                  node_boundary_conditions: List[finite_elements.conditions.NodeBoundaryCondition],
