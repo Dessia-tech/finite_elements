@@ -547,7 +547,7 @@ class ElasticityResults(Result):
                                                                  nodes_number=len(self.mesh.nodes))
         q = self.result_vector
 
-        element_to_strain, element_to_stress = [], []
+        element_to_strain, element_to_stress = {}, {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
                 displacements = []
@@ -561,8 +561,8 @@ class ElasticityResults(Result):
                     for i in range(self.dimension):
                         displacements.append(q[positions[(index, i+1)]])
 
-                element_to_strain.append((npy.matmul(b_matrix, displacements)))
-                element_to_stress.append((npy.matmul(npy.matmul(d_matrix, b_matrix), displacements)))
+                element_to_strain[element] = (npy.matmul(b_matrix, displacements))
+                element_to_stress[element] = (npy.matmul(npy.matmul(d_matrix, b_matrix), displacements))
 
         return element_to_strain, element_to_stress
 
@@ -593,3 +593,63 @@ class ElasticityResults(Result):
             deformed_nodes.append(node + displacement_field_vectors[i])
 
         return deformed_nodes
+
+    def axial_strain_x(self):
+
+        strain = self.strain
+        axial_strain_x = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                axial_strain_x[element] = strain[element][0]
+
+        return axial_strain_x
+
+    def axial_strain_y(self):
+
+        strain = self.strain
+        axial_strain_y = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                axial_strain_y[element] = strain[element][1]
+
+        return axial_strain_y
+
+    def axial_stress_x(self):
+
+        stress = self.stress
+        axial_stress_x = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                axial_stress_x[element] = stress[element][0]
+
+        return axial_stress_x
+
+    def axial_stress_y(self):
+
+        stress = self.stress
+        axial_stress_y = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                axial_stress_y[element] = stress[element][1]
+
+        return axial_stress_y
+
+    def shear_strain_xy(self):
+
+        strain = self.strain
+        shear_strain_xy = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                shear_strain_xy[element] = strain[element][2]
+
+        return shear_strain_xy
+
+    def shear_stress_xy(self):
+
+        stress = self.stress
+        shear_stress_xy = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                shear_stress_xy[element] = stress[element][2]
+
+        return shear_stress_xy
