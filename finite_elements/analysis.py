@@ -151,7 +151,6 @@ class FiniteElements(DessiaObject):
         return data, row_ind
 
 
-
 class FiniteElementAnalysis(FiniteElements):
     """
     :param mesh: The meshing of the machine.
@@ -187,48 +186,6 @@ class FiniteElementAnalysis(FiniteElements):
     #                             magnet_loads, continuity_conditions, 
     #                             node_boundary_conditions, element_boundary_conditions)
 
-    # def k_matrix(self):
-    #     row_ind, col_ind, data = [], [], []
-    #     for elements_group in self.mesh.elements_groups:
-    #         for element in elements_group.elements:
-    #             data.extend(element.elementary_matrix())
-    #             row_ind_n, col_ind_n = self.get_row_col_indices(element)
-    #             row_ind.extend(row_ind_n)
-    #             col_ind.extend(col_ind_n)
-    #     return data, row_ind, col_ind
-
-    # def c_matrix_continuity_conditions(self):
-    #     row_ind, col_ind, data = [], [], []
-    #     for i, condition in enumerate(self.continuity_conditions):
-    #         data.extend(condition.c_matrix())
-
-    #         index1 = self.mesh.node_to_index[condition.node1]
-    #         index2 = self.mesh.node_to_index[condition.node2]
-
-    #         row_ind.extend((len(self.mesh.nodes)+len(self.node_loads)+i,
-    #                         index1,
-    #                         len(self.mesh.nodes)+len(self.node_loads)+i,
-    #                         index2))
-    #         col_ind.extend((index1,
-    #                         len(self.mesh.nodes)+len(self.node_loads)+i,
-    #                         index2,
-    #                         len(self.mesh.nodes)+len(self.node_loads)+i))
-
-    #     return data, row_ind, col_ind
-
-    # def c_matrix_boundary_conditions(self):
-    #     positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-    #                                                              nodes_number=len(self.mesh.nodes))
-    #     row_ind, col_ind, data = [], [],[]
-    #     for i, node_condition in enumerate(self.node_boundary_conditions):
-    #         data.extend(node_condition.c_matrix())
-    #         pos = positions[(self.mesh.node_to_index[node_condition.application],
-    #                          node_condition.dimension)]
-    #         row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
-    #         col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
-
-    #     return data, row_ind, col_ind
-
     def create_matrix(self):
         row_ind = []
         col_ind = []
@@ -256,61 +213,6 @@ class FiniteElementAnalysis(FiniteElements):
 
         return matrix
 
-    # def source_c_matrix_node_loads(self):
-    #     data, row_ind = [], []
-    #     positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-    #                                                              nodes_number=len(self.mesh.nodes))
-    #     for i, load in enumerate(self.node_loads):
-    #         data.append(load.source_c_matrix())
-    #         row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
-
-    #     return data, row_ind
-
-    # def source_c_matrix_elements_loads(self):
-    #     data, row_ind = [], []
-    #     for load in self.element_loads:
-    #         for element in load.elements:
-    #             indexes = [self.mesh.node_to_index[element.points[0]],
-    #                        self.mesh.node_to_index[element.points[1]],
-    #                        self.mesh.node_to_index[element.points[2]]]
-
-    #             elementary_source_matrix = element.elementary_source_matrix(indexes)
-
-    #             data.append(load.value * elementary_source_matrix[0])
-    #             data.append(load.value * elementary_source_matrix[1])
-    #             data.append(load.value * elementary_source_matrix[2])
-
-    #             row_ind.append(indexes[0])
-    #             row_ind.append(indexes[1])
-    #             row_ind.append(indexes[2])
-
-    #     return data, row_ind
-
-    # def source_c_matrix_magnet_loads(self):
-    #     data, row_ind = [], []
-    #     for magnet_load in self.magnet_loads:
-    #         for linear_element in magnet_load.contour_linear_elements():
-    #             indexes = [self.mesh.node_to_index[linear_element.points[0]],
-    #                        self.mesh.node_to_index[linear_element.points[1]]]
-    #             length = linear_element.length()
-    #             dl = vm.Vector2D([-linear_element.interior_normal[1],
-    #                               linear_element.interior_normal[0]])
-    #             data.append(magnet_load.magnetization_vector.Dot(dl) * length/2)
-    #             data.append(magnet_load.magnetization_vector.Dot(dl) * length/2)
-    #             row_ind.append(indexes[0])
-    #             row_ind.append(indexes[1])
-
-    #     return data, row_ind
-
-    # def source_c_matrix_node_boundary_conditions(self):
-    #     data, row_ind = [], []
-
-    #     for i, node_condition in enumerate(self.node_boundary_conditions):
-    #         data.append(node_condition.source_c_matrix())
-    #         row_ind.append(len(self.mesh.nodes) * self.dimension + i)
-
-    #     return data, row_ind
-
     def create_source_matrix(self):
         matrix = npy.zeros((self.get_source_matrix_length(), 1))
 
@@ -334,81 +236,7 @@ class FiniteElementAnalysis(FiniteElements):
         for i, d in enumerate(source_c_matrix_node_boundary_conditions[0]):
             matrix[source_c_matrix_node_boundary_conditions[1][i]][0] += d
 
-        # continuity_conditions
-
         return matrix
-
-    # def create_matrix(self):
-    #     row_ind = []
-    #     col_ind = []
-    #     data = []
-
-    #     # elementary_matrix
-    #     for elements_group in self.mesh.elements_groups:
-    #         for element in elements_group.elements:
-    #             data.extend(element.elementary_matrix())
-    #             row_ind_n, col_ind_n = self.get_row_col_indices(element)
-    #             row_ind.extend(row_ind_n)
-    #             col_ind.extend(col_ind_n)
-
-    #     # matrix_node_loads
-    #     data_n, row_ind_n, col_ind_n = self.matrix_node_loads()
-    #     data.extend(data_n)
-    #     row_ind.extend(row_ind_n)
-    #     col_ind.extend(col_ind_n)
-
-    #     # matrix_continuity_conditions
-    #     data_n, row_ind_n, col_ind_n = self.matrix_continuity_conditions()
-    #     data.extend(data_n)
-    #     row_ind.extend(row_ind_n)
-    #     col_ind.extend(col_ind_n)
-
-    #     # matrix_node_boundary_conditions
-    #     data_n, row_ind_n, col_ind_n = self.matrix_node_boundary_conditions()
-    #     data.extend(data_n)
-    #     row_ind.extend(row_ind_n)
-    #     col_ind.extend(col_ind_n)
-
-    #     matrix = sparse.csr_matrix((data, (row_ind, col_ind)))
-    #     return matrix
-
-    # def create_source_matrix(self):
-
-    #     matrix = npy.zeros((self.get_source_matrix_length(), 1))
-
-    #     # elementary_source_matrix
-    #     # data, row_ind = self.source_matrix_element_loads()
-    #     # for i, d in enumerate(data):
-    #     #     matrix[row_ind[i]][0] += d
-
-    #     for load in self.element_loads:
-    #         for element in load.elements:
-    #             indexes = [self.mesh.node_to_index[element.points[0]],
-    #                         self.mesh.node_to_index[element.points[1]],
-    #                         self.mesh.node_to_index[element.points[2]]]
-
-    #             elementary_source_matrix = element.elementary_source_matrix(indexes)
-
-    #             matrix[indexes[0]][0] += load.value * elementary_source_matrix[0]
-    #             matrix[indexes[1]][0] += load.value * elementary_source_matrix[1]
-    #             matrix[indexes[2]][0] += load.value * elementary_source_matrix[2]
-
-    #     # elementary_source_matrix_node_loads
-    #     data, row_ind = self.source_matrix_node_loads()
-    #     for i, d in enumerate(data):
-    #         matrix[row_ind[i]][0] += d
-
-    #     # elementary_source_matrix_magnet_loads
-    #     data, row_ind = self.source_matrix_magnet_loads()
-    #     for i, d in enumerate(data):
-    #         matrix[row_ind[i]][0] += d
-
-    #     # node_boundary_conditions
-    #     data, row_ind = self.source_matrix_node_boundary_conditions()
-    #     for i, d in enumerate(data):
-    #         matrix[row_ind[i]][0] += d
-
-    #     return matrix
 
     @property
     def dimension(self):
@@ -417,9 +245,6 @@ class FiniteElementAnalysis(FiniteElements):
     def get_row_col_indices(self, element):
 
         indexes = [self.mesh.node_to_index[point] for point in element.points]
-        # indexes = [self.mesh.node_to_index[element.points[0]],
-        #            self.mesh.node_to_index[element.points[1]],
-        #            self.mesh.node_to_index[element.points[2]]]
 
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
@@ -441,52 +266,6 @@ class FiniteElementAnalysis(FiniteElements):
         return len(self.mesh.nodes)*self.dimension + len(self.continuity_conditions) \
             + len(self.node_boundary_conditions) + len(self.element_boundary_conditions)
 
-    # def apply_boundary_conditions(self, rigidity_matrix, source_matrix):
-
-    #     def delete_from_csr(mat, row_indices=[], col_indices=[]):
-    #         if not isinstance(mat, csr_matrix):
-    #             raise ValueError("works only for CSR format -- use .tocsr() first")
-
-    #         rows, cols = [], []
-    #         if row_indices:
-    #             rows = list(row_indices)
-    #         if col_indices:
-    #             cols = list(col_indices)
-
-    #         if len(rows) > 0 and len(cols) > 0:
-    #             row_mask = npy.ones(mat.shape[0], dtype=bool)
-    #             row_mask[rows] = False
-    #             col_mask = npy.ones(mat.shape[1], dtype=bool)
-    #             col_mask[cols] = False
-    #             return mat[row_mask][:,col_mask]
-    #         elif len(rows) > 0:
-    #             mask = npy.ones(mat.shape[0], dtype=bool)
-    #             mask[rows] = False
-    #             return mat[mask]
-    #         elif len(cols) > 0:
-    #             mask = npy.ones(mat.shape[1], dtype=bool)
-    #             mask[cols] = False
-    #             return mat[:,mask]
-    #         else:
-    #             return mat
-
-    #     node_boundary_conditions = [(self.mesh.node_to_index[node_condition.application],
-    #                 node_condition.dimension) for node_condition in self.node_boundary_conditions]
-    #     node_boundary_conditions=sorted(node_boundary_conditions, key=lambda i: (i[0], i[1]), reverse=True)
-
-    #     positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-    #                                                              nodes_number=len(self.mesh.nodes))
-
-    #     row_indices, col_indices = [], []
-    #     for node_condition in node_boundary_conditions:
-    #         row_indices.append(positions[node_condition])
-    #         col_indices.append(positions[node_condition])
-
-    #     rigidity_matrix = delete_from_csr(rigidity_matrix, row_indices, col_indices)
-    #     source_matrix = npy.delete(source_matrix, row_indices, axis=0)
-
-    #     return rigidity_matrix, source_matrix
-
     def solve(self):
         """
         Solve the matix equation : F = K.X, where X is the unknown vector. \
@@ -504,6 +283,7 @@ class FiniteElementAnalysis(FiniteElements):
         
         # scipy.sparse.linalg.spsolved is the fastest !
         # print('avant')
+
         K_sparse = self.create_matrix()
         F = self.create_source_matrix()
 
@@ -547,9 +327,6 @@ class FiniteElementAnalysis(FiniteElements):
         color_map = ((0, 0, 1), (1, 0, 0))
 
         permeabilities = self.elements_permeability()
-        # permeabilities = []
-        # for elements_group in self.mesh.elements_groups:
-        #     permeabilities.append(elements_group.elements[0].mu_total)
         mu_max = max(permeabilities)
         mu_min = min(permeabilities)
         colors = []
