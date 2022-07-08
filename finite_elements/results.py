@@ -248,7 +248,7 @@ class Result(DessiaObject):
                                                        deformed_nodes[indexes[1]],
                                                        deformed_nodes[indexes[2]]])
 
-                solid_elments2d.append(elements.SolidMechanicsTriangularElement2D(
+                solid_elments2d.append(elements.ElasticityTriangularElement2D(
                     triangle, element.elasticity_modulus, element.poisson_ratio, element.thickness))
 
             group_solid_elments2d.append(vmmesh.ElementsGroup(solid_elments2d, ''))
