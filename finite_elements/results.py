@@ -522,8 +522,8 @@ class ElasticityResults(Result):
 
         self.displacement_vectors_per_node = self._displacement_vectors_per_node()
         self.strain, self.stress = self._strain_stress_per_element()
-        self.deformed_mesh = self._deformed_mesh()
         self.deformed_nodes = self._deformed_nodes()
+        self.deformed_mesh = self._deformed_mesh()
 
         Result.__init__(self, mesh, result_vector)
 
@@ -567,25 +567,24 @@ class ElasticityResults(Result):
         return element_to_strain, element_to_stress
 
     def _deformed_mesh(self):
-        deformed_nodes = self.deformed_nodes()
-        group_solid_elments2d = []
+        deformed_nodes = self.deformed_nodes
+        group_elasticity_elments2d = []
         for elements_group in self.mesh.elements_groups:
-            solid_elments2d = []
+            elasticity_elments2d = []
             for element in elements_group.elements:
-                indexes = [self.mesh.node_to_index[element.points[0]],
-                           self.mesh.node_to_index[element.points[1]],
-                           self.mesh.node_to_index[element.points[2]]]
 
-                triangle = vmmesh.TriangularElement2D([deformed_nodes[indexes[0]],
-                                                       deformed_nodes[indexes[1]],
-                                                       deformed_nodes[indexes[2]]])
+                indexes = [self.mesh.node_to_index[point] for point in element.points]
 
-                solid_elments2d.append(elements.ElasticityTriangularElement2D(
-                    triangle, element.elasticity_modulus, element.poisson_ratio, element.thickness))
+                points = [deformed_nodes[index] for index in indexes]
 
-            group_solid_elments2d.append(vmmesh.ElementsGroup(solid_elments2d, ''))
+                mesh_element = element.mesh_element.__class__(points)
 
-        return vmmesh.Mesh(group_solid_elments2d)
+                elasticity_elments2d.append(element.__class__(
+                    mesh_element, element.elasticity_modulus, element.poisson_ratio, element.thickness))
+
+            group_elasticity_elments2d.append(vmmesh.ElementsGroup(elasticity_elments2d, ''))
+
+        return vmmesh.Mesh(group_elasticity_elments2d)
 
     def _deformed_nodes(self):
         displacement_field_vectors = self.displacement_vectors_per_node
