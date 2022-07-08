@@ -438,15 +438,8 @@ class FiniteElementAnalysis(FiniteElements):
         return row_ind, col_ind
 
     def get_source_matrix_length(self):
-        # if isinstance(self.mesh.elements_groups[0].elements[0],
-        #               finite_elements.elements.MagneticElement2D):
-        #     return len(self.mesh.nodes)*self.dimension + self.nb_loads + len(self.continuity_conditions)
-        # elif isinstance(self.mesh.elements_groups[0].elements[0],
-        #               finite_elements.elements.ElasticityElement):
-        #     return len(self.mesh.nodes)*self.dimension + len(self.node_boundary_conditions)
-        return len(self.mesh.nodes)*self.dimension + \
-            len(self.node_boundary_conditions) + \
-                len(self.continuity_conditions)
+        return len(self.mesh.nodes)*self.dimension + len(self.continuity_conditions) \
+            + len(self.node_boundary_conditions) + len(self.element_boundary_conditions)
 
     # def apply_boundary_conditions(self, rigidity_matrix, source_matrix):
 
