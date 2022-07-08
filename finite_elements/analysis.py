@@ -191,23 +191,35 @@ class FiniteElementAnalysis(FiniteElements):
         col_ind = []
         data = []
 
-        # global K
-        k_matrix = self.k_matrix()
-        data.extend(k_matrix[0])
-        row_ind.extend(k_matrix[1])
-        col_ind.extend(k_matrix[2])
+        # # global K
+        # k_matrix = self.k_matrix()
+        # data.extend(k_matrix[0])
+        # row_ind.extend(k_matrix[1])
+        # col_ind.extend(k_matrix[2])
 
-        # continuity_conditions
-        c_matrix_continuity_conditions = self.c_matrix_continuity_conditions()
-        data.extend(c_matrix_continuity_conditions[0])
-        row_ind.extend(c_matrix_continuity_conditions[1])
-        col_ind.extend(c_matrix_continuity_conditions[2])
+        # # continuity_conditions
+        # c_matrix_continuity_conditions = self.c_matrix_continuity_conditions()
+        # data.extend(c_matrix_continuity_conditions[0])
+        # row_ind.extend(c_matrix_continuity_conditions[1])
+        # col_ind.extend(c_matrix_continuity_conditions[2])
 
-        # boundary_conditions
-        c_matrix_boundary_conditions = self.c_matrix_boundary_conditions()
-        data.extend(c_matrix_boundary_conditions[0])
-        row_ind.extend(c_matrix_boundary_conditions[1])
-        col_ind.extend(c_matrix_boundary_conditions[2])
+        # # boundary_conditions
+        # c_matrix_boundary_conditions = self.c_matrix_boundary_conditions()
+        # data.extend(c_matrix_boundary_conditions[0])
+        # row_ind.extend(c_matrix_boundary_conditions[1])
+        # col_ind.extend(c_matrix_boundary_conditions[2])
+
+        method_names = ['k_matrix', 'c_matrix_continuity_conditions', 'c_matrix_boundary_conditions']
+        for method_name in method_names:
+            if hasattr(self, method_name):
+                result = getattr(self, method_name)()
+                data.extend(result[0])
+                row_ind.extend(result[1])
+                col_ind.extend(result[2])
+
+            else:
+                raise NotImplementedError(
+                    f'Class {self.__class__.__name__} does not implement {method_name}')
 
         matrix = sparse.csr_matrix((data, (row_ind, col_ind)))
 
