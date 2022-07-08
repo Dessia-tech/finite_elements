@@ -20,7 +20,7 @@ elasticity_modulus, poisson_ratio = 96, 1/3
 
 points = [vm.Point3D(2,3,4), vm.Point3D(6,3,2), vm.Point3D(2,5,1), vm.Point3D(4,3,6)]
 
-solid_elments3d = [fe.elements.SolidMechanicsTetrahedralElement3D(
+solid_elments3d = [fe.elements.ElasticityTetrahedralElement3D(
     mesh_element = mesh.TetrahedralElement(points),
     elasticity_modulus = elasticity_modulus,
     poisson_ratio = poisson_ratio)]

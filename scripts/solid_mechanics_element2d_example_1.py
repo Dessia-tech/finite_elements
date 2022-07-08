@@ -21,7 +21,7 @@ elasticity_modulus, poisson_ratio, thickness = 30*1e6, 0.25, 0.5
 triangles = [mesh.TriangularElement2D([vm.Point2D(3,0),vm.Point2D(3,2),vm.Point2D(0,0)]),
              mesh.TriangularElement2D([vm.Point2D(0,2),vm.Point2D(0,0),vm.Point2D(3,2)])]
 
-solid_elments2d = [fe.elements.SolidMechanicsTriangularElement2D(
+solid_elments2d = [fe.elements.ElasticityTriangularElement2D(
     triangle, elasticity_modulus, poisson_ratio, thickness) for triangle in triangles]
 
 group_solid_elments2d = mesh.ElementsGroup(solid_elments2d, '')
@@ -35,7 +35,7 @@ mesh = mesh.Mesh([group_solid_elments2d])
 
 # %%
 
-node_loads = [fe.loads.SingleNodeLoad(mesh.nodes[1], -10000000, 2)] #1000
+node_loads = [fe.loads.NodeLoad(mesh.nodes[1], -10000000, 2)] #1000
 node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(3,0), 0, 2),
                             finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(0,2), 0, 1),
                             finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(0,2), 0, 2),

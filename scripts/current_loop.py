@@ -164,9 +164,9 @@ for node in mesh.nodes:
     or math.isclose(node[0], 1 * box_multiplier, abs_tol=1e-6) \
     or math.isclose(node[1], -1 * box_multiplier, abs_tol=1e-6) \
     or math.isclose(node[1], 1 * box_multiplier, abs_tol=1e-6):
-        node_loads.append(fe.loads.SingleNodeLoad(node, 0, 1))
-element_load = [fe.loads.ConstantLoad(mesh.elements_groups[0].elements, intensity),
-                fe.loads.ConstantLoad(mesh.elements_groups[1].elements, -intensity)]
+        node_loads.append(fe.loads.NodeLoad(node, 0, 1))
+element_load = [fe.loads.ElementsLoad(mesh.elements_groups[0].elements, intensity, 1),
+                fe.loads.ElementsLoad(mesh.elements_groups[1].elements, -intensity, 1)]
 analysis = fe.analysis.FiniteElementAnalysis(mesh, element_load, node_loads, [], [], [], [])
 result = analysis.solve()
 ax = mesh.elements_groups[0].plot()

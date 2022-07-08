@@ -50,11 +50,11 @@ magnetic_elements = [fe.elements.MagneticElement2D(element, mu3) for element in 
 group_phase3 = mesh.ElementsGroup(magnetic_elements, 'phase3')
 
 mesh = mesh.Mesh([group_phase1, group_phase2, group_phase3])
-elements_loads = [fe.loads.ConstantLoad(group_phase1.elements[0:2], 1e10)]
+elements_loads = [fe.loads.ElementsLoad(group_phase1.elements[0:2], 1e10, 1)]
 node_loads = []
 for node in mesh.nodes:
     if math.isclose(node[0], phase1+phase2+phase3, abs_tol=1e-6):
-        node_loads.append(fe.loads.SingleNodeLoad(node, 0, 1))
+        node_loads.append(fe.loads.NodeLoad(node, 0, 1))
 analysis = fe.analysis.FiniteElementAnalysis(mesh, elements_loads, node_loads, [], [], [], [])
 analysis.plot_elements_loads()
 analysis.plot_elements_permeability()
