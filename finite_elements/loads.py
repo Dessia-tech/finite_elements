@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Module containing objects related to different loads and conditions types
+Module containing objects related to different loads types
 """
 
 # import matplotlib as mpl
@@ -19,20 +19,22 @@ from dessia_common import DessiaObject
 from typing import List #Tuple, TypeVar
 
 
-class ConstantLoad(DessiaObject):
-    """ 
+class ElementsLoad(DessiaObject):
+    """
     Sets a load on the selected elements by imposing a source value for the \
-    current density vector J. Each element creates a source of the input value. 
-    
+    current density vector J. Each element creates a source of the input value.
+
     :param elements: The triangular elements.
     :type elements: List of volmdlr.TriangularElements objects
     :param value: Set the elements' current density vector J value.
     :type value: float
     """
     def __init__(self, elements: List[vmmesh.TriangularElement],
-                 value: float):
+                 value: float,
+                 dimension: int):
         self.elements = elements
         self.value = value
+        self.dimension = dimension
         
         self.value_per_element = []
         total_area = sum([elem.area for elem in self.elements])
@@ -40,7 +42,27 @@ class ConstantLoad(DessiaObject):
             self.value_per_element.append(value * element.area/total_area)
         DessiaObject.__init__(self, name='')
 
-class SingleEdgeLoad(DessiaObject):
+
+class ElementLoad(DessiaObject):
+    """
+    Sets a load on the selected elements by imposing a source value for the \
+    current density vector J. Each element creates a source of the input value.
+
+    :param elements: The triangular elements.
+    :type elements: List of volmdlr.TriangularElements objects
+    :param value: Set the elements' current density vector J value.
+    :type value: float
+    """
+    def __init__(self, element: vmmesh.TriangularElement,
+                 value: float,
+                 dimension: int):
+        self.element = element
+        self.value = value
+        self.dimension = dimension
+
+        DessiaObject.__init__(self, name='')
+
+class EdgeLoad(DessiaObject):
     def __init__(self, edge, value, dimension):
         self.edge = edge
         self.value = value
@@ -49,7 +71,7 @@ class SingleEdgeLoad(DessiaObject):
         DessiaObject.__init__(self, name='')
 
 
-class SingleNodeLoad(DessiaObject):
+class NodeLoad(DessiaObject):
     """ 
     Forces the value of the vector potential A at a node. To set a magnetic wall \
     the value of the vector potential has to be set to A.
@@ -89,7 +111,7 @@ class MagnetLoad(DessiaObject):
         self.element_magnetization_vector = magnetization_vector / len(elements)
         
         DessiaObject.__init__(self, name='')
-        
+
     def contour_linear_elements(self):
         linear_elements_count = {}
         for element in self.elements:
