@@ -509,3 +509,88 @@ class Result(DessiaObject):
                 cbar.set_label(titles[i][j])
 
         return axs
+
+class ElasticityResults(Result):
+    _standalone_in_db = True
+    _non_serializable_attributes = []
+    _non_eq_attributes = ['name']
+    _non_hash_attributes = ['name']
+    _generic_eq = True
+    def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float]):
+        self.mesh = mesh
+        self.result_vector = result_vector
+
+        self.displacement_vectors_per_node = self._displacement_vectors_per_node()
+        self.strain, self.stress = self._strain_stress_per_element()
+        self.deformed_mesh = self._deformed_mesh()
+        self.deformed_nodes = self._deformed_nodes()
+
+        Result.__init__(self, mesh, result_vector)
+
+    def _displacement_vectors_per_node(self):
+        nodes_number = len(self.mesh.nodes)
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=nodes_number)
+        displacement_field_vectors = []
+        q = self.result_vector
+
+        for node in range(0, nodes_number):
+            displacement = []
+            for i in range(self.dimension):
+                displacement.append(q[positions[(node, i+1)]])
+            displacement_field_vectors.append(vm.Vector2D(*displacement))
+
+        return displacement_field_vectors
+
+    def _strain_stress_per_element(self):
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+        q = self.result_vector
+
+        element_to_strain, element_to_stress = [], []
+        for elements_group in self.mesh.elements_groups:
+            for element in elements_group.elements:
+                displacements = []
+                b_matrix = element.b_matrix()
+                d_matrix = element.d_matrix()
+
+                indexes = [self.mesh.node_to_index[element.points[0]],
+                           self.mesh.node_to_index[element.points[1]],
+                           self.mesh.node_to_index[element.points[2]]]
+                for index in indexes:
+                    for i in range(self.dimension):
+                        displacements.append(q[positions[(index, i+1)]])
+
+                element_to_strain.append((npy.matmul(b_matrix, displacements)))
+                element_to_stress.append((npy.matmul(npy.matmul(d_matrix, b_matrix), displacements)))
+
+        return element_to_strain, element_to_stress
+
+    def _deformed_mesh(self):
+        deformed_nodes = self.deformed_nodes()
+        group_solid_elments2d = []
+        for elements_group in self.mesh.elements_groups:
+            solid_elments2d = []
+            for element in elements_group.elements:
+                indexes = [self.mesh.node_to_index[element.points[0]],
+                           self.mesh.node_to_index[element.points[1]],
+                           self.mesh.node_to_index[element.points[2]]]
+
+                triangle = vmmesh.TriangularElement2D([deformed_nodes[indexes[0]],
+                                                       deformed_nodes[indexes[1]],
+                                                       deformed_nodes[indexes[2]]])
+
+                solid_elments2d.append(elements.ElasticityTriangularElement2D(
+                    triangle, element.elasticity_modulus, element.poisson_ratio, element.thickness))
+
+            group_solid_elments2d.append(vmmesh.ElementsGroup(solid_elments2d, ''))
+
+        return vmmesh.Mesh(group_solid_elments2d)
+
+    def _deformed_nodes(self):
+        displacement_field_vectors = self.displacement_vectors_per_node
+        deformed_nodes = []
+        for i, node in enumerate(self.mesh.nodes):
+            deformed_nodes.append(node + displacement_field_vectors[i])
+
+        return deformed_nodes
