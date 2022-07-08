@@ -112,3 +112,9 @@ class ContinuityCondition(DessiaObject):
         self.value = value
         
         DessiaObject.__init__(self, name='')
+
+    def c_matrix(self):
+        return (1, 1, -self.value, -self.value)
+
+    def source_c_matrix(self):
+        return None
