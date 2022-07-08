@@ -87,8 +87,14 @@ class NodeLoad(DessiaObject):
         self.dimension = dimension
         
         DessiaObject.__init__(self, name='')
-        
-    
+
+    def c_matrix(self):
+        return ()
+
+    def source_c_matrix(self):
+        return self.value
+
+
 class MagnetLoad(DessiaObject):
     """
     Sets a load on the selected elements by imposing a source value for the \
