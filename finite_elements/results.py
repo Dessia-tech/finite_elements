@@ -571,18 +571,14 @@ class ElasticityResults(Result):
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
                 displacements = []
-                b_matrix = element.b_matrix()
-                d_matrix = element.d_matrix()
+                indexes = [self.mesh.node_to_index[point] for point in element.points]
 
-                indexes = [self.mesh.node_to_index[element.points[0]],
-                           self.mesh.node_to_index[element.points[1]],
-                           self.mesh.node_to_index[element.points[2]]]
                 for index in indexes:
                     for i in range(self.dimension):
                         displacements.append(q[positions[(index, i+1)]])
 
-                element_to_strain[element] = (npy.matmul(b_matrix, displacements))
-                element_to_stress[element] = (npy.matmul(npy.matmul(d_matrix, b_matrix), displacements))
+                element_to_strain[element] = (npy.matmul(element.b_matrix, displacements))
+                element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix, element.b_matrix), displacements))
 
         return element_to_strain, element_to_stress
 
