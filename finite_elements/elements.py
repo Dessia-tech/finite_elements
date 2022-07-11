@@ -147,7 +147,13 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
                  thickness: float = 1.0,
                  displacements = None,
                  name : str = ''):
+        self.mesh_element = mesh_element
+        self.elasticity_modulus = elasticity_modulus
+        self.poisson_ratio = poisson_ratio
         self.thickness = thickness
+        self.points = self.mesh_element.points
+        self.b_matrix = self._b_matrix()
+        self.d_matrix = self._d_matrix()
         self.displacements = displacements
 
         ElasticityElement.__init__(self, mesh_element,
@@ -156,7 +162,7 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
         # DessiaObject.__init__(self, name=name)
 
-    def b_matrix(self):
+    def _b_matrix(self):
         y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
         x = [(self.points[i].x-self.points[j].x) for (i,j) in [(2,1), (0,2), (1,0)]]
 
@@ -170,7 +176,7 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
         return b_matrix
 
-    def d_matrix(self):
+    def _d_matrix(self):
         elasticity_modulus = self.elasticity_modulus
         poisson_ratio = self.poisson_ratio
 
@@ -188,8 +194,8 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
     def elementary_matrix(self):
 
-        b_matrix = self.b_matrix()
-        d_matrix = self.d_matrix()
+        b_matrix = self.b_matrix
+        d_matrix = self.d_matrix
 
         # y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
         # x = [(self.points[i].x-self.points[j].x) for (i,j) in [(2,1), (0,2), (1,0)]]
@@ -243,6 +249,12 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
                  elasticity_modulus, poisson_ratio,
                  displacements = None,
                  name : str = ''):
+        self.mesh_element = mesh_element
+        self.elasticity_modulus = elasticity_modulus
+        self.poisson_ratio = poisson_ratio
+        self.points = self.mesh_element.points
+        self.b_matrix = self._b_matrix()
+        self.d_matrix = self._d_matrix()
         self.displacements = displacements
 
         ElasticityElement.__init__(self, mesh_element,
@@ -251,9 +263,9 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
 
         # DessiaObject.__init__(self, name=name)
 
-    def b_matrix(self):
+    def _b_matrix(self):
 
-        N1, N2, N3, N4 = self.form_functions
+        N1, N2, N3, N4 = self.mesh_element.form_functions
 
         a1 = N1[1]
         b1 = N1[2]
@@ -275,11 +287,11 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
                 0, c1, b1, 0, c2, b2, 0, c3, b3, 0, c4, b4,
                 c1, 0, a1, c2, 0, a2, c3, 0, a3, c4, 0, a4]
 
-        b_matrix = (1/(6*self.volume)) * npy.array(data).reshape(6, 12)
+        b_matrix = (1/(6*self.mesh_element.volume)) * npy.array(data).reshape(6, 12)
 
         return b_matrix
 
-    def d_matrix(self):
+    def _d_matrix(self):
         elasticity_modulus = self.elasticity_modulus
         poisson_ratio = self.poisson_ratio
         coeff_a = 1 - poisson_ratio
@@ -303,8 +315,8 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
 
     def elementary_matrix(self):
 
-        b_matrix = self.b_matrix()
-        d_matrix = self.d_matrix()
+        b_matrix = self.b_matrix
+        d_matrix = self.d_matrix
 
         stiffness_matrix = self.volume * (npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
 
