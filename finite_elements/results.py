@@ -521,11 +521,30 @@ class ElasticityResults(Result):
         self.result_vector = result_vector
 
         self.displacement_vectors_per_node = self._displacement_vectors_per_node()
+        self.displacement_per_element = self._displacement_per_element()
         self.strain, self.stress = self._strain_stress_per_element()
         self.deformed_nodes = self._deformed_nodes()
         self.deformed_mesh = self._deformed_mesh()
 
         Result.__init__(self, mesh, result_vector)
+
+    def _displacement_per_element(self):
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+        q = self.result_vector
+
+        displacement_per_element = {}
+        for elements_group in self.mesh.elements_groups:
+            for element in elements_group.elements:
+                displacements = []
+                indexes = [self.mesh.node_to_index[point] for point in element.points]
+                for index in indexes:
+                    for i in range(self.dimension):
+                        displacements.append(q[positions[(index, i+1)]])
+
+                displacement_per_element[element] = displacements
+
+        return displacement_per_element
 
     def _displacement_vectors_per_node(self):
         nodes_number = len(self.mesh.nodes)
