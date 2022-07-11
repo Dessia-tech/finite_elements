@@ -125,13 +125,29 @@ class ElasticityElement(DessiaObject):
     _non_eq_attributes = ['name']
     _non_hash_attributes = ['name']
     _generic_eq = True
-    def __init__(self, mesh_element,
-                 elasticity_modulus : float,
-                 poisson_ratio : float,
+    # def __init__(self, mesh_element,
+    #              elasticity_modulus : float,
+    #              poisson_ratio : float,
+    #              name : str = ''):
+    #     self.mesh_element = mesh_element
+    #     self.elasticity_modulus = elasticity_modulus
+    #     self.poisson_ratio = poisson_ratio
+
+    def __init__(self, mesh_element: vmmesh.TetrahedralElement,
+                 elasticity_modulus, poisson_ratio,
+                 displacements = None,
+                 stress = None,
+                 strain = None,
                  name : str = ''):
         self.mesh_element = mesh_element
         self.elasticity_modulus = elasticity_modulus
         self.poisson_ratio = poisson_ratio
+        self.points = self.mesh_element.points
+        self.b_matrix = self._b_matrix()
+        self.d_matrix = self._d_matrix()
+        self.displacements = displacements
+        self.stress = stress
+        self.strain = strain
 
         DessiaObject.__init__(self, name=name)
 
@@ -142,23 +158,32 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
     # _non_eq_attributes = ['name']
     # _non_hash_attributes = ['name']
     # _generic_eq = True
-    def __init__(self, mesh_element: vmmesh.TriangularElement2D,
+    # def __init__(self, mesh_element: vmmesh.TriangularElement2D,
+    #              elasticity_modulus, poisson_ratio,
+    #              thickness: float = 1.0,
+    #              displacements = None,
+    #              stress = None,
+    #              strain = None,
+    #              name : str = ''):
+    #     self.mesh_element = mesh_element
+    #     self.elasticity_modulus = elasticity_modulus
+    #     self.poisson_ratio = poisson_ratio
+    #     self.thickness = thickness
+    #     self.points = self.mesh_element.points
+    #     self.b_matrix = self._b_matrix()
+    #     self.d_matrix = self._d_matrix()
+    #     self.displacements = displacements
+    #     self.stress = stress
+    #     self.strain = strain
+
+    def __init__(self, mesh_element: vmmesh.TetrahedralElement,
                  elasticity_modulus, poisson_ratio,
                  thickness: float = 1.0,
                  displacements = None,
                  stress = None,
                  strain = None,
                  name : str = ''):
-        self.mesh_element = mesh_element
-        self.elasticity_modulus = elasticity_modulus
-        self.poisson_ratio = poisson_ratio
         self.thickness = thickness
-        self.points = self.mesh_element.points
-        self.b_matrix = self._b_matrix()
-        self.d_matrix = self._d_matrix()
-        self.displacements = displacements
-        self.stress = stress
-        self.strain = strain
 
         ElasticityElement.__init__(self, mesh_element,
                                        elasticity_modulus, poisson_ratio)
@@ -249,21 +274,28 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
     # _non_eq_attributes = ['name']
     # _non_hash_attributes = ['name']
     # _generic_eq = True
+    # def __init__(self, mesh_element: vmmesh.TetrahedralElement,
+    #              elasticity_modulus, poisson_ratio,
+    #              displacements = None,
+    #              stress = None,
+    #              strain = None,
+    #              name : str = ''):
+    #     self.mesh_element = mesh_element
+    #     self.elasticity_modulus = elasticity_modulus
+    #     self.poisson_ratio = poisson_ratio
+    #     self.points = self.mesh_element.points
+    #     self.b_matrix = self._b_matrix()
+    #     self.d_matrix = self._d_matrix()
+    #     self.displacements = displacements
+    #     self.stress = stress
+    #     self.strain = strain
+
     def __init__(self, mesh_element: vmmesh.TetrahedralElement,
                  elasticity_modulus, poisson_ratio,
                  displacements = None,
                  stress = None,
                  strain = None,
                  name : str = ''):
-        self.mesh_element = mesh_element
-        self.elasticity_modulus = elasticity_modulus
-        self.poisson_ratio = poisson_ratio
-        self.points = self.mesh_element.points
-        self.b_matrix = self._b_matrix()
-        self.d_matrix = self._d_matrix()
-        self.displacements = displacements
-        self.stress = stress
-        self.strain = strain
 
         ElasticityElement.__init__(self, mesh_element,
                                        elasticity_modulus, poisson_ratio)
