@@ -146,6 +146,8 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
                  elasticity_modulus, poisson_ratio,
                  thickness: float = 1.0,
                  displacements = None,
+                 stress = None,
+                 strain = None,
                  name : str = ''):
         self.mesh_element = mesh_element
         self.elasticity_modulus = elasticity_modulus
@@ -155,6 +157,8 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
         self.b_matrix = self._b_matrix()
         self.d_matrix = self._d_matrix()
         self.displacements = displacements
+        self.stress = stress
+        self.strain = strain
 
         ElasticityElement.__init__(self, mesh_element,
                                        elasticity_modulus, poisson_ratio)
@@ -248,6 +252,8 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
     def __init__(self, mesh_element: vmmesh.TetrahedralElement,
                  elasticity_modulus, poisson_ratio,
                  displacements = None,
+                 stress = None,
+                 strain = None,
                  name : str = ''):
         self.mesh_element = mesh_element
         self.elasticity_modulus = elasticity_modulus
@@ -256,6 +262,8 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
         self.b_matrix = self._b_matrix()
         self.d_matrix = self._d_matrix()
         self.displacements = displacements
+        self.stress = stress
+        self.strain = strain
 
         ElasticityElement.__init__(self, mesh_element,
                                        elasticity_modulus, poisson_ratio)

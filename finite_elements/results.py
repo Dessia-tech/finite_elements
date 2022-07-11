@@ -567,7 +567,9 @@ class ElasticityResults(Result):
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
                 element_to_strain[element] = (npy.matmul(element.b_matrix, element.displacements))
+                element.strain = element_to_strain[element]
                 element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix, element.b_matrix), element.displacements))
+                element.stress = element_to_stress[element]
 
         return element_to_strain, element_to_stress
 
