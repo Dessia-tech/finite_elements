@@ -533,7 +533,7 @@ class ElasticityResults(Result):
                                                                  nodes_number=len(self.mesh.nodes))
         q = self.result_vector
 
-        _displacements_per_element = {}
+        displacements_per_element = {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
                 displacements = []
@@ -542,10 +542,10 @@ class ElasticityResults(Result):
                     for i in range(self.dimension):
                         displacements.append(q[positions[(index, i+1)]])
 
-                _displacements_per_element[element] = displacements
+                displacements_per_element[element] = displacements
                 element.displacements = displacements
 
-        return _displacements_per_element
+        return displacements_per_element
 
     def _displacement_vectors_per_node(self):
         nodes_number = len(self.mesh.nodes)
@@ -563,22 +563,11 @@ class ElasticityResults(Result):
         return displacement_field_vectors
 
     def _strain_stress_per_element(self):
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
-        q = self.result_vector
-
         element_to_strain, element_to_stress = {}, {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
-                displacements = []
-                indexes = [self.mesh.node_to_index[point] for point in element.points]
-
-                for index in indexes:
-                    for i in range(self.dimension):
-                        displacements.append(q[positions[(index, i+1)]])
-
-                element_to_strain[element] = (npy.matmul(element.b_matrix, displacements))
-                element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix, element.b_matrix), displacements))
+                element_to_strain[element] = (npy.matmul(element.b_matrix, element.displacements))
+                element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix, element.b_matrix), element.displacements))
 
         return element_to_strain, element_to_stress
 
