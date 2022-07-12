@@ -9,14 +9,14 @@ Module containing objects related to different loads types
 # from matplotlib.colors import LinearSegmentedColormap
 # import numpy as npy
 # import matplotlib.tri as mtri
+from typing import List #Tuple, TypeVar
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
 # import math
 # from scipy import sparse
 # from scipy import linalg
-# import time 
+# import time
 from dessia_common import DessiaObject
-from typing import List #Tuple, TypeVar
 
 
 class ElementsLoad(DessiaObject):
@@ -35,7 +35,7 @@ class ElementsLoad(DessiaObject):
         self.elements = elements
         self.value = value
         self.dimension = dimension
-        
+
         self.value_per_element = []
         total_area = sum([elem.area for elem in self.elements])
         for element in self.elements:
@@ -63,6 +63,8 @@ class ElementLoad(DessiaObject):
         DessiaObject.__init__(self, name='')
 
 class EdgeLoad(DessiaObject):
+    """
+    """
     def __init__(self, edge, value, dimension):
         self.edge = edge
         self.value = value
@@ -72,10 +74,10 @@ class EdgeLoad(DessiaObject):
 
 
 class NodeLoad(DessiaObject):
-    """ 
+    """
     Forces the value of the vector potential A at a node. To set a magnetic wall \
     the value of the vector potential has to be set to A.
-    
+
     :param node: The node.
     :type node: volmdlr.Point2D object
     :param value: Set the node's vector potential A value.
@@ -85,21 +87,25 @@ class NodeLoad(DessiaObject):
         self.node = node
         self.value = value
         self.dimension = dimension
-        
+
         DessiaObject.__init__(self, name='')
 
     def c_matrix(self):
+        """
+        """
         return ()
 
     def source_c_matrix(self):
+        """
+        """
         return self.value
 
 
 class MagnetLoad(DessiaObject):
     """
     Sets a load on the selected elements by imposing a source value for the \
-    magnetization vector M. Each element creates a source of the input value. 
-    
+    magnetization vector M. Each element creates a source of the input value.
+
     :param elements: The triangular elements.
     :type elements: List of volmdlr.TriangularElements
     :param non_contour_nodes: Specify the nodes that are not part of the magnet's contour.
@@ -113,12 +119,15 @@ class MagnetLoad(DessiaObject):
         self.elements = elements
         self.non_contour_nodes = non_contour_nodes
         self.magnetization_vector = magnetization_vector
-        
+
         self.element_magnetization_vector = magnetization_vector / len(elements)
-        
+
         DessiaObject.__init__(self, name='')
 
     def contour_linear_elements(self):
+        """
+        """
+
         linear_elements_count = {}
         for element in self.elements:
             for linear_element in element.linear_elements:
