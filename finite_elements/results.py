@@ -710,6 +710,38 @@ class ElasticityResults3D(ElasticityResults):
 
         return axial_stress_z
 
+    def plot_axial_strain_z(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='axial_strain_z', ax=ax, fig=fig)
+
+    def plot_axial_stress_z(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='axial_stress_z', ax=ax, fig=fig)
+
+    def plot_shear_strain_xy(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='shear_strain_xy', ax=ax, fig=fig)
+
+    def plot_shear_strain_yz(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='shear_strain_yz', ax=ax, fig=fig)
+
+    def plot_shear_strain_zx(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='shear_strain_zx', ax=ax, fig=fig)
+
+    def plot_shear_stress_xy(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='shear_stress_xy', ax=ax, fig=fig)
+
+    def plot_shear_stress_yz(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='shear_stress_yz', ax=ax, fig=fig)
+
+    def plot_shear_stress_zx(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='shear_stress_zx', ax=ax, fig=fig)
+
     def shear_strain_xy(self):
 
         strain = self.strain
