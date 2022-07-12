@@ -637,24 +637,6 @@ class ElasticityResults2D(ElasticityResults):
 
         return axs
 
-    def plot_strain_stress(self, axs=None, fig=None):
-        if axs is None:
-            fig, axs = plt.subplots(2, 3)
-        # if fig is None:
-        #     fig = plt.figure()
-
-        axs = axs.ravel()
-        self.plot_strain(axs=axs[0:3], fig=fig)
-        self.plot_stress(axs=axs[3::], fig=fig)
-
-        # self.plot_strain(axs=axs[0, 0:3], fig=fig)
-        # self.plot_stress(axs=axs[1, 0:3], fig=fig)
-
-        # self.plot_strain(axs=axs, fig=fig, row=2)
-        # self.plot_stress(axs=axs, fig=fig, row=2)
-
-        return axs
-
     def plot_stress(self, axs=None, fig=None, row=1):
         if fig is None:
             fig = plt.figure()
@@ -798,24 +780,6 @@ class ElasticityResults3D(ElasticityResults):
         axs = []
         for i, name in enumerate(plot_names):
             axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
-
-        return axs
-
-    def plot_strain_stress(self, axs=None, fig=None):
-        if axs is None:
-            fig, axs = plt.subplots(1, 6)
-        # if fig is None:
-        #     fig = plt.figure()
-
-        axs = axs.ravel()
-        self.plot_strain(axs=axs[0:6], fig=fig)
-        self.plot_stress(axs=axs[6::], fig=fig)
-
-        # self.plot_strain(axs=axs[0, 0:3], fig=fig)
-        # self.plot_stress(axs=axs[1, 0:3], fig=fig)
-
-        # self.plot_strain(axs=axs, fig=fig, row=2)
-        # self.plot_stress(axs=axs, fig=fig, row=2)
 
         return axs
 
