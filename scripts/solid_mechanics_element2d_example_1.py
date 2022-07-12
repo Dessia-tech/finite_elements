@@ -55,3 +55,6 @@ elasticity_result.plot_displacement_vectors_per_node()
 
 elasticity_result.plot_strain()
 elasticity_result.plot_stress()
+
+elasticity_result.plot_displacement_per_node_x()
+elasticity_result.plot_displacement_per_node_y()
