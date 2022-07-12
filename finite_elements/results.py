@@ -510,6 +510,44 @@ class ElasticityResults(Result):
         self.deformed_mesh.plot(ax=ax)
         # self.mesh.plot(ax)
 
+    def plot_displacements(self, displacement_name: str, ax=None, fig=None):
+
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        if hasattr(self, displacement_name):
+            x = getattr(self, displacement_name)()
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {displacement_name}')
+
+        triang = finite_elements.core.get_triangulation(self.deformed_mesh) #self.mesh
+        x_min, x_max = min(x), max(x)
+
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = plt.gcf()
+        ax.tricontourf(triang, x, cmap=blue_red)
+        ax.triplot(triang, 'k-')
+        # ax.set_title('Triangular grid')
+
+        norm = mpl.colors.Normalize(vmin=x_min,vmax=x_max)
+        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        sm.set_array([])
+        cbar = fig.colorbar(sm, ticks=npy.linspace(x_min, x_max, 10))
+        cbar.set_label(displacement_name)
+
+        return ax
+
+    def plot_displacement_per_node_x(self, ax=None):
+
+        return self.plot_displacements(displacement_name='displacement_per_node_x', ax=ax)
+
+    def plot_displacement_per_node_y(self, ax=None):
+
+        return self.plot_displacements(displacement_name='displacement_per_node_y', ax=ax)
+
     def plot_displacement_vectors_per_node(self, ax=None, amplitude=0.05):
         if ax is None:
             fig, ax = plt.subplots()
@@ -768,6 +806,10 @@ class ElasticityResults3D(ElasticityResults):
     def plot_axial_stress_z(self, ax=None, fig=None):
 
         return self.plot_constraints(constraint_name='axial_stress_z', ax=ax, fig=fig)
+
+    def plot_displacement_per_node_z(self, ax=None):
+
+        return self.plot_displacements(displacement_name='displacement_per_node_z', ax=ax)
 
     def plot_shear_strain_yz(self, ax=None, fig=None):
 
