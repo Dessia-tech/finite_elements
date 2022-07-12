@@ -48,10 +48,10 @@ m = analysis.create_matrix()
 
 results = analysis.solve()
 
-results.plot_displacement_field_vectors_per_node()
-
-results.plot_deformed_mesh()
-
-results.plot_stress_strain()
-
 elasticity_result = fe.results.ElasticityResults(results.mesh, results.result_vector)
+
+elasticity_result.plot_deformed_mesh()
+elasticity_result.plot_displacement_vectors_per_node()
+
+elasticity_result.plot_strain()
+elasticity_result.plot_stress()
