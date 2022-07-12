@@ -192,6 +192,7 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
         # DessiaObject.__init__(self, name=name)
 
     def _b_matrix(self):
+
         y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
         x = [(self.points[i].x-self.points[j].x) for (i,j) in [(2,1), (0,2), (1,0)]]
 

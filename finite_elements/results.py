@@ -660,3 +660,12 @@ class ElasticityResults(Result):
                 shear_stress_xy[element] = stress[element][2]
 
         return shear_stress_xy
+
+    def plot_displacement_vectors_per_node(self, ax=None, amplitude=0.05):
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        self.mesh.plot(ax)
+        displacement_field_vectors = self.displacement_vectors_per_node
+        for i, vector in enumerate(displacement_field_vectors):
+            vector.plot(amplitude=amplitude, origin=self.mesh.nodes[i], ax=ax, normalize=True)
