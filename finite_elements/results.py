@@ -42,8 +42,26 @@ class Result(DessiaObject):
         
         DessiaObject.__init__(self, name='')
 
+    @property
+    def dimension(self):
+        return self.mesh.elements_groups[0].elements[0].dimension
+
+
+class MagneticResults(Result):
+    _standalone_in_db = True
+    _non_serializable_attributes = []
+    _non_eq_attributes = ['name']
+    _non_hash_attributes = ['name']
+    _generic_eq = True
+    def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float]):
+        self.mesh = mesh
+        self.result_vector = result_vector
+
+        self.magnetic_field_per_element = self._magnetic_field_per_element()
+        self.magnetic_field_norm = self._magnetic_field_norm()
+
     def brbtetha(self, gap_elements_group):
-        element_to_magnetic_field = self.magnetic_field_per_element()
+        element_to_magnetic_field = self.magnetic_field_per_element
         all_BrBtetha = []
         for element in gap_elements_group.elements:
             vector_B = element_to_magnetic_field[element]
@@ -58,17 +76,13 @@ class Result(DessiaObject):
             all_BrBtetha.append(B_r * B_teta)
         return all_BrBtetha
 
-    @property
-    def dimension(self):
-        return self.mesh.elements_groups[0].elements[0].dimension
-
-    def magnetic_field_norm(self):
-        element_to_magnetic_field = self.magnetic_field_per_element()
+    def _magnetic_field_norm(self):
+        element_to_magnetic_field = self.magnetic_field_per_element
         Bs = [B.norm() for B in list(element_to_magnetic_field.values())]
 
         return Bs
 
-    def magnetic_field_per_element(self):
+    def _magnetic_field_per_element(self):
         element_to_magnetic_field = {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
@@ -96,7 +110,7 @@ class Result(DessiaObject):
         :param element: The element on which the tensor is computed.
         :type element: a TriangularElement object
         """
-        element_to_magnetic_field = self.magnetic_field_per_element()
+        element_to_magnetic_field = self.magnetic_field_per_element
         vector_B = element_to_magnetic_field[element]
         element_center = element.center
         e_r = vm.Vector2D(element_center.vector)
@@ -128,7 +142,7 @@ class Result(DessiaObject):
         :param nb_notches: The number of notches of the Stator.
         :type nb_notches: int
         """
-        element_to_magnetic_field = self.magnetic_field_per_element()
+        element_to_magnetic_field = self.magnetic_field_per_element
         
         for elements_group in self.mesh.elements_groups:
             if elements_group.name == air_gap_elements_group_name:
@@ -227,8 +241,8 @@ class Result(DessiaObject):
             fig, ax = plt.subplots()
         else:
             fig = plt.gcf()
-        element_to_magnetic_field = self.magnetic_field_per_element()
-        Bs =  self.magnetic_field_norm()
+        element_to_magnetic_field = self.magnetic_field_per_element
+        Bs =  self.magnetic_field_norm
         
         B_max, B_min = finite_elements.core.get_bmin_bmax(Bs, Bmin=None, Bmax=Bmax)
         B_to_color = finite_elements.core.get_colors(Bs, B_max=B_max, B_min=B_min)
@@ -252,7 +266,7 @@ class Result(DessiaObject):
             fig = plt.gcf()
         ax.set_aspect('equal')
 
-        element_to_magnetic_field = self.magnetic_field_per_element()
+        element_to_magnetic_field = self.magnetic_field_per_element
 
         x = []
         y = []
@@ -299,8 +313,8 @@ class Result(DessiaObject):
         else:
             fig = plt.gcf()
 
-        element_to_magnetic_field = self.magnetic_field_per_element()
-        Bs = self.magnetic_field_norm()
+        element_to_magnetic_field = self.magnetic_field_per_element
+        Bs = self.magnetic_field_norm
 
         B_max, B_min = finite_elements.core.get_bmin_bmax(Bs, Bmin, Bmax)
         B_to_color = finite_elements.core.get_colors(Bs, B_max=B_max, B_min=B_min)
@@ -342,6 +356,7 @@ class Result(DessiaObject):
         cbar.set_label('Potential Vector')
 
         return ax
+
 
 
 class ElasticityResults(Result):
