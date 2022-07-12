@@ -58,5 +58,8 @@ for node in mesh.nodes:
 analysis = fe.analysis.FiniteElementAnalysis(mesh, elements_loads, [], [], [], node_boundary_conditions, [])
 analysis.plot_elements_loads()
 analysis.plot_elements_permeability()
+
 results = analysis.solve()
-results.plot_magnetic_field()
+
+magnetic_results = fe.results.MagneticResults(results.mesh, results.result_vector)
+magnetic_results.plot_magnetic_field()
