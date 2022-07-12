@@ -358,7 +358,6 @@ class MagneticResults(Result):
         return ax
 
 
-
 class ElasticityResults(Result):
     _standalone_in_db = True
     _non_serializable_attributes = []
@@ -427,9 +426,9 @@ class ElasticityResults(Result):
 
     def _deformed_mesh(self):
         deformed_nodes = self.deformed_nodes
-        group_elasticity_elments2d = []
+        group_elasticity_elments = []
         for elements_group in self.mesh.elements_groups:
-            elasticity_elments2d = []
+            elasticity_elments = []
             for element in elements_group.elements:
 
                 indexes = [self.mesh.node_to_index[point] for point in element.points]
@@ -438,12 +437,12 @@ class ElasticityResults(Result):
 
                 mesh_element = element.mesh_element.__class__(points)
 
-                elasticity_elments2d.append(element.__class__(
+                elasticity_elments.append(element.__class__(
                     mesh_element, element.elasticity_modulus, element.poisson_ratio, element.thickness))
 
-            group_elasticity_elments2d.append(vmmesh.ElementsGroup(elasticity_elments2d, ''))
+            group_elasticity_elments.append(vmmesh.ElementsGroup(elasticity_elments, ''))
 
-        return vmmesh.Mesh(group_elasticity_elments2d)
+        return vmmesh.Mesh(group_elasticity_elments)
 
     def _deformed_nodes(self):
         displacement_field_vectors = self.displacement_vectors_per_node
