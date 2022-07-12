@@ -435,46 +435,6 @@ class ElasticityResults(Result):
 
         return deformed_nodes
 
-    def axial_strain_x(self):
-
-        strain = self.strain
-        axial_strain_x = {}
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                axial_strain_x[element] = strain[element][0]
-
-        return axial_strain_x
-
-    def axial_strain_y(self):
-
-        strain = self.strain
-        axial_strain_y = {}
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                axial_strain_y[element] = strain[element][1]
-
-        return axial_strain_y
-
-    def axial_stress_x(self):
-
-        stress = self.stress
-        axial_stress_x = {}
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                axial_stress_x[element] = stress[element][0]
-
-        return axial_stress_x
-
-    def axial_stress_y(self):
-
-        stress = self.stress
-        axial_stress_y = {}
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                axial_stress_y[element] = stress[element][1]
-
-        return axial_stress_y
-
     def plot_axial_strain_x(self, ax=None, fig=None):
 
         return self.plot_constraints(constraint_name='axial_strain_x', ax=ax, fig=fig)
@@ -592,6 +552,65 @@ class ElasticityResults(Result):
 
         return axs
 
+
+class ElasticityResults2D(ElasticityResults):
+    # _standalone_in_db = True
+    # _non_serializable_attributes = []
+    # _non_eq_attributes = ['name']
+    # _non_hash_attributes = ['name']
+    # _generic_eq = True
+    # def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float]):
+    #     self.mesh = mesh
+    #     self.result_vector = result_vector
+
+    #     self.displacement_vectors_per_node = self._displacement_vectors_per_node()
+    #     self.displacements_per_element = self._displacements_per_element()
+    #     self.strain, self.stress = self._strain_stress_per_element()
+    #     self.deformed_nodes = self._deformed_nodes()
+    #     self.deformed_mesh = self._deformed_mesh()
+
+    #     Result.__init__(self, mesh, result_vector)
+
+    def axial_strain_x(self):
+
+        strain = self.strain
+        axial_strain_x = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                axial_strain_x[element] = strain[element][0]
+
+        return axial_strain_x
+
+    def axial_strain_y(self):
+
+        strain = self.strain
+        axial_strain_y = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                axial_strain_y[element] = strain[element][1]
+
+        return axial_strain_y
+
+    def axial_stress_x(self):
+
+        stress = self.stress
+        axial_stress_x = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                axial_stress_x[element] = stress[element][0]
+
+        return axial_stress_x
+
+    def axial_stress_y(self):
+
+        stress = self.stress
+        axial_stress_y = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                axial_stress_y[element] = stress[element][1]
+
+        return axial_stress_y
+
     def shear_strain_xy(self):
 
         strain = self.strain
@@ -611,6 +630,7 @@ class ElasticityResults(Result):
                 shear_stress_xy[element] = stress[element][2]
 
         return shear_stress_xy
+
 
 class ElasticityResults3D(ElasticityResults):
     # _standalone_in_db = True
