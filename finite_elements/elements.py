@@ -256,6 +256,17 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
         return stiffness_matrix.flatten()
 
+    def elementary_mass_matrix(self):
+        det_jacobian = (self.points[0].x-self.points[2].x)*(self.points[1].y-self.points[2].y) \
+            - (self.points[0].y-self.points[2].y)*(self.points[1].x-self.points[2].x)
+        data = [2, 1, 1,
+                1, 2, 1,
+                1, 1, 2]
+
+        mass_matrix = (det_jacobian/24) * npy.array(data).reshape(3, 3)
+
+        return mass_matrix
+
     def strain(self):
         b_matrix = self.b_matrix()
         q = self.displacements
