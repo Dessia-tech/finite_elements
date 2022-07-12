@@ -24,7 +24,6 @@ steps:
   - git fetch --tags
   - pip install Cython sphinx sphinx_rtd_theme coverage
   - python setup.py install
-  - cd doc
   - make html
   - cd ../scripts
   - coverage run --source volmdlr -a ci_scripts.py
