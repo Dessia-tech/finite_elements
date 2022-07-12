@@ -14,7 +14,7 @@ import volmdlr.mesh as vmmesh
 # import math
 # from scipy import sparse
 # from scipy import linalg
-# import time 
+# import time
 from dessia_common import DessiaObject
 # from typing import List #Tuple, TypeVar
 import numpy as npy
@@ -22,6 +22,8 @@ import numpy as npy
 
 
 class MagneticElement2D(vmmesh.TriangularElement2D):
+    """
+    """
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -196,7 +198,8 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
         y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
         x = [(self.points[i].x-self.points[j].x) for (i,j) in [(2,1), (0,2), (1,0)]]
 
-        det_jacobian = (self.points[0].x-self.points[2].x)*(self.points[1].y-self.points[2].y) - (self.points[0].y-self.points[2].y)*(self.points[1].x-self.points[2].x)
+        det_jacobian = (self.points[0].x-self.points[2].x)*(self.points[1].y-self.points[2].y) \
+            - (self.points[0].y-self.points[2].y)*(self.points[1].x-self.points[2].x)
 
         data = [y[0], 0, y[1], 0, y[2], 0,
                 0, x[0], 0, x[1], 0, x[2],
@@ -230,7 +233,8 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
         # y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
         # x = [(self.points[i].x-self.points[j].x) for (i,j) in [(2,1), (0,2), (1,0)]]
 
-        # det_jacobian = (self.points[0].x-self.points[2].x)*(self.points[1].y-self.points[2].y) - (self.points[0].y-self.points[2].y)*(self.points[1].x-self.points[2].x)
+        # det_jacobian = (self.points[0].x-self.points[2].x)*(self.points[1].y-self.points[2].y) \
+        #     - (self.points[0].y-self.points[2].y)*(self.points[1].x-self.points[2].x)
 
         # data = [y[0], 0, y[1], 0, y[2], 0,
         #         0, x[0], 0, x[1], 0, x[2],
@@ -247,7 +251,8 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
         # d_matrix = (elasticity_modulus/(1 - (poisson_ratio)**2)) * npy.array(data).reshape(3,3)
 
-        stiffness_matrix = self.thickness * self.area * (npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
+        stiffness_matrix = self.thickness * self.area * (
+            npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
 
         return stiffness_matrix.flatten()
 
@@ -359,6 +364,7 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
         b_matrix = self.b_matrix
         d_matrix = self.d_matrix
 
-        stiffness_matrix = self.volume * (npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
+        stiffness_matrix = self.volume * (
+            npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
 
         return stiffness_matrix.flatten()
