@@ -6,15 +6,15 @@ Library: finite_elements (core.py)
 
 # import matplotlib as mpl
 # import matplotlib.pyplot as plt
+import math
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as npy
 import matplotlib.tri as mtri
 # import volmdlr as vm
 # import volmdlr.mesh as vmmesh
-import math
 # from scipy import sparse
 # from scipy import linalg
-# import time 
+# import time
 # from dessia_common import DessiaObject
 # from typing import TypeVar, List, Tuple
 
@@ -32,6 +32,19 @@ MU = 4*math.pi*1e-7
 
 
 def get_bmin_bmax(Bs, Bmax=None, Bmin=None):
+    """
+
+    :param Bs: DESCRIPTION
+    :type Bs: TYPE
+    :param Bmax: DESCRIPTION, defaults to None
+    :type Bmax: TYPE, optional
+    :param Bmin: DESCRIPTION, defaults to None
+    :type Bmin: TYPE, optional
+
+    :return: DESCRIPTION
+    :rtype: TYPE
+    """
+
     if Bmax is None and Bmin is None:
         B_max, B_min = max(Bs), min(Bs)
     elif Bmax is not None and Bmin is None:
@@ -44,6 +57,19 @@ def get_bmin_bmax(Bs, Bmax=None, Bmin=None):
     return B_max, B_min
 
 def get_colors(Bs, B_max=None, B_min=None):
+    """
+
+    :param Bs: DESCRIPTION
+    :type Bs: TYPE
+    :param B_max: DESCRIPTION, defaults to None
+    :type B_max: TYPE, optional
+    :param B_min: DESCRIPTION, defaults to None
+    :type B_min: TYPE, optional
+
+    :return: DESCRIPTION
+    :rtype: TYPE
+    """
+
     color_map = ((0,0,1), (1,0,0))
 
     B_to_color = {}
@@ -61,6 +87,16 @@ def get_colors(Bs, B_max=None, B_min=None):
     return B_to_color
 
 def global_matrix_positions(dimension, nodes_number):
+    """
+
+    :param dimension: DESCRIPTION
+    :type dimension: TYPE
+    :param nodes_number: DESCRIPTION
+    :type nodes_number: TYPE
+
+    :return: DESCRIPTION
+    :rtype: TYPE
+    """
 
     positions = {}
     count = 0
@@ -72,6 +108,15 @@ def global_matrix_positions(dimension, nodes_number):
     return positions
 
 def get_triangulation(mesh):
+    """
+
+    :param mesh: DESCRIPTION
+    :type mesh: TYPE
+
+    :return: DESCRIPTION
+    :rtype: TYPE
+    """
+
     x_list, y_list = [], []
     for node in mesh.nodes:
         x_list.append(node[0])
