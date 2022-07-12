@@ -502,55 +502,55 @@ class ElasticityResults(Result):
 
         return self.plot_constraints(constraint_name='shear_stress_xy', ax=ax, fig=fig)
 
-    def plot_strain(self, axs=None, fig=None, row=1):
-        # if fig is None:
-        #     fig = plt.figure()
-        if axs is None:
-            fig, axs = plt.subplots(1, 3)
+    # def plot_strain(self, axs=None, fig=None, row=1):
+    #     # if fig is None:
+    #     #     fig = plt.figure()
+    #     if axs is None:
+    #         fig, axs = plt.subplots(1, 3)
 
-        plot_names = ['plot_axial_strain_x', 'plot_axial_strain_y', 'plot_shear_strain_xy']
-        # axs = []
-        # for i, name in enumerate(plot_names):
-        #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+    #     plot_names = ['plot_axial_strain_x', 'plot_axial_strain_y', 'plot_shear_strain_xy']
+    #     # axs = []
+    #     # for i, name in enumerate(plot_names):
+    #     #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
 
-        for i, ax in enumerate(axs.ravel()):
-            ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
+    #     for i, ax in enumerate(axs.ravel()):
+    #         ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
 
-        return axs
+    #     return axs
 
-    def plot_strain_stress(self, axs=None, fig=None):
-        if axs is None:
-            fig, axs = plt.subplots(2, 3)
-        # if fig is None:
-        #     fig = plt.figure()
+    # def plot_strain_stress(self, axs=None, fig=None):
+    #     if axs is None:
+    #         fig, axs = plt.subplots(2, 3)
+    #     # if fig is None:
+    #     #     fig = plt.figure()
 
-        axs = axs.ravel()
-        self.plot_strain(axs=axs[0:3], fig=fig)
-        self.plot_stress(axs=axs[3::], fig=fig)
+    #     axs = axs.ravel()
+    #     self.plot_strain(axs=axs[0:3], fig=fig)
+    #     self.plot_stress(axs=axs[3::], fig=fig)
 
-        # self.plot_strain(axs=axs[0, 0:3], fig=fig)
-        # self.plot_stress(axs=axs[1, 0:3], fig=fig)
+    #     # self.plot_strain(axs=axs[0, 0:3], fig=fig)
+    #     # self.plot_stress(axs=axs[1, 0:3], fig=fig)
 
-        # self.plot_strain(axs=axs, fig=fig, row=2)
-        # self.plot_stress(axs=axs, fig=fig, row=2)
+    #     # self.plot_strain(axs=axs, fig=fig, row=2)
+    #     # self.plot_stress(axs=axs, fig=fig, row=2)
 
-        return axs
+    #     return axs
 
-    def plot_stress(self, axs=None, fig=None, row=1):
-        # if fig is None:
-        #     fig = plt.figure()
-        if axs is None:
-            fig, axs = plt.subplots(1, 3)
+    # def plot_stress(self, axs=None, fig=None, row=1):
+    #     # if fig is None:
+    #     #     fig = plt.figure()
+    #     if axs is None:
+    #         fig, axs = plt.subplots(1, 3)
 
-        plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy']
-        # axs = []
-        # for i, name in enumerate(plot_names):
-        #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+    #     plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy']
+    #     # axs = []
+    #     # for i, name in enumerate(plot_names):
+    #     #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
 
-        for i, ax in enumerate(axs.ravel()):
-            ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
+    #     for i, ax in enumerate(axs.ravel()):
+    #         ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
 
-        return axs
+    #     return axs
 
 
 class ElasticityResults2D(ElasticityResults):
@@ -610,6 +610,56 @@ class ElasticityResults2D(ElasticityResults):
                 axial_stress_y[element] = stress[element][1]
 
         return axial_stress_y
+
+    def plot_strain(self, axs=None, fig=None, row=1):
+        # if fig is None:
+        #     fig = plt.figure()
+        if axs is None:
+            fig, axs = plt.subplots(1, 3)
+
+        plot_names = ['plot_axial_strain_x', 'plot_axial_strain_y', 'plot_shear_strain_xy']
+        # axs = []
+        # for i, name in enumerate(plot_names):
+        #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+
+        for i, ax in enumerate(axs.ravel()):
+            ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
+
+        return axs
+
+    def plot_strain_stress(self, axs=None, fig=None):
+        if axs is None:
+            fig, axs = plt.subplots(2, 3)
+        # if fig is None:
+        #     fig = plt.figure()
+
+        axs = axs.ravel()
+        self.plot_strain(axs=axs[0:3], fig=fig)
+        self.plot_stress(axs=axs[3::], fig=fig)
+
+        # self.plot_strain(axs=axs[0, 0:3], fig=fig)
+        # self.plot_stress(axs=axs[1, 0:3], fig=fig)
+
+        # self.plot_strain(axs=axs, fig=fig, row=2)
+        # self.plot_stress(axs=axs, fig=fig, row=2)
+
+        return axs
+
+    def plot_stress(self, axs=None, fig=None, row=1):
+        # if fig is None:
+        #     fig = plt.figure()
+        if axs is None:
+            fig, axs = plt.subplots(1, 3)
+
+        plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy']
+        # axs = []
+        # for i, name in enumerate(plot_names):
+        #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+
+        for i, ax in enumerate(axs.ravel()):
+            ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
+
+        return axs
 
     def shear_strain_xy(self):
 
@@ -718,10 +768,6 @@ class ElasticityResults3D(ElasticityResults):
 
         return self.plot_constraints(constraint_name='axial_stress_z', ax=ax, fig=fig)
 
-    def plot_shear_strain_xy(self, ax=None, fig=None):
-
-        return self.plot_constraints(constraint_name='shear_strain_xy', ax=ax, fig=fig)
-
     def plot_shear_strain_yz(self, ax=None, fig=None):
 
         return self.plot_constraints(constraint_name='shear_strain_yz', ax=ax, fig=fig)
@@ -730,10 +776,6 @@ class ElasticityResults3D(ElasticityResults):
 
         return self.plot_constraints(constraint_name='shear_strain_zx', ax=ax, fig=fig)
 
-    def plot_shear_stress_xy(self, ax=None, fig=None):
-
-        return self.plot_constraints(constraint_name='shear_stress_xy', ax=ax, fig=fig)
-
     def plot_shear_stress_yz(self, ax=None, fig=None):
 
         return self.plot_constraints(constraint_name='shear_stress_yz', ax=ax, fig=fig)
@@ -741,6 +783,58 @@ class ElasticityResults3D(ElasticityResults):
     def plot_shear_stress_zx(self, ax=None, fig=None):
 
         return self.plot_constraints(constraint_name='shear_stress_zx', ax=ax, fig=fig)
+
+    def plot_strain(self, axs=None, fig=None, row=1):
+        # if fig is None:
+        #     fig = plt.figure()
+        if axs is None:
+            fig, axs = plt.subplots(2, 3)
+
+        plot_names = ['plot_axial_strain_x', 'plot_axial_strain_y', 'plot_shear_strain_xy',
+                      'plot_axial_strain_z', 'plot_shear_strain_yz', 'plot_shear_strain_zx']
+        # axs = []
+        # for i, name in enumerate(plot_names):
+        #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+
+        for i, ax in enumerate(axs.ravel()):
+            ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
+
+        return axs
+
+    def plot_strain_stress(self, axs=None, fig=None):
+        if axs is None:
+            fig, axs = plt.subplots(1, 6)
+        # if fig is None:
+        #     fig = plt.figure()
+
+        axs = axs.ravel()
+        self.plot_strain(axs=axs[0:6], fig=fig)
+        self.plot_stress(axs=axs[6::], fig=fig)
+
+        # self.plot_strain(axs=axs[0, 0:3], fig=fig)
+        # self.plot_stress(axs=axs[1, 0:3], fig=fig)
+
+        # self.plot_strain(axs=axs, fig=fig, row=2)
+        # self.plot_stress(axs=axs, fig=fig, row=2)
+
+        return axs
+
+    def plot_stress(self, axs=None, fig=None, row=1):
+        # if fig is None:
+        #     fig = plt.figure()
+        if axs is None:
+            fig, axs = plt.subplots(2, 3)
+
+        plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy',
+                      'plot_axial_stress_z', 'plot_shear_stress_yz', 'plot_shear_stress_zx']
+        # axs = []
+        # for i, name in enumerate(plot_names):
+        #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+
+        for i, ax in enumerate(axs.ravel()):
+            ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
+
+        return axs
 
     def shear_strain_xy(self):
 
