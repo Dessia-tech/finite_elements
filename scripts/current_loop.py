@@ -171,4 +171,6 @@ analysis = fe.analysis.FiniteElementAnalysis(mesh, element_load, node_loads, [],
 result = analysis.solve()
 ax = mesh.elements_groups[0].plot()
 mesh.elements_groups[1].plot(ax=ax)
-result.plot_magnetic_field_vectors(ax=ax, amplitude=0.05) #, Bmax=0.00003)
+
+magnetic_results = fe.results.MagneticResults(result.mesh, result.result_vector)
+magnetic_results.plot_magnetic_field_vectors(ax=ax, amplitude=0.05) #, Bmax=0.00003)
