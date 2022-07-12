@@ -661,6 +661,13 @@ class ElasticityResults(Result):
 
         return shear_stress_xy
 
+    def plot_deformed_mesh(self, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        self.deformed_mesh().plot(ax=ax)
+        # self.mesh.plot(ax)
+
     def plot_displacement_vectors_per_node(self, ax=None, amplitude=0.05):
         if ax is None:
             fig, ax = plt.subplots()
