@@ -48,7 +48,7 @@ m = analysis.create_matrix()
 
 results = analysis.solve()
 
-elasticity_result = fe.results.ElasticityResults(results.mesh, results.result_vector)
+elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector)
 
 elasticity_result.plot_deformed_mesh()
 elasticity_result.plot_displacement_vectors_per_node()
