@@ -452,6 +452,14 @@ class ElasticityResults(Result):
 
         return deformed_nodes
 
+    def displacement_per_node_x(self):
+
+        return [displacement[0] for displacement in self.displacement_vectors_per_node]
+
+    def displacement_per_node_y(self):
+
+        return [displacement[1] for displacement in self.displacement_vectors_per_node]
+
     def plot_axial_strain_x(self, ax=None, fig=None):
 
         return self.plot_constraints(constraint_name='axial_strain_x', ax=ax, fig=fig)
@@ -748,6 +756,10 @@ class ElasticityResults3D(ElasticityResults):
                 axial_stress_z[element] = stress[element][2]
 
         return axial_stress_z
+
+    def displacement_per_node_z(self):
+
+        return [displacement[2] for displacement in self.displacement_vectors_per_node]
 
     def plot_axial_strain_z(self, ax=None, fig=None):
 
