@@ -510,3 +510,100 @@ class ElasticityResults(Result):
         displacement_field_vectors = self.displacement_vectors_per_node
         for i, vector in enumerate(displacement_field_vectors):
             vector.plot(amplitude=amplitude, origin=self.mesh.nodes[i], ax=ax, normalize=True)
+
+    def plot_constraints(self, constraint_name: str, ax=None, fig=None):
+
+        if ax is None:
+            fig, ax = plt.subplots()
+
+        if hasattr(self, constraint_name):
+            result = getattr(self, constraint_name)()
+            result_values = [value for value in result.values()]
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {constraint_name}')
+
+        deformed_mesh = self.deformed_mesh
+        B_max, B_min = finite_elements.core.get_bmin_bmax(result_values, Bmin=None, Bmax=None)
+        B_to_color = finite_elements.core.get_colors(result_values, B_max=B_max, B_min=B_min)
+        for g, group in enumerate(deformed_mesh.elements_groups):
+            for e, element in enumerate(group.elements):
+                element.plot(ax=ax, color=B_to_color[result[self.mesh.elements_groups[g].elements[e]]], fill=True)
+
+        norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
+        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        sm.set_array([])
+        cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10), ax=ax)
+        cbar.set_label(constraint_name)
+
+        return ax
+
+    def plot_axial_strain_x(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='axial_strain_x', ax=ax, fig=fig)
+
+    def plot_axial_strain_y(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='axial_strain_y', ax=ax, fig=fig)
+
+    def plot_axial_stress_x(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='axial_stress_x', ax=ax, fig=fig)
+
+    def plot_axial_stress_y(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='axial_stress_y', ax=ax, fig=fig)
+
+    def plot_shear_strain_xy(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='shear_strain_xy', ax=ax, fig=fig)
+
+    def plot_shear_stress_xy(self, ax=None, fig=None):
+
+        return self.plot_constraints(constraint_name='shear_stress_xy', ax=ax, fig=fig)
+
+    def plot_strain(self, axs=None, fig=None, row=1):
+        if fig is None:
+            fig = plt.figure()
+        # if axs is None:
+        #     fig, axs = plt.subplots(1, 3)
+
+        plot_names = ['plot_axial_strain_x', 'plot_axial_strain_y', 'plot_shear_strain_xy']
+        axs = []
+        for i, name in enumerate(plot_names):
+            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+
+        # for i, ax in enumerate(axs.ravel()):
+        #     ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
+
+        return axs
+
+    def plot_stress(self, axs=None, fig=None, row=1):
+        if fig is None:
+            fig = plt.figure()
+        # if axs is None:
+        #     fig, axs = plt.subplots(1, 3)
+
+        plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy']
+        axs = []
+        for i, name in enumerate(plot_names):
+            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+
+        # for i, ax in enumerate(axs.ravel()):
+        #     ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
+
+        return axs
+
+    def plot_strain_stress(self, axs=None, fig=None):
+        # if axs is None:
+        #     fig, axs = plt.subplots(2, 3)
+        if fig is None:
+            fig = plt.figure()
+
+        # self.plot_strain(axs=axs[0, 0:3], fig=fig)
+        # self.plot_stress(axs=axs[1, 0:3], fig=fig)
+
+        self.plot_strain(axs=axs, fig=fig, row=2)
+        self.plot_stress(axs=axs, fig=fig, row=2)
+
+        return axs
