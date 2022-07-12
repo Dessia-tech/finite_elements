@@ -407,7 +407,10 @@ class ElasticityResults(Result):
             displacement = []
             for i in range(self.dimension):
                 displacement.append(q[positions[(node, i+1)]])
-            displacement_field_vectors.append(vm.Vector2D(*displacement))
+
+            displacement_field_vectors.append(
+                getattr(vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement))
+            # displacement_field_vectors.append(vm.Vector2D(*displacement))
 
         return displacement_field_vectors
 
