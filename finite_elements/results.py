@@ -58,54 +58,9 @@ class Result(DessiaObject):
             all_BrBtetha.append(B_r * B_teta)
         return all_BrBtetha
 
-    def deformed_mesh(self):
-        deformed_nodes = self.deformed_nodes()
-        group_solid_elments2d = []
-        for elements_group in self.mesh.elements_groups:
-            solid_elments2d = []
-            for element in elements_group.elements:
-                indexes = [self.mesh.node_to_index[element.points[0]],
-                           self.mesh.node_to_index[element.points[1]],
-                           self.mesh.node_to_index[element.points[2]]]
-
-                triangle = vmmesh.TriangularElement2D([deformed_nodes[indexes[0]],
-                                                       deformed_nodes[indexes[1]],
-                                                       deformed_nodes[indexes[2]]])
-
-                solid_elments2d.append(elements.ElasticityTriangularElement2D(
-                    triangle, element.elasticity_modulus, element.poisson_ratio, element.thickness))
-
-            group_solid_elments2d.append(vmmesh.ElementsGroup(solid_elments2d, ''))
-
-        return vmmesh.Mesh(group_solid_elments2d)
-
-    def deformed_nodes(self):
-        displacement_field_vectors = self.displacement_field_vectors_per_node()
-        deformed_nodes = []
-        for i, node in enumerate(self.mesh.nodes):
-            deformed_nodes.append(node + displacement_field_vectors[i])
-
-        return deformed_nodes
-
     @property
     def dimension(self):
         return self.mesh.elements_groups[0].elements[0].dimension
-
-    def displacement_field_vectors_per_node(self):
-        nodes_number = len(self.mesh.nodes)
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=nodes_number)
-
-        displacement_field_vectors = []
-        q = self.result_vector
-
-        for node in range(0, nodes_number):
-            displacement = []
-            for i in range(self.dimension):
-                displacement.append(q[positions[(node, i+1)]])
-            displacement_field_vectors.append(vm.Vector2D(*displacement))
-
-        return displacement_field_vectors
 
     def magnetic_field_norm(self):
         element_to_magnetic_field = self.magnetic_field_per_element()
@@ -212,79 +167,6 @@ class Result(DessiaObject):
         
         return T 
 
-    def strain(self):
-        """
-        axial_strain_x, axial_strain_y, shear_strain_xy
-        """
-
-        strain = self.strain_per_element()
-        axial_strain_x, axial_strain_y, shear_strain_xy = [], [], []
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                axial_strain_x.append(strain[element][0])
-                axial_strain_y.append(strain[element][1])
-                shear_strain_xy.append(strain[element][2])
-
-        return axial_strain_x, axial_strain_y, shear_strain_xy
-
-    def strain_per_element(self):
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
-        q = self.result_vector
-
-        element_to_strain = {}
-        for elements_group in self.mesh.elements_groups:
-            for element in elements_group.elements:
-                displacements = []
-                b_matrix = element.b_matrix()
-                indexes = [self.mesh.node_to_index[element.points[0]],
-                           self.mesh.node_to_index[element.points[1]],
-                           self.mesh.node_to_index[element.points[2]]]
-                for index in indexes:
-                    for i in range(self.dimension):
-                        displacements.append(q[positions[(index, i+1)]])
-
-                element_to_strain[element] = (npy.matmul(b_matrix, displacements))
-
-        return element_to_strain
-
-    def stress(self):
-        """
-        axial_stress_x, axial_stress_y, shear_stress_xy
-        """
-
-        stress = self.stress_per_element()
-        axial_stress_x, axial_stress_y, shear_stress_xy = [], [], []
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                axial_stress_x.append(stress[element][0])
-                axial_stress_y.append(stress[element][1])
-                shear_stress_xy.append(stress[element][2])
-
-        return axial_stress_x, axial_stress_y, shear_stress_xy
-
-    def stress_per_element(self):
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
-        q = self.result_vector
-
-        element_to_stress = {}
-        for elements_group in self.mesh.elements_groups:
-            for element in elements_group.elements:
-                displacements = []
-                b_matrix = element.b_matrix()
-                d_matrix = element.d_matrix()
-                indexes = [self.mesh.node_to_index[element.points[0]],
-                           self.mesh.node_to_index[element.points[1]],
-                           self.mesh.node_to_index[element.points[2]]]
-                for index in indexes:
-                    for i in range(self.dimension):
-                        displacements.append(q[positions[(index, i+1)]])
-
-                element_to_stress[element] = (npy.matmul(npy.matmul(d_matrix, b_matrix), displacements))
-
-        return element_to_stress
-
     def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
         if ax is None:
             fig, ax = plt.subplots()
@@ -335,22 +217,6 @@ class Result(DessiaObject):
         cbar.set_label('Br*Btetha')
         
         return ax
-
-    def plot_deformed_mesh(self, ax=None):
-        if ax is None:
-            fig, ax = plt.subplots()
-
-        self.deformed_mesh().plot(ax=ax)
-        # self.mesh.plot(ax)
-
-    def plot_displacement_field_vectors_per_node(self, ax=None, amplitude=0.05):
-        if ax is None:
-            fig, ax = plt.subplots()
-
-        self.mesh.plot(ax)
-        displacement_field_vectors = self.displacement_field_vectors_per_node()
-        for i, vector in enumerate(displacement_field_vectors):
-            vector.plot(amplitude=amplitude, origin=self.mesh.nodes[i], ax=ax, normalize=True)
 
     def plot_magnetic_field(self, ax=None, Bmax=None):
         """
@@ -477,38 +343,6 @@ class Result(DessiaObject):
 
         return ax
 
-    def plot_stress_strain(self, axs=None):
-        if axs is None:
-            fig, axs = plt.subplots(2, 3)
-
-        stress = self.stress_per_element()
-        strain = self.strain_per_element()
-        axial_stress_x, axial_stress_y, shear_stress_xy = self.stress()
-        axial_strain_x, axial_strain_y, shear_strain_xy = self.strain()
-
-        stress_strain = [[axial_stress_x, axial_stress_y, shear_stress_xy],
-                         [axial_strain_x, axial_strain_y, shear_strain_xy]]
-
-        titles = [['axial_stress_x', 'axial_stress_y', 'shear_stress_xy'],
-                  ['axial_strain_x', 'axial_strain_y', 'shear_strain_xy']]
-
-        deformed_mesh = self.deformed_mesh()
-
-        for i, st in enumerate([stress, strain]):
-            for j, s in enumerate(stress_strain[i]):
-                B_max, B_min = finite_elements.core.get_bmin_bmax(s, Bmin=None, Bmax=None)
-                B_to_color = finite_elements.core.get_colors(s, B_max=B_max, B_min=B_min)
-                for g, group in enumerate(deformed_mesh.elements_groups):
-                    for e, element in enumerate(group.elements):
-                        element.plot(ax=axs[i, j], color=B_to_color[st[self.mesh.elements_groups[g].elements[e]][j]], fill=True)
-
-                norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
-                sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
-                sm.set_array([])
-                cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10), ax=axs[i][j])
-                cbar.set_label(titles[i][j])
-
-        return axs
 
 class ElasticityResults(Result):
     _standalone_in_db = True
