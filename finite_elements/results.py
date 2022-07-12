@@ -475,41 +475,21 @@ class ElasticityResults(Result):
 
         return axial_stress_y
 
-    def shear_strain_xy(self):
+    def plot_axial_strain_x(self, ax=None, fig=None):
 
-        strain = self.strain
-        shear_strain_xy = {}
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                shear_strain_xy[element] = strain[element][2]
+        return self.plot_constraints(constraint_name='axial_strain_x', ax=ax, fig=fig)
 
-        return shear_strain_xy
+    def plot_axial_strain_y(self, ax=None, fig=None):
 
-    def shear_stress_xy(self):
+        return self.plot_constraints(constraint_name='axial_strain_y', ax=ax, fig=fig)
 
-        stress = self.stress
-        shear_stress_xy = {}
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                shear_stress_xy[element] = stress[element][2]
+    def plot_axial_stress_x(self, ax=None, fig=None):
 
-        return shear_stress_xy
+        return self.plot_constraints(constraint_name='axial_stress_x', ax=ax, fig=fig)
 
-    def plot_deformed_mesh(self, ax=None):
-        if ax is None:
-            fig, ax = plt.subplots()
+    def plot_axial_stress_y(self, ax=None, fig=None):
 
-        self.deformed_mesh().plot(ax=ax)
-        # self.mesh.plot(ax)
-
-    def plot_displacement_vectors_per_node(self, ax=None, amplitude=0.05):
-        if ax is None:
-            fig, ax = plt.subplots()
-
-        self.mesh.plot(ax)
-        displacement_field_vectors = self.displacement_vectors_per_node
-        for i, vector in enumerate(displacement_field_vectors):
-            vector.plot(amplitude=amplitude, origin=self.mesh.nodes[i], ax=ax, normalize=True)
+        return self.plot_constraints(constraint_name='axial_stress_y', ax=ax, fig=fig)
 
     def plot_constraints(self, constraint_name: str, ax=None, fig=None):
 
@@ -538,21 +518,21 @@ class ElasticityResults(Result):
 
         return ax
 
-    def plot_axial_strain_x(self, ax=None, fig=None):
+    def plot_deformed_mesh(self, ax=None):
+        if ax is None:
+            fig, ax = plt.subplots()
+    
+        self.deformed_mesh().plot(ax=ax)
+        # self.mesh.plot(ax)
 
-        return self.plot_constraints(constraint_name='axial_strain_x', ax=ax, fig=fig)
+    def plot_displacement_vectors_per_node(self, ax=None, amplitude=0.05):
+        if ax is None:
+            fig, ax = plt.subplots()
 
-    def plot_axial_strain_y(self, ax=None, fig=None):
-
-        return self.plot_constraints(constraint_name='axial_strain_y', ax=ax, fig=fig)
-
-    def plot_axial_stress_x(self, ax=None, fig=None):
-
-        return self.plot_constraints(constraint_name='axial_stress_x', ax=ax, fig=fig)
-
-    def plot_axial_stress_y(self, ax=None, fig=None):
-
-        return self.plot_constraints(constraint_name='axial_stress_y', ax=ax, fig=fig)
+        self.mesh.plot(ax)
+        displacement_field_vectors = self.displacement_vectors_per_node
+        for i, vector in enumerate(displacement_field_vectors):
+            vector.plot(amplitude=amplitude, origin=self.mesh.nodes[i], ax=ax, normalize=True)
 
     def plot_shear_strain_xy(self, ax=None, fig=None):
 
@@ -569,22 +549,6 @@ class ElasticityResults(Result):
             fig, axs = plt.subplots(1, 3)
 
         plot_names = ['plot_axial_strain_x', 'plot_axial_strain_y', 'plot_shear_strain_xy']
-        # axs = []
-        # for i, name in enumerate(plot_names):
-        #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
-
-        for i, ax in enumerate(axs.ravel()):
-            ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
-
-        return axs
-
-    def plot_stress(self, axs=None, fig=None, row=1):
-        # if fig is None:
-        #     fig = plt.figure()
-        if axs is None:
-            fig, axs = plt.subplots(1, 3)
-
-        plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy']
         # axs = []
         # for i, name in enumerate(plot_names):
         #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
@@ -611,3 +575,39 @@ class ElasticityResults(Result):
         # self.plot_stress(axs=axs, fig=fig, row=2)
 
         return axs
+
+    def plot_stress(self, axs=None, fig=None, row=1):
+        # if fig is None:
+        #     fig = plt.figure()
+        if axs is None:
+            fig, axs = plt.subplots(1, 3)
+
+        plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy']
+        # axs = []
+        # for i, name in enumerate(plot_names):
+        #     axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+
+        for i, ax in enumerate(axs.ravel()):
+            ax = getattr(self, plot_names[i])(ax=ax, fig=fig)
+
+        return axs
+
+    def shear_strain_xy(self):
+
+        strain = self.strain
+        shear_strain_xy = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                shear_strain_xy[element] = strain[element][2]
+
+        return shear_strain_xy
+
+    def shear_stress_xy(self):
+
+        stress = self.stress
+        shear_stress_xy = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                shear_stress_xy[element] = stress[element][2]
+
+        return shear_stress_xy
