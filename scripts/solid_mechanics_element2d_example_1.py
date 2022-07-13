@@ -16,13 +16,13 @@ import finite_elements.conditions
 
 # %% Mesh2D
 
-elasticity_modulus, poisson_ratio, thickness = 30*1e6, 0.25, 0.5
+elasticity_modulus, poisson_ratio, thickness, mass_density = 30*1e6, 0.25, 0.5, 2.7
 
 triangles = [mesh.TriangularElement2D([vm.Point2D(3,0),vm.Point2D(3,2),vm.Point2D(0,0)]),
              mesh.TriangularElement2D([vm.Point2D(0,2),vm.Point2D(0,0),vm.Point2D(3,2)])]
 
 solid_elments2d = [fe.elements.ElasticityTriangularElement2D(
-    triangle, elasticity_modulus, poisson_ratio, thickness) for triangle in triangles]
+    triangle, elasticity_modulus, poisson_ratio, mass_density, thickness) for triangle in triangles]
 
 group_solid_elments2d = mesh.ElementsGroup(solid_elments2d, '')
 mesh = mesh.Mesh([group_solid_elments2d])
