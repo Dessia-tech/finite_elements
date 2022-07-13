@@ -306,15 +306,14 @@ class FiniteElementAnalysis(FiniteElements):
         matrices = []
         method_names = ['k_matrix', 'm_matrix']
         for method_name in method_names:
-            row_ind, col_ind, data = [], [], []
+            matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
+                               len(self.mesh.nodes)*self.dimension))
+
             if hasattr(self, method_name):
-                result = getattr(self, method_name)()
-                data.extend(result[0])
-                row_ind.extend(result[1])
-                col_ind.extend(result[2])
-
-                matrices.append(sparse.csr_matrix((data, (row_ind, col_ind))))
-
+                data, row_ind, col_ind = getattr(self, method_name)()
+                for i, d in enumerate(data):
+                    matrix[row_ind[i]][col_ind[i]] += d
+                matrices.append(matrix)
             else:
                 raise NotImplementedError(
                     f'Class {self.__class__.__name__} does not implement {method_name}')
