@@ -13,6 +13,7 @@ import volmdlr as vm
 import volmdlr.mesh as vmmesh
 # import math
 from scipy import sparse
+from scipy.linalg import eigh
 # from scipy.sparse import csr_matrix
 # from scipy import linalg
 # import time 
@@ -300,6 +301,29 @@ class FiniteElementAnalysis(FiniteElements):
     def get_source_matrix_length(self):
         return len(self.mesh.nodes)*self.dimension + len(self.continuity_conditions) \
             + len(self.node_boundary_conditions) + len(self.element_boundary_conditions)
+
+    def modal_analysis(self):
+        matrices = []
+        method_names = ['k_matrix', 'm_matrix']
+        for method_name in method_names:
+            row_ind, col_ind, data = [], [], []
+            if hasattr(self, method_name):
+                result = getattr(self, method_name)()
+                data.extend(result[0])
+                row_ind.extend(result[1])
+                col_ind.extend(result[2])
+
+                matrices.append(sparse.csr_matrix((data, (row_ind, col_ind))))
+
+            else:
+                raise NotImplementedError(
+                    f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        matrix_k, matrix_m = matrices
+
+        eigvals, eigvecs = eigh(matrix_k, matrix_m)
+
+        return eigvals, eigvecs
 
     def solve(self):
         """
