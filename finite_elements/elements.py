@@ -190,7 +190,7 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
         self.thickness = thickness
 
         ElasticityElement.__init__(self, mesh_element,
-                                       elasticity_modulus, poisson_ratio)
+                                       elasticity_modulus, poisson_ratio, mass_density)
         vmmesh.TriangularElement2D.__init__(self, points=mesh_element.points)
 
         # DessiaObject.__init__(self, name=name)
@@ -269,7 +269,7 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
         mass_matrix = ((self.mass_density * self.area \
                         * self.thickness)/12) * npy.array(data).reshape(6, 6)
 
-        return mass_matrix
+        return mass_matrix.flatten()
 
     def strain(self):
         b_matrix = self.b_matrix()
