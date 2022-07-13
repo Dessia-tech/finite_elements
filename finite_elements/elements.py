@@ -137,6 +137,7 @@ class ElasticityElement(DessiaObject):
 
     def __init__(self, mesh_element: vmmesh.TetrahedralElement,
                  elasticity_modulus, poisson_ratio,
+                 mass_density,
                  displacements = None,
                  stress = None,
                  strain = None,
@@ -144,6 +145,7 @@ class ElasticityElement(DessiaObject):
         self.mesh_element = mesh_element
         self.elasticity_modulus = elasticity_modulus
         self.poisson_ratio = poisson_ratio
+        self.mass_density = mass_density
         self.points = self.mesh_element.points
         self.b_matrix = self._b_matrix()
         self.d_matrix = self._d_matrix()
@@ -257,13 +259,15 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
         return stiffness_matrix.flatten()
 
     def elementary_mass_matrix(self):
-        det_jacobian = (self.points[0].x-self.points[2].x)*(self.points[1].y-self.points[2].y) \
-            - (self.points[0].y-self.points[2].y)*(self.points[1].x-self.points[2].x)
-        data = [2, 1, 1,
-                1, 2, 1,
-                1, 1, 2]
+        data = [2, 0, 1, 0, 1, 0,
+                0, 2, 0, 1, 0, 1,
+                1, 0, 2, 0, 1, 0,
+                0, 1, 0, 2, 0, 1,
+                1, 0, 1, 0, 2, 0,
+                0, 1, 0, 1, 0, 2]
 
-        mass_matrix = (det_jacobian/24) * npy.array(data).reshape(3, 3)
+        mass_matrix = ((self.mass_density * self.area \
+                        * self.thickness)/12) * npy.array(data).reshape(6, 6)
 
         return mass_matrix
 
