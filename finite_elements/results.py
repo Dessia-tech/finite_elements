@@ -506,6 +506,7 @@ class ElasticityResults(Result):
     def plot_deformed_mesh(self, ax=None):
         if ax is None:
             fig, ax = plt.subplots()
+            ax.set_aspect('equal')
     
         self.deformed_mesh.plot(ax=ax)
         # self.mesh.plot(ax)
