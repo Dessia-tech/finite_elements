@@ -181,7 +181,7 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
     #     self.strain = strain
 
     def __init__(self, mesh_element: vmmesh.TetrahedralElement,
-                 elasticity_modulus, poisson_ratio,
+                 elasticity_modulus, poisson_ratio, mass_density,
                  thickness: float = 1.0,
                  displacements = None,
                  stress = None,
@@ -312,14 +312,14 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
     #     self.strain = strain
 
     def __init__(self, mesh_element: vmmesh.TetrahedralElement,
-                 elasticity_modulus, poisson_ratio,
+                 elasticity_modulus, poisson_ratio, mass_density,
                  displacements = None,
                  stress = None,
                  strain = None,
                  name : str = ''):
 
         ElasticityElement.__init__(self, mesh_element,
-                                       elasticity_modulus, poisson_ratio)
+                                       elasticity_modulus, poisson_ratio, mass_density)
         vmmesh.TetrahedralElement.__init__(self, points=mesh_element.points)
 
         # DessiaObject.__init__(self, name=name)
