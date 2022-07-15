@@ -513,11 +513,10 @@ class ElasticityResults(Result):
 
     def plot_displacements(self, displacement_name: str, ax=None, fig=None):
 
-        if ax is None:
-            fig, ax = plt.subplots()
-
         if hasattr(self, displacement_name):
             x = getattr(self, displacement_name)()
+        elif displacement_name == 'displacement_per_node_xy':
+            x = [displacement.norm() for displacement in self.displacement_vectors_per_node]
         else:
             raise NotImplementedError(
                 f'Class {self.__class__.__name__} does not implement {displacement_name}')
@@ -529,6 +528,8 @@ class ElasticityResults(Result):
             fig, ax = plt.subplots()
         else:
             fig = plt.gcf()
+
+        ax.set_aspect('equal')
         ax.tricontourf(triang, x, cmap=blue_red)
         ax.triplot(triang, 'k-')
         # ax.set_title('Triangular grid')
@@ -544,6 +545,10 @@ class ElasticityResults(Result):
     def plot_displacement_per_node_x(self, ax=None):
 
         return self.plot_displacements(displacement_name='displacement_per_node_x', ax=ax)
+
+    def plot_displacement_per_node_xy(self, ax=None):
+
+        return self.plot_displacements(displacement_name='displacement_per_node_xy', ax=ax)
 
     def plot_displacement_per_node_y(self, ax=None):
 
