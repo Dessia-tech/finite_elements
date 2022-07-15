@@ -16,18 +16,20 @@ import finite_elements.conditions
 
 # %% Mesh2D
 
-file_path = 'mesh_2.msh'
+file_path = 'mesh_4.msh'
 
 gmsh = volmdlr.gmsh.Gmsh.from_file(file_path)
 
 mesh = gmsh.define_triangular_element_mesh()
 
-mesh.plot()
+# mesh.plot()
 
 # %% Finite Element Mesh2D
 
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
-elasticity_modulus, poisson_ratio, thickness, mass_density = 45*1e6, 0.29, 1, 1800 #magnesium
+elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
+# elasticity_modulus, poisson_ratio, thickness, mass_density = 70000, 0.34, 1, 2.7e-9 #aluminium
+# elasticity_modulus, poisson_ratio, thickness, mass_density = 45*1e6, 0.29, 1, 1800 #magnesium
+
 group_elements = []
 
 for group in mesh.elements_groups:
@@ -48,10 +50,10 @@ analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [])
 eigvals, eigvecs = analysis.modal_analysis()
 elasticity_results = []
 
-for eigvec in eigvecs:
+for eigvec in eigvecs[0:6]:
     elasticity_results.append(fe.results.ElasticityResults2D(analysis.mesh,
                                                              eigvec))
 
 for elasticity_result in elasticity_results[0:6]:
-    elasticity_result.plot_deformed_mesh()
-
+    # elasticity_result.plot_deformed_mesh()
+    elasticity_result.plot_displacement_per_node_xy()
