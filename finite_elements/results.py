@@ -558,6 +558,7 @@ class ElasticityResults(Result):
         if ax is None:
             fig, ax = plt.subplots()
 
+        ax.set_aspect('equal')
         self.mesh.plot(ax)
         displacement_field_vectors = self.displacement_vectors_per_node
         for i, vector in enumerate(displacement_field_vectors):
