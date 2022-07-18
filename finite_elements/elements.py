@@ -266,6 +266,21 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
                 1, 0, 1, 0, 2, 0,
                 0, 1, 0, 1, 0, 2]
 
+        # jacobian = [self.points[1].x - self.points[0].x, self.points[1].y - self.points[0].y,
+        #             self.points[2].x - self.points[0].x, self.points[2].y - self.points[0].y]
+
+        # x1 = self.mesh_element.points[0][0]
+        # y1 = self.mesh_element.points[0][1]
+        # x2 = self.mesh_element.points[1][0]
+        # y2 = self.mesh_element.points[1][1]
+        # x3 = self.mesh_element.points[2][0]
+        # y3 = self.mesh_element.points[2][1]
+
+        # det_jacobien = 1 / (abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1)))
+
+        # mass_matrix = det_jacobien * ((self.mass_density * self.area \
+        #                 * self.thickness)/12) * npy.array(data).reshape(6, 6)
+
         mass_matrix = ((self.mass_density * self.area \
                         * self.thickness)/12) * npy.array(data).reshape(6, 6)
 
