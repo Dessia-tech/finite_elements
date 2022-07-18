@@ -26,8 +26,10 @@ mesh = gmsh.define_triangular_element_mesh()
 
 # %% Finite Element Mesh2D
 
-elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 70000, 0.34, 1, 2.7e-9 #aluminium
+# elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
+# elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e3, 0.25, 0.5, 3.74 #acier
+elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 0.5, 7860 #acier
+
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 45*1e6, 0.29, 1, 1800 #magnesium
 
 group_elements = []
