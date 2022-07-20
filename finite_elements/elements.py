@@ -258,6 +258,31 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
         return stiffness_matrix.flatten()
 
+    # def elementary_mass_matrix(self):
+        data = [2, 0, 1, 0, 1, 0,
+                0, 2, 0, 1, 0, 1,
+                1, 0, 2, 0, 1, 0,
+                0, 1, 0, 2, 0, 1,
+                1, 0, 1, 0, 2, 0,
+                0, 1, 0, 1, 0, 2]
+
+        x1 = self.mesh_element.points[0][0]
+        y1 = self.mesh_element.points[0][1]
+        x2 = self.mesh_element.points[1][0]
+        y2 = self.mesh_element.points[1][1]
+        x3 = self.mesh_element.points[2][0]
+        y3 = self.mesh_element.points[2][1]
+
+        det_jacobien = (abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1)))
+
+        # mass_matrix = det_jacobien * ((self.mass_density * self.area \
+        #                 * self.thickness)/12) * npy.array(data).reshape(6, 6)
+
+        mass_matrix = 0.5* det_jacobien* ((self.mass_density * self.area \
+                        * self.thickness)/12) * npy.array(data).reshape(6, 6)
+
+        return mass_matrix.flatten()
+
     def elementary_mass_matrix(self):
         data = [2, 0, 1, 0, 1, 0,
                 0, 2, 0, 1, 0, 1,
@@ -266,25 +291,71 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
                 1, 0, 1, 0, 2, 0,
                 0, 1, 0, 1, 0, 2]
 
-        # jacobian = [self.points[1].x - self.points[0].x, self.points[1].y - self.points[0].y,
-        #             self.points[2].x - self.points[0].x, self.points[2].y - self.points[0].y]
+        x1 = self.mesh_element.points[0][0]
+        y1 = self.mesh_element.points[0][1]
+        x2 = self.mesh_element.points[1][0]
+        y2 = self.mesh_element.points[1][1]
+        x3 = self.mesh_element.points[2][0]
+        y3 = self.mesh_element.points[2][1]
 
-        # x1 = self.mesh_element.points[0][0]
-        # y1 = self.mesh_element.points[0][1]
-        # x2 = self.mesh_element.points[1][0]
-        # y2 = self.mesh_element.points[1][1]
-        # x3 = self.mesh_element.points[2][0]
-        # y3 = self.mesh_element.points[2][1]
+        d = [(x2*y3 - x3*y2), (x3*y1 - x1*y3), (x1*y2 - x2*y1), 0, 0, 0,
+             (y2-y3), (y3-y1), (y1-y2), 0, 0, 0,
+             (x3-x2), (x1-x3), (x2-x1), 0, 0, 0,
+             0, 0, 0, (x2*y3 - x3*y2), (x3*y1 - x1*y3), (x1*y2 - x2*y1),
+             0, 0, 0, (y2-y3), (y3-y1), (y1-y2),
+             0, 0, 0, (x3-x2), (x1-x3), (x2-x1)]
 
-        # det_jacobien = 1 / (abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1)))
+        A = 1/(2*self.area) * npy.array(d).reshape(6, 6)
+        from numpy.linalg import inv
+        A = inv(A)
 
-        # mass_matrix = det_jacobien * ((self.mass_density * self.area \
-        #                 * self.thickness)/12) * npy.array(data).reshape(6, 6)
+        M = npy.array(data).reshape(6, 6)
 
         mass_matrix = ((self.mass_density * self.area \
-                        * self.thickness)/12) * npy.array(data).reshape(6, 6)
+                        * self.thickness)/12) * npy.matmul(A, M)
+
+        mass_matrix = ((self.mass_density * self.area \
+                        * self.thickness)/12) * (npy.matmul(npy.matmul(A.transpose(), M), A))
 
         return mass_matrix.flatten()
+
+
+    # def elementary_mass_matrix(self):
+
+    #     x1 = self.mesh_element.points[0][0]
+    #     y1 = self.mesh_element.points[0][1]
+    #     x2 = self.mesh_element.points[1][0]
+    #     y2 = self.mesh_element.points[1][1]
+    #     x3 = self.mesh_element.points[2][0]
+    #     y3 = self.mesh_element.points[2][1]
+
+    #     det_jacobien = abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))
+
+    #     element_form_functions = self.mesh_element.form_functions
+    #     a1 = element_form_functions[0][0]
+    #     b1 = element_form_functions[0][1]
+    #     c1 = element_form_functions[0][2]
+    #     a2 = element_form_functions[1][0]
+    #     b2 = element_form_functions[1][1]
+    #     c2 = element_form_functions[1][2]
+    #     a3 = element_form_functions[2][0]
+    #     b3 = element_form_functions[2][1]
+    #     c3 = element_form_functions[2][2]
+
+    #     N1 = det_jacobien*(a1 + 0.5*b1*x2 + 0.5*c1*y2 + 0.5*b1*x3 + 0.5*c1*y3)
+    #     N2 = det_jacobien*(a2 + 0.5*b2*x2 + 0.5*c2*y2 + 0.5*b2*x3 + 0.5*c2*y3)
+    #     N3 = det_jacobien*(a3 + 0.5*b3*x2 + 0.5*c3*y2 + 0.5*b3*x3 + 0.5*c3*y3)
+
+    #     data = [N1*N1, 0, N1*N2, 0, N1*N3, 0,
+    #             0, N1*N1, 0, N1*N2, 0, N1*N3,
+    #             N2*N1, 0, N2*N2, 0, N2*N3, 0,
+    #             0, N2*N1, 0, N2*N2, 0, N2*N3,
+    #             N3*N1, 0, N3*N2, 0, N3*N3, 0,
+    #             0, N3*N1, 0, N3*N2, 0, N3*N3]
+
+    #     mass_matrix = self.mass_density * self.thickness * npy.array(data).reshape(6, 6)
+
+    #     return mass_matrix.flatten()
 
     def strain(self):
         b_matrix = self.b_matrix()
