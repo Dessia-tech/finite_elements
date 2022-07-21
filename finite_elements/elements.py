@@ -258,7 +258,7 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
         return stiffness_matrix.flatten()
 
-    # def elementary_mass_matrix(self):
+    def elementary_mass_matrix(self):
         data = [2, 0, 1, 0, 1, 0,
                 0, 2, 0, 1, 0, 1,
                 1, 0, 2, 0, 1, 0,
@@ -278,46 +278,46 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
         # mass_matrix = det_jacobien * ((self.mass_density * self.area \
         #                 * self.thickness)/12) * npy.array(data).reshape(6, 6)
 
-        mass_matrix = 0.5* det_jacobien* ((self.mass_density * self.area \
+        mass_matrix = 0.5* det_jacobien * ((self.mass_density * self.area \
                         * self.thickness)/12) * npy.array(data).reshape(6, 6)
 
         return mass_matrix.flatten()
 
-    def elementary_mass_matrix(self):
-        data = [2, 0, 1, 0, 1, 0,
-                0, 2, 0, 1, 0, 1,
-                1, 0, 2, 0, 1, 0,
-                0, 1, 0, 2, 0, 1,
-                1, 0, 1, 0, 2, 0,
-                0, 1, 0, 1, 0, 2]
+    # def elementary_mass_matrix(self):
+    #     data = [2, 0, 1, 0, 1, 0,
+    #             0, 2, 0, 1, 0, 1,
+    #             1, 0, 2, 0, 1, 0,
+    #             0, 1, 0, 2, 0, 1,
+    #             1, 0, 1, 0, 2, 0,
+    #             0, 1, 0, 1, 0, 2]
 
-        x1 = self.mesh_element.points[0][0]
-        y1 = self.mesh_element.points[0][1]
-        x2 = self.mesh_element.points[1][0]
-        y2 = self.mesh_element.points[1][1]
-        x3 = self.mesh_element.points[2][0]
-        y3 = self.mesh_element.points[2][1]
+    #     x1 = self.mesh_element.points[0][0]
+    #     y1 = self.mesh_element.points[0][1]
+    #     x2 = self.mesh_element.points[1][0]
+    #     y2 = self.mesh_element.points[1][1]
+    #     x3 = self.mesh_element.points[2][0]
+    #     y3 = self.mesh_element.points[2][1]
 
-        d = [(x2*y3 - x3*y2), (x3*y1 - x1*y3), (x1*y2 - x2*y1), 0, 0, 0,
-             (y2-y3), (y3-y1), (y1-y2), 0, 0, 0,
-             (x3-x2), (x1-x3), (x2-x1), 0, 0, 0,
-             0, 0, 0, (x2*y3 - x3*y2), (x3*y1 - x1*y3), (x1*y2 - x2*y1),
-             0, 0, 0, (y2-y3), (y3-y1), (y1-y2),
-             0, 0, 0, (x3-x2), (x1-x3), (x2-x1)]
+    #     d = [(x2*y3 - x3*y2), (x3*y1 - x1*y3), (x1*y2 - x2*y1), 0, 0, 0,
+    #          (y2-y3), (y3-y1), (y1-y2), 0, 0, 0,
+    #          (x3-x2), (x1-x3), (x2-x1), 0, 0, 0,
+    #          0, 0, 0, (x2*y3 - x3*y2), (x3*y1 - x1*y3), (x1*y2 - x2*y1),
+    #          0, 0, 0, (y2-y3), (y3-y1), (y1-y2),
+    #          0, 0, 0, (x3-x2), (x1-x3), (x2-x1)]
 
-        A = 1/(2*self.area) * npy.array(d).reshape(6, 6)
-        from numpy.linalg import inv
-        A = inv(A)
+    #     A = 1/(2*self.area) * npy.array(d).reshape(6, 6)
+    #     from numpy.linalg import inv
+    #     A = inv(A)
 
-        M = npy.array(data).reshape(6, 6)
+    #     M = npy.array(data).reshape(6, 6)
 
-        mass_matrix = ((self.mass_density * self.area \
-                        * self.thickness)/12) * npy.matmul(A, M)
+    #     mass_matrix = ((self.mass_density * self.area \
+    #                     * self.thickness)/12) * npy.matmul(A, M)
 
-        mass_matrix = ((self.mass_density * self.area \
-                        * self.thickness)/12) * (npy.matmul(npy.matmul(A.transpose(), M), A))
+    #     mass_matrix = ((self.mass_density * self.area \
+    #                     * self.thickness)/12) * (npy.matmul(npy.matmul(A.transpose(), M), A))
 
-        return mass_matrix.flatten()
+    #     return mass_matrix.flatten()
 
 
     # def elementary_mass_matrix(self):

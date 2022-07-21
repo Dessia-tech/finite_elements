@@ -36,6 +36,11 @@ elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 0.5,
 
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 30*1e6, 0.25, 0.5, 7860
 
+# elasticity_modulus, poisson_ratio, thickness, mass_density = 210000, 0.3, 0.5, 2.7000*1e-6 #matlab
+
+# elasticity_modulus, poisson_ratio, thickness, mass_density = 193000, 0.3, 0.5, 8*1e-6 #Stainless steel
+elasticity_modulus, poisson_ratio, thickness, mass_density = 68900, 0.33, 0.5, 2.7*1e-6 #Aluminum 6061
+
 group_elements = []
 
 for group in mesh.elements_groups:
@@ -56,10 +61,10 @@ analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [])
 eigvals, eigvecs = analysis.modal_analysis()
 elasticity_results = []
 
-for eigvec in eigvecs[0:1]:
+for eigvec in eigvecs[0:5]:
     elasticity_results.append(fe.results.ElasticityResults2D(analysis.mesh,
                                                              eigvec))
 
-for elasticity_result in elasticity_results[0:1]:
+for elasticity_result in elasticity_results[0:5]:
     # elasticity_result.plot_deformed_mesh()
     elasticity_result.plot_displacement_per_node_xy()
