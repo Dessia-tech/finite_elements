@@ -29,7 +29,7 @@ mesh = gmsh.define_triangular_element_mesh()
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 45*1e6, 0.29, 1, 1800 #magnesium
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e3, 0.25, 0.5, 3.74 #acier
-elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7860 #acier
+elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7.860 #acier
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 3*1e7, 0.3, 0.5, 0.3/386 #acier
 # # elasticity_modulus, poisson_ratio, thickness, mass_density = 20*1e9, 0.3, 0.5, 7800 #acier
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.3, 0.5, 8000 #acier
@@ -59,7 +59,7 @@ analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [])
 eigvals, eigvecs = analysis.modal_analysis()
 elasticity_results = []
 
-for eigvec in eigvecs[0:5]:
+for eigvec in eigvecs.T[0:5]:
     elasticity_results.append(fe.results.ElasticityResults2D(analysis.mesh,
                                                               eigvec))
 

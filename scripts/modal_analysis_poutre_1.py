@@ -63,7 +63,7 @@ analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [])
 eigvals, eigvecs = analysis.modal_analysis()
 elasticity_results = []
 
-for eigvec in eigvecs:
+for eigvec in eigvecs.T:
     elasticity_results.append(fe.results.ElasticityResults2D(analysis.mesh,
                                                              eigvec))
 
