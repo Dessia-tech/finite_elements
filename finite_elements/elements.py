@@ -156,6 +156,17 @@ class ElasticityElement(DessiaObject):
 
         DessiaObject.__init__(self, name=name)
 
+    def d_matrix(self, plane_strain: bool, plane_stress:bool):
+
+        if (plane_strain and plane_stress):
+            raise ValueError('just one of plane_strain or plane_stress can be True')
+        elif (not plane_strain and not plane_stress):
+            raise ValueError('one of plane_strain or plane_stress must be True')
+        elif plane_strain:
+            return self.d_matrix_plane_strain
+        elif plane_stress:
+            return self.d_matrix_plane_stress
+
 
 class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2D):
     # _standalone_in_db = False
@@ -236,17 +247,6 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
                 0, 0, b]
 
         return npy.array(data).reshape(3,3)
-
-    def d_matrix(self, plane_strain: bool, plane_stress:bool):
-
-        if (plane_strain and plane_stress):
-            raise ValueError('just one of plane_strain or plane_stress can be True')
-        elif (not plane_strain and not plane_stress):
-            raise ValueError('one of plane_strain or plane_stress must be True')
-        elif plane_strain:
-            return self.d_matrix_plane_strain
-        elif plane_stress:
-            return self.d_matrix_plane_stress
 
     @property
     def dimension(self):
@@ -468,7 +468,12 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
 
         return b_matrix
 
-    def _d_matrix(self):
+    def _d_matrix_plane_strain(self):
+        return self._d_matrix_()
+    def _d_matrix_plane_stress(self):
+        return self._d_matrix_()
+
+    def _d_matrix_(self):
         elasticity_modulus = self.elasticity_modulus
         poisson_ratio = self.poisson_ratio
         coeff_a = 1 - poisson_ratio
@@ -490,10 +495,10 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
     def dimension(self):
         return 3
 
-    def elementary_matrix(self):
+    def elementary_matrix(self, plane_strain: bool, plane_stress:bool):
 
         b_matrix = self.b_matrix
-        d_matrix = self.d_matrix
+        d_matrix = self.d_matrix(plane_strain, plane_stress)
 
         stiffness_matrix = self.volume * (
             npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))

@@ -31,12 +31,12 @@ solid_elments3d = [fe.elements.ElasticityTetrahedralElement3D(
 group_solid_elments3d = mesh.ElementsGroup(solid_elments3d, '')
 mesh = mesh.Mesh([group_solid_elments3d])
 
-stiffness_matrix = solid_elments3d[0].elementary_matrix()
+stiffness_matrix = solid_elments3d[0].elementary_matrix(plane_strain=True, plane_stress=False)
 
 
 # %% Analysis
 
-analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [])
+analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [], plane_strain=True, plane_stress=False)
 
 m = analysis.create_matrix()
 
