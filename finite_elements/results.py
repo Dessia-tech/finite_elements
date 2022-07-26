@@ -455,7 +455,8 @@ class ElasticityResults(Result):
         displacement_field_vectors = self.displacement_vectors_per_node
         deformed_nodes = []
         for i, node in enumerate(self.mesh.nodes):
-            deformed_nodes.append(node + displacement_field_vectors[i])
+            obj=getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
+            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i]))
 
         return deformed_nodes
 
