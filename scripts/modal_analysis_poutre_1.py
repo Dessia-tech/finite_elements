@@ -18,7 +18,8 @@ import finite_elements.conditions
 
 phase1, phase2, phase3 = 3, 3, 3
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
-elasticity_modulus, poisson_ratio, thickness, mass_density = 45*1e6, 0.29, 1, 1800 #magnesium
+elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7860 #acier
+
 
 elements_phase1 = []
 for i in range(3):
@@ -63,10 +64,20 @@ analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [],
 eigvals, eigvecs = analysis.modal_analysis()
 elasticity_results = []
 
-for eigvec in eigvecs:
+for eigvec in eigvecs.T:
     elasticity_results.append(fe.results.ElasticityResults2D(analysis.mesh,
                                                              eigvec,
                                                              analysis.plane_strain, analysis.plane_stress))
 
-for elasticity_result in elasticity_results[0:6]:
-    elasticity_result.plot_deformed_mesh()
+for elasticity_result in elasticity_results[0:10]:
+    # elasticity_result.plot_deformed_mesh()
+    elasticity_result.plot_displacement_per_node_xy()
+
+# %%
+
+# import matplotlib.pyplot as plt
+# b = [max(abs(eigvec)) for eigvec in eigvecs]
+# plt.plot(b)
+
+# plt.plot(eigvals)
+

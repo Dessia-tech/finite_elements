@@ -29,17 +29,15 @@ mesh = gmsh.define_triangular_element_mesh()
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 45*1e6, 0.29, 1, 1800 #magnesium
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e3, 0.25, 0.5, 3.74 #acier
-elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 0.5, 7860 #acier
+elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7.860 #acier
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 3*1e7, 0.3, 0.5, 0.3/386 #acier
 # # elasticity_modulus, poisson_ratio, thickness, mass_density = 20*1e9, 0.3, 0.5, 7800 #acier
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.3, 0.5, 8000 #acier
 
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 30*1e6, 0.25, 0.5, 7860
-
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 210000, 0.3, 0.5, 2.7000*1e-6 #matlab
-
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 193000, 0.3, 0.5, 8*1e-6 #Stainless steel
-elasticity_modulus, poisson_ratio, thickness, mass_density = 68900, 0.33, 0.5, 2.7*1e-6 #Aluminum 6061
+# elasticity_modulus, poisson_ratio, thickness, mass_density = 68900, 0.33, 0.5, 2.7*1e-6 #Aluminum 6061
 
 group_elements = []
 
@@ -62,7 +60,7 @@ analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [],
 eigvals, eigvecs = analysis.modal_analysis()
 elasticity_results = []
 
-for eigvec in eigvecs[0:5]:
+for eigvec in eigvecs.T[0:5]:
     elasticity_results.append(fe.results.ElasticityResults2D(analysis.mesh,
                                                              eigvec,
                                                              analysis.plane_strain, analysis.plane_stress))
@@ -70,3 +68,11 @@ for eigvec in eigvecs[0:5]:
 for elasticity_result in elasticity_results:
     # elasticity_result.plot_deformed_mesh()
     elasticity_result.plot_displacement_per_node_xy()
+
+# %%
+
+# import matplotlib.pyplot as plt
+# b = [max(abs(eigvec)) for eigvec in eigvecs]
+# plt.plot(b)
+
+# plt.plot(eigvals)

@@ -455,7 +455,7 @@ class ElasticityResults(Result):
         displacement_field_vectors = self.displacement_vectors_per_node
         deformed_nodes = []
         for i, node in enumerate(self.mesh.nodes):
-            deformed_nodes.append(node + displacement_field_vectors[i])
+            deformed_nodes.append(node + displacement_field_vectors[i]*10)
 
         return deformed_nodes
 
