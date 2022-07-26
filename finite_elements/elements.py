@@ -146,7 +146,7 @@ class ElasticityElement(DessiaObject):
         self.elasticity_modulus = elasticity_modulus
         self.poisson_ratio = poisson_ratio
         self.mass_density = mass_density
-        self.points = self._points()
+        self.points = self.mesh_element.points
         self.b_matrix = self._b_matrix()
         self.d_matrix_plane_strain = self._d_matrix_plane_strain()
         self.d_matrix_plane_stress = self._d_matrix_plane_stress()
@@ -166,10 +166,6 @@ class ElasticityElement(DessiaObject):
             return self.d_matrix_plane_strain
         elif plane_stress:
             return self.d_matrix_plane_stress
-
-    def _points(self):
-        obj=getattr(finite_elements.core, f'Node{self.__class__.__name__[-2::]}')
-        return [getattr(obj, 'from_point')(point) for point in self.mesh_element.points]
 
 class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2D):
     # _standalone_in_db = False

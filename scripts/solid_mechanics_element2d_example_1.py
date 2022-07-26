@@ -33,11 +33,11 @@ mesh_fe = mesh.Mesh([group_solid_elments2d])
 load = -10000000
 node_loads = [fe.loads.NodeLoad(mesh_fe.nodes[mesh_fe.node_to_index[mesh.Node2D(3,2)]], load, 2)] #1000
 
-node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(finite_elements.core.Node2D(3,0), 0, 2),
-                            finite_elements.conditions.NodeBoundaryCondition(finite_elements.core.Node2D(0,2), 0, 1),
-                            finite_elements.conditions.NodeBoundaryCondition(finite_elements.core.Node2D(0,2), 0, 2),
-                            finite_elements.conditions.NodeBoundaryCondition(finite_elements.core.Node2D(0,0), 0, 1),
-                            finite_elements.conditions.NodeBoundaryCondition(finite_elements.core.Node2D(0,0), 0, 2)]
+node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(mesh.Node2D(3,0), 0, 2),
+                            finite_elements.conditions.NodeBoundaryCondition(mesh.Node2D(0,2), 0, 1),
+                            finite_elements.conditions.NodeBoundaryCondition(mesh.Node2D(0,2), 0, 2),
+                            finite_elements.conditions.NodeBoundaryCondition(mesh.Node2D(0,0), 0, 1),
+                            finite_elements.conditions.NodeBoundaryCondition(mesh.Node2D(0,0), 0, 2)]
 
 
 #%% Analysis: plane_strain

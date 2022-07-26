@@ -22,8 +22,8 @@ gmsh = volmdlr.gmsh.Gmsh.from_file(file_path)
 
 mesh = gmsh.define_triangular_element_mesh()
 
-# mesh.plot()
-
+mesh.plot()
+'''
 # %% Finite Element Mesh2D
 
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
@@ -76,3 +76,4 @@ for elasticity_result in elasticity_results:
 # plt.plot(b)
 
 # plt.plot(eigvals)
+'''
