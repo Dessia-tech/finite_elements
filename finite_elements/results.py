@@ -444,8 +444,8 @@ class ElasticityResults(Result):
 
                 mesh_element = element.mesh_element.__class__(points)
 
-                elasticity_elments.append(element.__class__(
-                    mesh_element, element.elasticity_modulus, element.poisson_ratio, element.thickness))
+                elasticity_elments.append(element.__class__.from_element(mesh_element,
+                                                                         element))
 
             group_elasticity_elments.append(vmmesh.ElementsGroup(elasticity_elments, ''))
 
