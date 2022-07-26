@@ -23,8 +23,8 @@ elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7
 
 elements_phase1 = []
 for i in range(3):
-    element1 = mesh.TriangularElement2D([vm.Point2D(i,0), vm.Point2D(i+1,0), vm.Point2D(i,1)])
-    element2 = mesh.TriangularElement2D([vm.Point2D(i+1,1), vm.Point2D(i+1,0), vm.Point2D(i,1)])
+    element1 = mesh.TriangularElement2D([mesh.Node2D(i,0), mesh.Node2D(i+1,0), mesh.Node2D(i,1)])
+    element2 = mesh.TriangularElement2D([mesh.Node2D(i+1,1), mesh.Node2D(i+1,0), mesh.Node2D(i,1)])
     elements_phase1.extend([element1, element2])
 
 solid_elments2d = [fe.elements.ElasticityTriangularElement2D(
@@ -34,8 +34,8 @@ group_phase1 = mesh.ElementsGroup(solid_elments2d, 'phase1')
 
 elements_phase2 = []
 for i in range(phase1, phase1+phase2):
-    element1 = mesh.TriangularElement2D([vm.Point2D(i,0), vm.Point2D(i+1,0), vm.Point2D(i,1)])
-    element2 = mesh.TriangularElement2D([vm.Point2D(i+1,1), vm.Point2D(i+1,0), vm.Point2D(i,1)])
+    element1 = mesh.TriangularElement2D([mesh.Node2D(i,0), mesh.Node2D(i+1,0), mesh.Node2D(i,1)])
+    element2 = mesh.TriangularElement2D([mesh.Node2D(i+1,1), mesh.Node2D(i+1,0), mesh.Node2D(i,1)])
     elements_phase2.extend([element1, element2])
 
 solid_elments2d = [fe.elements.ElasticityTriangularElement2D(
@@ -45,8 +45,8 @@ group_phase2 = mesh.ElementsGroup(solid_elments2d, 'phase2')
 
 elements_phase3 = []
 for i in range(phase1+phase2, phase1+phase2+phase3):
-    element1 = mesh.TriangularElement2D([vm.Point2D(i,0), vm.Point2D(i+1,0), vm.Point2D(i,1)])
-    element2 = mesh.TriangularElement2D([vm.Point2D(i+1,1), vm.Point2D(i+1,0), vm.Point2D(i,1)])
+    element1 = mesh.TriangularElement2D([mesh.Node2D(i,0), mesh.Node2D(i+1,0), mesh.Node2D(i,1)])
+    element2 = mesh.TriangularElement2D([mesh.Node2D(i+1,1), mesh.Node2D(i+1,0), mesh.Node2D(i,1)])
     elements_phase3.extend([element1, element2])
 
 solid_elments2d = [fe.elements.ElasticityTriangularElement2D(
