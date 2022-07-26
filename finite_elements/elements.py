@@ -212,17 +212,6 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
         return b_matrix
 
-    def d_matrix(self, plane_strain: bool, plane_stress:bool):
-
-        if (plane_strain and plane_stress):
-            raise ValueError('just one of plane_strain or plane_stress can be True')
-        elif (not plane_strain and not plane_stress):
-            raise ValueError('one of plane_strain or plane_stress must be True')
-        elif plane_strain:
-            return self.d_matrix_plane_strain
-        elif plane_stress:
-            return self.d_matrix_plane_stress
-
     def _d_matrix_plane_strain(self):
 
         a = (self.elasticity_modulus*self.poisson_ratio) \
@@ -247,6 +236,17 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
                 0, 0, b]
 
         return npy.array(data).reshape(3,3)
+
+    def d_matrix(self, plane_strain: bool, plane_stress:bool):
+
+        if (plane_strain and plane_stress):
+            raise ValueError('just one of plane_strain or plane_stress can be True')
+        elif (not plane_strain and not plane_stress):
+            raise ValueError('one of plane_strain or plane_stress must be True')
+        elif plane_strain:
+            return self.d_matrix_plane_strain
+        elif plane_stress:
+            return self.d_matrix_plane_stress
 
     @property
     def dimension(self):
