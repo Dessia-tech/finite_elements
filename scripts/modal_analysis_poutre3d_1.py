@@ -43,14 +43,16 @@ mesh = vmmesh.Mesh(group_elements)
 
 # %% Analysis
 
-analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [])
+analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [],
+                                             plane_strain=False, plane_stress=True)
+
 
 eigvals, eigvecs = analysis.modal_analysis()
 elasticity_results = []
 
 for eigvec in eigvecs.T[0:5]:
-    elasticity_results.append(fe.results.ElasticityResults2D(analysis.mesh,
-                                                              eigvec))
+    elasticity_results.append(fe.results.ElasticityResults3D(analysis.mesh,
+                                                              eigvec, analysis.plane_strain, analysis.plane_stress))
 
 for elasticity_result in elasticity_results[0:5]:
     # elasticity_result.plot_deformed_mesh()
