@@ -68,15 +68,16 @@ for index in application_indices:
     node_boundary_conditions.extend([finite_elements.conditions.NodeBoundaryCondition(mesh.nodes[index], 0, 1),
                                 finite_elements.conditions.NodeBoundaryCondition(mesh.nodes[index], 0, 2)])
 
-# %% Analysis
+#%% Analysis: plane_strain
 
-analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, [], [], node_boundary_conditions, [])
+analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, [], [], node_boundary_conditions, [],
+                                             plane_strain=True, plane_stress=False)
 
 m = analysis.create_matrix()
 
 results = analysis.solve()
 
-elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector)
+elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector, analysis.plane_strain, analysis.plane_stress)
 
 elasticity_result.plot_deformed_mesh()
 elasticity_result.plot_displacement_vectors_per_node()
@@ -87,6 +88,28 @@ elasticity_result.plot_displacement_vectors_per_node()
 # elasticity_result.plot_displacement_per_node_x()
 # elasticity_result.plot_displacement_per_node_y()
 elasticity_result.plot_displacement_per_node_xy()
+
+#%% Analysis: plane_stress
+
+analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, [], [], node_boundary_conditions, [],
+                                             plane_strain=False, plane_stress=True)
+
+m = analysis.create_matrix()
+
+results = analysis.solve()
+
+elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector, analysis.plane_strain, analysis.plane_stress)
+
+elasticity_result.plot_deformed_mesh()
+elasticity_result.plot_displacement_vectors_per_node()
+
+# elasticity_result.plot_strain()
+# elasticity_result.plot_stress()
+
+# elasticity_result.plot_displacement_per_node_x()
+# elasticity_result.plot_displacement_per_node_y()
+elasticity_result.plot_displacement_per_node_xy()
+
 
 # %%
 

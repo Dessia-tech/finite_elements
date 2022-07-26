@@ -364,9 +364,14 @@ class ElasticityResults(Result):
     _non_eq_attributes = ['name']
     _non_hash_attributes = ['name']
     _generic_eq = True
-    def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float]):
+    def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float],
+                 plane_strain: bool,
+                 plane_stress: bool):
+
         self.mesh = mesh
         self.result_vector = result_vector
+        self.plane_strain = plane_strain
+        self.plane_stress = plane_stress
 
         self.displacement_vectors_per_node = self._displacement_vectors_per_node()
         self.displacements_per_element = self._displacements_per_element()
@@ -419,7 +424,9 @@ class ElasticityResults(Result):
             for element in elements_group.elements:
                 element_to_strain[element] = (npy.matmul(element.b_matrix, element.displacements))
                 element.strain = element_to_strain[element]
-                element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix, element.b_matrix), element.displacements))
+                element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress),
+                                                                                     element.b_matrix),
+                                                                    element.displacements))
                 element.stress = element_to_stress[element]
 
         return element_to_strain, element_to_stress

@@ -148,7 +148,8 @@ class ElasticityElement(DessiaObject):
         self.mass_density = mass_density
         self.points = self.mesh_element.points
         self.b_matrix = self._b_matrix()
-        self.d_matrix = self._d_matrix()
+        self.d_matrix_plane_strain = self._d_matrix_plane_strain()
+        self.d_matrix_plane_stress = self._d_matrix_plane_stress()
         self.displacements = displacements
         self.stress = stress
         self.strain = strain
@@ -211,26 +212,55 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
         return b_matrix
 
-    def _d_matrix(self):
-        elasticity_modulus = self.elasticity_modulus
-        poisson_ratio = self.poisson_ratio
+    def d_matrix(self, plane_strain: bool, plane_stress:bool):
 
-        data = [1, poisson_ratio, 0,
-                poisson_ratio, 1, 0,
-                0, 0, (1-poisson_ratio)/2]
+        if (plane_strain and plane_stress):
+            raise ValueError('just one of plane_strain or plane_stress can be True')
+        elif (not plane_strain and not plane_stress):
+            raise ValueError('one of plane_strain or plane_stress must be True')
+        elif plane_strain:
+            return self.d_matrix_plane_strain
+        elif plane_stress:
+            return self.d_matrix_plane_stress
 
-        d_matrix = (elasticity_modulus/(1 - (poisson_ratio)**2)) * npy.array(data).reshape(3,3)
+    def _d_matrix_plane_strain(self):
 
-        return d_matrix
+        a = (self.elasticity_modulus*self.poisson_ratio) \
+            /((1+self.poisson_ratio)*(1-2*self.poisson_ratio))
+        b = self.elasticity_modulus/(2*(1+self.poisson_ratio))
+        c = a+2*b
+        data = [c, a, 0,
+                a, c, 0,
+                0, 0, b]
+
+        return npy.array(data).reshape(3,3)
+
+    def _d_matrix_plane_stress(self):
+
+        a = (self.elasticity_modulus*self.poisson_ratio) \
+            /(1-self.poisson_ratio**2)
+        b = self.elasticity_modulus/(2*(1+self.poisson_ratio))
+        c = a+2*b
+
+        data = [c, a, 0,
+                a, c, 0,
+                0, 0, b]
+
+        return npy.array(data).reshape(3,3)
 
     @property
     def dimension(self):
         return 2
 
-    def elementary_matrix(self):
+    def elementary_matrix(self, plane_strain: bool, plane_stress:bool):
 
         b_matrix = self.b_matrix
-        d_matrix = self.d_matrix
+        d_matrix = self.d_matrix(plane_strain, plane_stress)
+
+        # if plane_strain:
+        #     d_matrix = self.self.d_matrix_plane_strain
+        # elif plane_stress:
+        #     d_matrix = self.self.d_matrix_plane_stress
 
         # y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
         # x = [(self.points[i].x-self.points[j].x) for (i,j) in [(2,1), (0,2), (1,0)]]
@@ -278,7 +308,7 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
         # mass_matrix = det_jacobien * ((self.mass_density * self.area \
         #                 * self.thickness)/12) * npy.array(data).reshape(6, 6)
 
-        mass_matrix = 0.5* det_jacobien * ((self.mass_density * self.area \
+        mass_matrix = det_jacobien * ((self.mass_density * self.area \
                         * self.thickness)/12) * npy.array(data).reshape(6, 6)
 
         return mass_matrix.flatten()

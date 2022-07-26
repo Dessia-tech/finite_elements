@@ -32,7 +32,9 @@ class FiniteElements(DessiaObject):
                  magnet_loads: List[MagnetLoad],
                  continuity_conditions: List[ContinuityCondition],
                  node_boundary_conditions: List[finite_elements.conditions.NodeBoundaryCondition],
-                 element_boundary_conditions: List[finite_elements.conditions.ElementBoundaryCondition]):
+                 element_boundary_conditions: List[finite_elements.conditions.ElementBoundaryCondition],
+                 plane_strain: bool,
+                 plane_stress: bool):
         self.mesh = mesh
         self.element_loads = element_loads  # current density J
         self.node_loads = node_loads 
@@ -40,6 +42,8 @@ class FiniteElements(DessiaObject):
         self.continuity_conditions = continuity_conditions
         self.node_boundary_conditions = node_boundary_conditions
         self.element_boundary_conditions = element_boundary_conditions
+        self.plane_strain = plane_strain
+        self.plane_stress = plane_stress
 
         DessiaObject.__init__(self, name='')
 
@@ -89,7 +93,7 @@ class FiniteElements(DessiaObject):
         row_ind, col_ind, data = [], [], []
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
-                data.extend(element.elementary_matrix())
+                data.extend(element.elementary_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress))
                 row_ind_n, col_ind_n = self.get_row_col_indices(element)
                 row_ind.extend(row_ind_n)
                 col_ind.extend(col_ind_n)
