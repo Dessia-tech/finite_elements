@@ -18,8 +18,8 @@ import finite_elements.conditions
 
 elasticity_modulus, poisson_ratio, thickness, mass_density = 30*1e6, 0.25, 0.5, 2.7
 
-triangles = [mesh.TriangularElement2D([vm.Point2D(3,0),vm.Point2D(3,2),vm.Point2D(0,0)]),
-              mesh.TriangularElement2D([vm.Point2D(0,2),vm.Point2D(0,0),vm.Point2D(3,2)])]
+triangles = [mesh.TriangularElement2D([mesh.Node2D(3,0),mesh.Node2D(3,2),mesh.Node2D(0,0)]),
+             mesh.TriangularElement2D([mesh.Node2D(0,2),mesh.Node2D(0,0),mesh.Node2D(3,2)])]
 
 solid_elments2d = [fe.elements.ElasticityTriangularElement2D(
     triangle, elasticity_modulus, poisson_ratio, mass_density, thickness) for triangle in triangles]
@@ -27,44 +27,12 @@ solid_elments2d = [fe.elements.ElasticityTriangularElement2D(
 group_solid_elments2d = mesh.ElementsGroup(solid_elments2d, '')
 mesh_fe = mesh.Mesh([group_solid_elments2d])
 
-# # group_solid_elments2d = [mesh.ElementsGroup([solid_elment], '') for solid_elment in solid_elments2d]
-# # mesh = mesh.Mesh(group_solid_elments2d)
-
-# # mesh.node_to_index[mesh.nodes[3]] = 2
-# # mesh.node_to_index[mesh.nodes[2]] = 3
-
-for elements_group in mesh_fe.elements_groups:
-    for element in elements_group.elements:
-        element.points = [finite_elements.core.Node2D.from_point(point) for point in element.points]
-
-elements_groups=mesh_fe.elements_groups
-
-mesh_fe = mesh.Mesh(elements_groups)
-
-# %%
-
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 30*1e6, 0.25, 0.5, 2.7
-
-# triangles = [mesh.TriangularElement2D([finite_elements.core.Node2D(3,0),finite_elements.core.Node2D(3,2),finite_elements.core.Node2D(0,0)]),
-#              mesh.TriangularElement2D([finite_elements.core.Node2D(0,2),finite_elements.core.Node2D(0,0),finite_elements.core.Node2D(3,2)])]
-
-# solid_elments2d = [fe.elements.ElasticityTriangularElement2D(
-#     triangle, elasticity_modulus, poisson_ratio, mass_density, thickness) for triangle in triangles]
-
-# group_solid_elments2d = mesh.ElementsGroup(solid_elments2d, '')
-# mesh_fe = mesh.Mesh([group_solid_elments2d])
-
 
 # %% Loads/Conditions
 
-# node_loads = [fe.loads.NodeLoad(mesh_fe.nodes[1], -10000000, 2)] #1000
-# node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(3,0), 0, 2),
-#                             finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(0,2), 0, 1),
-#                             finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(0,2), 0, 2),
-#                             finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(0,0), 0, 1),
-#                             finite_elements.conditions.NodeBoundaryCondition(vm.Point2D(0,0), 0, 2)]
+load = -10000000
+node_loads = [fe.loads.NodeLoad(mesh_fe.nodes[mesh_fe.node_to_index[mesh.Node2D(3,2)]], load, 2)] #1000
 
-node_loads = [fe.loads.NodeLoad(mesh_fe.nodes[2], -10000000, 2)] #1000
 node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(finite_elements.core.Node2D(3,0), 0, 2),
                             finite_elements.conditions.NodeBoundaryCondition(finite_elements.core.Node2D(0,2), 0, 1),
                             finite_elements.conditions.NodeBoundaryCondition(finite_elements.core.Node2D(0,2), 0, 2),
@@ -74,29 +42,29 @@ node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(fin
 
 #%% Analysis: plane_strain
 
-# analysis = fe.analysis.FiniteElementAnalysis(mesh_fe, [], node_loads, [], [], node_boundary_conditions, [],
-#                                              plane_strain=True, plane_stress=False)
+analysis = fe.analysis.FiniteElementAnalysis(mesh_fe, [], node_loads, [], [], node_boundary_conditions, [],
+                                              plane_strain=True, plane_stress=False)
 
-# m = analysis.create_matrix()
+m = analysis.create_matrix()
 
-# results = analysis.solve()
+results = analysis.solve()
 
-# elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector, analysis.plane_strain, analysis.plane_stress)
+elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector, analysis.plane_strain, analysis.plane_stress)
 
-# elasticity_result.plot_deformed_mesh()
-# elasticity_result.plot_displacement_vectors_per_node()
+elasticity_result.plot_deformed_mesh()
+elasticity_result.plot_displacement_vectors_per_node()
 
-# elasticity_result.plot_strain()
-# elasticity_result.plot_stress()
+elasticity_result.plot_strain()
+elasticity_result.plot_stress()
 
-# # elasticity_result.plot_displacement_per_node_x()
-# # elasticity_result.plot_displacement_per_node_y()
-# elasticity_result.plot_displacement_per_node_xy()
+# elasticity_result.plot_displacement_per_node_x()
+# elasticity_result.plot_displacement_per_node_y()
+elasticity_result.plot_displacement_per_node_xy()
 
 #%% Analysis: plane_stress
 
 analysis = fe.analysis.FiniteElementAnalysis(mesh_fe, [], node_loads, [], [], node_boundary_conditions, [],
-                                             plane_strain=False, plane_stress=True)
+                                              plane_strain=False, plane_stress=True)
 
 m = analysis.create_matrix()
 

@@ -59,7 +59,7 @@ mesh = vmmesh.Mesh(group_elements)
 # %% Loads/Conditions
 
 load = -1000
-application_index = mesh.node_to_index[vm.Point2D(10,1)]
+application_index = mesh.node_to_index[volmdlr.mesh.Node2D(10,1)]
 node_loads = [fe.loads.NodeLoad(mesh.nodes[application_index], load, 2)]
 
 application_indices = find_points_with_x(nodes=mesh.nodes, x=0)
@@ -79,42 +79,42 @@ results = analysis.solve()
 
 elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector, analysis.plane_strain, analysis.plane_stress)
 
-elasticity_result.plot_deformed_mesh()
-elasticity_result.plot_displacement_vectors_per_node()
+# elasticity_result.plot_deformed_mesh()
+# elasticity_result.plot_displacement_vectors_per_node()
 
-# elasticity_result.plot_strain()
-# elasticity_result.plot_stress()
+# # elasticity_result.plot_strain()
+# # elasticity_result.plot_stress()
 
-# elasticity_result.plot_displacement_per_node_x()
-# elasticity_result.plot_displacement_per_node_y()
-elasticity_result.plot_displacement_per_node_xy()
+# # elasticity_result.plot_displacement_per_node_x()
+# # elasticity_result.plot_displacement_per_node_y()
+# elasticity_result.plot_displacement_per_node_xy()
 
-#%% Analysis: plane_stress
+# #%% Analysis: plane_stress
 
-analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, [], [], node_boundary_conditions, [],
-                                             plane_strain=False, plane_stress=True)
+# analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, [], [], node_boundary_conditions, [],
+#                                              plane_strain=False, plane_stress=True)
 
-m = analysis.create_matrix()
+# m = analysis.create_matrix()
 
-results = analysis.solve()
+# results = analysis.solve()
 
-elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector, analysis.plane_strain, analysis.plane_stress)
+# elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector, analysis.plane_strain, analysis.plane_stress)
 
-elasticity_result.plot_deformed_mesh()
-elasticity_result.plot_displacement_vectors_per_node()
+# elasticity_result.plot_deformed_mesh()
+# elasticity_result.plot_displacement_vectors_per_node()
 
-# elasticity_result.plot_strain()
-# elasticity_result.plot_stress()
+# # elasticity_result.plot_strain()
+# # elasticity_result.plot_stress()
 
-# elasticity_result.plot_displacement_per_node_x()
-# elasticity_result.plot_displacement_per_node_y()
-elasticity_result.plot_displacement_per_node_xy()
+# # elasticity_result.plot_displacement_per_node_x()
+# # elasticity_result.plot_displacement_per_node_y()
+# elasticity_result.plot_displacement_per_node_xy()
 
 
-# %%
+# # %%
 
-b = 1
-I = ((b**3)*thickness)/12 # I = (b*(thickness**3) + thickness*(b**3))/12
-fleche_y = (load*10**3)/(3*elasticity_modulus*I)
+# b = 1
+# I = ((b**3)*thickness)/12 # I = (b*(thickness**3) + thickness*(b**3))/12
+# fleche_y = (load*10**3)/(3*elasticity_modulus*I)
 
-elasticity_result.displacement_vectors_per_node[283]
+# elasticity_result.displacement_vectors_per_node[283]
