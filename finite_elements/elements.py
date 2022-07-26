@@ -18,7 +18,7 @@ import volmdlr.mesh as vmmesh
 from dessia_common import DessiaObject
 # from typing import List #Tuple, TypeVar
 import numpy as npy
-# import finite_elements.core
+import finite_elements.core
 
 
 class MagneticElement2D(vmmesh.TriangularElement2D):
@@ -135,7 +135,7 @@ class ElasticityElement(DessiaObject):
     #     self.elasticity_modulus = elasticity_modulus
     #     self.poisson_ratio = poisson_ratio
 
-    def __init__(self, mesh_element: vmmesh.TetrahedralElement,
+    def __init__(self, mesh_element,
                  elasticity_modulus, poisson_ratio,
                  mass_density,
                  displacements = None,
@@ -146,7 +146,7 @@ class ElasticityElement(DessiaObject):
         self.elasticity_modulus = elasticity_modulus
         self.poisson_ratio = poisson_ratio
         self.mass_density = mass_density
-        self.points = self.mesh_element.points
+        self.points = self._points()
         self.b_matrix = self._b_matrix()
         self.d_matrix_plane_strain = self._d_matrix_plane_strain()
         self.d_matrix_plane_stress = self._d_matrix_plane_stress()
@@ -167,6 +167,9 @@ class ElasticityElement(DessiaObject):
         elif plane_stress:
             return self.d_matrix_plane_stress
 
+    def _points(self):
+        obj=getattr(finite_elements.core, f'Node{self.__class__.__name__[-2::]}')
+        return [getattr(obj, 'from_point')(point) for point in self.mesh_element.points]
 
 class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2D):
     # _standalone_in_db = False
