@@ -386,6 +386,12 @@ class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2
 
     #     return mass_matrix.flatten()
 
+    @classmethod
+    def from_element(cls, mesh_element, elasticity_element):
+        return cls(mesh_element, elasticity_element.elasticity_modulus,
+                   elasticity_element.poisson_ratio, elasticity_element.mass_density,
+                   elasticity_element.thickness)
+
     def strain(self):
         b_matrix = self.b_matrix()
         q = self.displacements
@@ -532,3 +538,8 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
         #     * npy.array(data).reshape(12, 12)
 
         return mass_matrix.flatten()
+
+    @classmethod
+    def from_element(cls, mesh_element, elasticity_element):
+        return cls(mesh_element, elasticity_element.elasticity_modulus,
+                   elasticity_element.poisson_ratio, elasticity_element.mass_density)
