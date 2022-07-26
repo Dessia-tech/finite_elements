@@ -10,7 +10,7 @@ import math
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as npy
 import matplotlib.tri as mtri
-import volmdlr
+# import volmdlr
 # import volmdlr.mesh as vmmesh
 # from scipy import sparse
 # from scipy import linalg
@@ -133,35 +133,3 @@ def get_triangulation(mesh):
     triang = mtri.Triangulation(x, y, triangles)
 
     return triang
-
-class Node2D(volmdlr.Point2D):
-    def __hash__(self):
-        return int(1e6 * (self.x + self.y))
-
-    def __eq__(self, other_node: 'Node2D'):
-        if other_node.__class__.__name__ not in ['Vector2D', 'Point2D',
-                                                 'Node2D']:
-            return False
-        return math.isclose(self.x, other_node.x, abs_tol=1e-06) \
-            and math.isclose(self.y, other_node.y, abs_tol=1e-06)
-
-    @classmethod
-    def from_point(cls, point2d):
-        return cls(point2d.x, point2d.y)
-
-
-class Node3D(volmdlr.Point3D):
-    def __hash__(self):
-        return int(1e6 * (self.x + self.y + self.z))
-
-    def __eq__(self, other_node: 'Node3D'):
-        if other_node.__class__.__name__ not in ['Vector3D', 'Point3D',
-                                                 'Node3D']:
-            return False
-        return math.isclose(self.x, other_node.x, abs_tol=1e-06) \
-            and math.isclose(self.y, other_node.y, abs_tol=1e-06) \
-            and math.isclose(self.z, other_node.z, abs_tol=1e-06)
-
-    @classmethod
-    def from_point(cls, point3d):
-        return cls(point3d.x, point3d.y, point3d.z)
