@@ -39,7 +39,7 @@ for group in mesh.elements_groups:
     group_elements.append(vmmesh.ElementsGroup(solid_elments3d, ''))
 
 mesh = vmmesh.Mesh(group_elements)
-
+mesh.nodes = gmsh.nodes[0]['all_nodes'] #Keep Gmsh order
 
 # %% Analysis
 
