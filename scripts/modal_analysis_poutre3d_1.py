@@ -40,6 +40,7 @@ for group in mesh.elements_groups:
 
 mesh = vmmesh.Mesh(group_elements)
 mesh.nodes = gmsh.nodes[0]['all_nodes'] #Keep Gmsh order
+mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
 
 # %% Analysis
 
