@@ -487,6 +487,8 @@ class ElasticityResults(Result):
             line=''
             for i in range(len([*displacement])):
                 line += str(displacement[i]) + ' '
+            if i==1:
+                line += '0'
             lines.append(line)
             # lines.append(str(displacement.x)+' '+str(displacement.y)+' '+str(displacement.z))
 
