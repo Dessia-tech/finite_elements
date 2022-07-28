@@ -16,9 +16,11 @@ import finite_elements.conditions
 
 # %% Mesh2D
 
-file_path = 'poutre_0.5.msh'
+files_path = ['poutre_0.5', 'poutre_1', 'poutre_3']
 
-gmsh = volmdlr.gmsh.Gmsh.from_file(file_path)
+file_path = files_path[0]
+
+gmsh = volmdlr.gmsh.Gmsh.from_file(file_path+'.msh')
 
 mesh = gmsh.define_tetrahedron_element_mesh()
 
@@ -47,13 +49,16 @@ mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
 analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [],
                                              plane_strain=False, plane_stress=True)
 
-
 eigvals, eigvecs = analysis.modal_analysis()
 elasticity_results = []
-
 for eigvec in eigvecs.T[0:10]:
     elasticity_results.append(fe.results.ElasticityResults3D(analysis.mesh,
                                                               eigvec, analysis.plane_strain, analysis.plane_stress))
 
 
+# %% VTK files generation
 
+for i, elasticity_result in enumerate(elasticity_results):
+    elasticity_result.update_vtk_with_results(
+        input_file_name = file_path+'.vtk',
+        output_file_name = file_path+'_mode_n°_'+str(i)+'.vtk')
