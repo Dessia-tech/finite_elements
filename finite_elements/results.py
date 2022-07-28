@@ -468,7 +468,13 @@ class ElasticityResults(Result):
 
         return [displacement[1] for displacement in self.displacement_vectors_per_node]
 
-    def update_vtk_with_results(self, file_name):
+    def update_vtk_with_results(self, input_file_name, output_file_name):
+        with open(input_file_name) as f_in:
+            with open(output_file_name, "w") as f_out:
+                for line in f_in:
+                    f_out.write(line)
+        f_out.close()
+        f_in.close()
 
         lines = ['POINT_DATA ' + str(len(self.mesh.nodes))]
         lines.append('SCALARS ' + 'Displacement_Magnitude float 1')
@@ -496,13 +502,13 @@ class ElasticityResults(Result):
         # for _, value in axial_strain_x.items():
         #     lines.append(str(value))
 
-        with open(file_name, "a+") as f:
-            f.seek(0)
+        with open(output_file_name, "a+") as f_out:
+            # f_out.seek(0)
             # f.write('\n')
             for line in lines:
-                f.write(line)
-                f.write('\n')
-        f.close()
+                f_out.write(line)
+                f_out.write('\n')
+        f_out.close()
 
 
 class ElasticityResults2D(ElasticityResults):
