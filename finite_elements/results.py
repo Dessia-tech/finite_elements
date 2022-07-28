@@ -765,57 +765,57 @@ class ElasticityResults3D(ElasticityResults):
 
         return [displacement[2] for displacement in self.displacement_vectors_per_node]
 
-    def plot_axial_strain_z(self, ax=None, fig=None):
+    # def plot_axial_strain_z(self, ax=None, fig=None):
 
-        return self.plot_constraints(constraint_name='axial_strain_z', ax=ax, fig=fig)
+    #     return self.plot_constraints(constraint_name='axial_strain_z', ax=ax, fig=fig)
 
-    def plot_axial_stress_z(self, ax=None, fig=None):
+    # def plot_axial_stress_z(self, ax=None, fig=None):
 
-        return self.plot_constraints(constraint_name='axial_stress_z', ax=ax, fig=fig)
+    #     return self.plot_constraints(constraint_name='axial_stress_z', ax=ax, fig=fig)
 
-    def plot_displacement_per_node_z(self, ax=None):
+    # def plot_displacement_per_node_z(self, ax=None):
 
-        return self.plot_displacements(displacement_name='displacement_per_node_z', ax=ax)
+    #     return self.plot_displacements(displacement_name='displacement_per_node_z', ax=ax)
 
-    def plot_shear_strain_yz(self, ax=None, fig=None):
+    # def plot_shear_strain_yz(self, ax=None, fig=None):
 
-        return self.plot_constraints(constraint_name='shear_strain_yz', ax=ax, fig=fig)
+    #     return self.plot_constraints(constraint_name='shear_strain_yz', ax=ax, fig=fig)
 
-    def plot_shear_strain_zx(self, ax=None, fig=None):
+    # def plot_shear_strain_zx(self, ax=None, fig=None):
 
-        return self.plot_constraints(constraint_name='shear_strain_zx', ax=ax, fig=fig)
+    #     return self.plot_constraints(constraint_name='shear_strain_zx', ax=ax, fig=fig)
 
-    def plot_shear_stress_yz(self, ax=None, fig=None):
+    # def plot_shear_stress_yz(self, ax=None, fig=None):
 
-        return self.plot_constraints(constraint_name='shear_stress_yz', ax=ax, fig=fig)
+    #     return self.plot_constraints(constraint_name='shear_stress_yz', ax=ax, fig=fig)
 
-    def plot_shear_stress_zx(self, ax=None, fig=None):
+    # def plot_shear_stress_zx(self, ax=None, fig=None):
 
-        return self.plot_constraints(constraint_name='shear_stress_zx', ax=ax, fig=fig)
+    #     return self.plot_constraints(constraint_name='shear_stress_zx', ax=ax, fig=fig)
 
-    def plot_strain(self, axs=None, fig=None, row=1):
-        if fig is None:
-            fig = plt.figure()
+    # def plot_strain(self, axs=None, fig=None, row=1):
+    #     if fig is None:
+    #         fig = plt.figure()
 
-        plot_names = ['plot_axial_strain_x', 'plot_axial_strain_y', 'plot_shear_strain_xy',
-                      'plot_axial_strain_z', 'plot_shear_strain_yz', 'plot_shear_strain_zx']
-        axs = []
-        for i, name in enumerate(plot_names):
-            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+    #     plot_names = ['plot_axial_strain_x', 'plot_axial_strain_y', 'plot_shear_strain_xy',
+    #                   'plot_axial_strain_z', 'plot_shear_strain_yz', 'plot_shear_strain_zx']
+    #     axs = []
+    #     for i, name in enumerate(plot_names):
+    #         axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
 
-        return axs
+    #     return axs
 
-    def plot_stress(self, axs=None, fig=None, row=1):
-        if fig is None:
-            fig = plt.figure()
+    # def plot_stress(self, axs=None, fig=None, row=1):
+    #     if fig is None:
+    #         fig = plt.figure()
 
-        plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy',
-                      'plot_axial_stress_z', 'plot_shear_stress_yz', 'plot_shear_stress_zx']
-        axs = []
-        for i, name in enumerate(plot_names):
-            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+    #     plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy',
+    #                   'plot_axial_stress_z', 'plot_shear_stress_yz', 'plot_shear_stress_zx']
+    #     axs = []
+    #     for i, name in enumerate(plot_names):
+    #         axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
 
-        return axs
+    #     return axs
 
     def shear_strain_xy(self):
 
