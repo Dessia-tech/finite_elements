@@ -468,6 +468,42 @@ class ElasticityResults(Result):
 
         return [displacement[1] for displacement in self.displacement_vectors_per_node]
 
+    def update_vtk_with_results(self, file_name):
+
+        lines = ['POINT_DATA ' + str(len(self.mesh.nodes))]
+        lines.append('SCALARS ' + 'Displacement_Magnitude float 1')
+        lines.append('LOOKUP_TABLE default')
+        for displacement in self.displacement_vectors_per_node:
+            lines.append(str(displacement.norm()))
+
+        lines.append('VECTORS Displacement_Vectors float')
+        for displacement in self.displacement_vectors_per_node:
+            line=''
+            for i in range(len([*displacement])):
+                line += str(displacement[i]) + ' '
+            lines.append(line)
+            # lines.append(str(displacement.x)+' '+str(displacement.y)+' '+str(displacement.z))
+
+        # lines.append('CELL_DATA ' + str(104))
+        # lines.append('SCALARS cell_scalars int 1')
+        # lines.append('LOOKUP_TABLE default')
+        # for i in range(104):
+        #     lines.append(str(i))
+        # lines.append('SCALARS axial_strain_x float 1')
+        # lines.append('LOOKUP_TABLE default')
+
+        # axial_strain_x = self.axial_strain_x()
+        # for _, value in axial_strain_x.items():
+        #     lines.append(str(value))
+
+        with open(file_name, "a+") as f:
+            f.seek(0)
+            # f.write('\n')
+            for line in lines:
+                f.write(line)
+                f.write('\n')
+        f.close()
+
 
 class ElasticityResults2D(ElasticityResults):
     # _standalone_in_db = True
