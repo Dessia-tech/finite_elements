@@ -16,9 +16,11 @@ import finite_elements.conditions
 
 # %% Mesh2D
 
-file_path = 'mesh_4.msh'
+files_path = ['mesh_2', 'mesh_3', 'mesh_4']
 
-gmsh = volmdlr.gmsh.Gmsh.from_file(file_path)
+file_path = files_path[1]
+
+gmsh = volmdlr.gmsh.Gmsh.from_file(file_path+'.msh')
 
 mesh = gmsh.define_triangular_element_mesh()
 
@@ -50,6 +52,8 @@ for group in mesh.elements_groups:
     group_elements.append(vmmesh.ElementsGroup(solid_elments2d, ''))
 
 mesh = vmmesh.Mesh(group_elements)
+mesh.nodes = gmsh.nodes[0]['all_nodes'] #Keep Gmsh order
+mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
 
 
 # %% Analysis
@@ -60,7 +64,7 @@ analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [],
 eigvals, eigvecs = analysis.modal_analysis()
 elasticity_results = []
 
-for eigvec in eigvecs.T[0:5]:
+for eigvec in eigvecs.T[0:10]:
     elasticity_results.append(fe.results.ElasticityResults2D(analysis.mesh,
                                                              eigvec,
                                                              analysis.plane_strain, analysis.plane_stress))
@@ -69,10 +73,9 @@ for elasticity_result in elasticity_results:
     # elasticity_result.plot_deformed_mesh()
     elasticity_result.plot_displacement_per_node_xy()
 
-# %%
+# %% VTK files generation
 
-# import matplotlib.pyplot as plt
-# b = [max(abs(eigvec)) for eigvec in eigvecs]
-# plt.plot(b)
-
-# plt.plot(eigvals)
+for i, elasticity_result in enumerate(elasticity_results):
+    elasticity_result.update_vtk_with_results(
+        input_file_name = file_path+'.vtk',
+        output_file_name = file_path+'_mode_n°_'+str(i)+'.vtk')
