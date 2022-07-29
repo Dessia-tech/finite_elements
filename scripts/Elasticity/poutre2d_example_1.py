@@ -25,11 +25,12 @@ solid_elments2d = [fe.elements.ElasticityTriangularElement2D(
 
 group_solid_elments2d = mesh.ElementsGroup(solid_elments2d, '')
 mesh_fe = mesh.Mesh([group_solid_elments2d])
-
+ax = mesh_fe.plot()
+ax.set_title("Initial Mesh")
 
 # %% Loads/Conditions
 
-load = -10000000
+load = -1000000
 node_loads = [fe.loads.NodeLoad(mesh_fe.nodes[mesh_fe.node_to_index[mesh.Node2D(3,2)]], load, 2)] #1000
 
 node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(mesh.Node2D(3,0), 0, 2),
@@ -62,10 +63,10 @@ elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_
 
 # %% Plots
 
-elasticity_result.plot_deformed_mesh()
+elasticity_result.plot_deformed_mesh(amplitude=10)
 elasticity_result.plot_displacement_vectors_per_node(amplitude=0.1)
 
-elasticity_result.plot_displacement_per_node_xy()
+elasticity_result.plot_displacement_per_node_xy(amplitude=10)
 
-elasticity_result.plot_strain()
-elasticity_result.plot_stress()
+# elasticity_result.plot_strain()
+# elasticity_result.plot_stress()
