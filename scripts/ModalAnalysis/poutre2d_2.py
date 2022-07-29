@@ -3,7 +3,7 @@
 """
 Created on Fri Jul 15 2022
 
-@author: b.soumiya
+@author: s.bendjebla
 """
 
 import volmdlr.gmsh
@@ -16,9 +16,11 @@ import finite_elements.conditions
 
 # %% Mesh2D
 
-files_path = ['mesh_2', 'mesh_3', 'mesh_4']
+files_path = ['../InputFiles/2D/poutre_2d_0.8', '../InputFiles/2D/poutre_2d_0.5',
+              '../InputFiles/2D/poutre_2d_0.3', '../InputFiles/2D/poutre_2d_0.18',
+              '../InputFiles/2D/poutre_2d_0.1']
 
-file_path = files_path[1]
+file_path = files_path[0]
 
 gmsh = volmdlr.gmsh.Gmsh.from_file(file_path+'.msh')
 
@@ -28,18 +30,10 @@ mesh = gmsh.define_triangular_element_mesh()
 
 # %% Finite Element Mesh2D
 
+# elasticity_modulus, poisson_ratio, thickness, mass_density = 30*1e6, 0.25, 1, 2.7
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 45*1e6, 0.29, 1, 1800 #magnesium
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e3, 0.25, 0.5, 3.74 #acier
-elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7.860 #acier
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 3*1e7, 0.3, 0.5, 0.3/386 #acier
-# # elasticity_modulus, poisson_ratio, thickness, mass_density = 20*1e9, 0.3, 0.5, 7800 #acier
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.3, 0.5, 8000 #acier
+elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7860 #acier
 
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 30*1e6, 0.25, 0.5, 7860
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 210000, 0.3, 0.5, 2.7000*1e-6 #matlab
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 193000, 0.3, 0.5, 8*1e-6 #Stainless steel
-# elasticity_modulus, poisson_ratio, thickness, mass_density = 68900, 0.33, 0.5, 2.7*1e-6 #Aluminum 6061
 
 group_elements = []
 
@@ -70,8 +64,8 @@ for eigvec in eigvecs.T[0:10]:
                                                              analysis.plane_strain, analysis.plane_stress))
 
 for elasticity_result in elasticity_results:
-    # elasticity_result.plot_deformed_mesh()
-    elasticity_result.plot_displacement_per_node_xy()
+    # elasticity_result.plot_deformed_mesh(amplitude=50)
+    elasticity_result.plot_displacement_per_node_xy(amplitude=50)
 
 # %% VTK files generation
 

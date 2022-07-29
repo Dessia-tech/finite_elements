@@ -16,7 +16,8 @@ import finite_elements.conditions
 
 # %% Mesh2D
 
-files_path = ['poutre_0.5', 'poutre_1', 'poutre_3']
+files_path = ['../InputFiles/3D/poutre3d_0.5', '../InputFiles/3D/poutre3d_1',
+              '../InputFiles/3D/poutre3d_3']
 
 file_path = files_path[0]
 
@@ -28,7 +29,9 @@ mesh = gmsh.define_tetrahedron_element_mesh()
 
 # %% Finite Element Mesh2D
 
-elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7.860 #acier
+# elasticity_modulus, poisson_ratio, mass_density = 30*1e6, 0.25, 2.7
+# elasticity_modulus, poisson_ratio, mass_density = 70*1e6, 0.33, 2700 #aluminium
+elasticity_modulus, poisson_ratio, mass_density = 210*1e9, 0.25, 7860 #acier
 
 group_elements = []
 

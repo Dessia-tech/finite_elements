@@ -3,10 +3,9 @@
 """
 Created on Wed Jul 13 2022
 
-@author: b.soumiya
+@author: s.bendjebla
 """
 
-import volmdlr as vm
 import volmdlr.mesh as mesh
 import finite_elements as fe
 import finite_elements.elements
@@ -70,14 +69,6 @@ for eigvec in eigvecs.T:
                                                              analysis.plane_strain, analysis.plane_stress))
 
 for elasticity_result in elasticity_results[0:10]:
-    # elasticity_result.plot_deformed_mesh()
-    elasticity_result.plot_displacement_per_node_xy()
-
-# %%
-
-# import matplotlib.pyplot as plt
-# b = [max(abs(eigvec)) for eigvec in eigvecs]
-# plt.plot(b)
-
-# plt.plot(eigvals)
+    # elasticity_result.plot_deformed_mesh(amplitude=50)
+    elasticity_result.plot_displacement_per_node_xy(amplitude=50)
 
