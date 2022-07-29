@@ -3,7 +3,7 @@
 """
 Created on Fri Jul 29 2022
 
-@author: b.soumiya
+@author: s.bendjebla
 """
 
 import volmdlr as vm

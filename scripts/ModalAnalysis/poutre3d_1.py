@@ -3,7 +3,7 @@
 """
 Created on Mon Jul 25 2022
 
-@author: b.soumiya
+@author: s.bendjebla
 """
 
 import volmdlr.gmsh
