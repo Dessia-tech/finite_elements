@@ -613,15 +613,29 @@ class ElasticityResults2D(ElasticityResults):
         cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10), ax=ax)
         cbar.set_label(constraint_name)
 
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+
         return ax
 
     def plot_deformed_mesh(self, ax=None):
         if ax is None:
             fig, ax = plt.subplots()
             ax.set_aspect('equal')
-    
+
         self.deformed_mesh.plot(ax=ax)
         # self.mesh.plot(ax)
+
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        if self.plane_stress:
+            comment = '"Plane Stress"'
+        else:
+            comment = '"Plane Strain"'
+
+        ax.set_title('Deformed Mesh '+ comment)
+
+        return ax
 
     def plot_displacements(self, displacement_name: str, ax=None, fig=None):
 
@@ -629,6 +643,7 @@ class ElasticityResults2D(ElasticityResults):
             x = getattr(self, displacement_name)()
         elif displacement_name == 'displacement_per_node_xy':
             x = [displacement.norm() for displacement in self.displacement_vectors_per_node]
+            displacement_name = 'displacement_magnitude_norm'
         else:
             raise NotImplementedError(
                 f'Class {self.__class__.__name__} does not implement {displacement_name}')
@@ -651,6 +666,15 @@ class ElasticityResults2D(ElasticityResults):
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(x_min, x_max, 10))
         cbar.set_label(displacement_name)
+
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+
+        if self.plane_stress:
+            comment = '"Plane Stress"'
+        else:
+            comment = '"Plane Strain"'
+        ax.set_title(comment)
 
         return ax
 
@@ -676,6 +700,15 @@ class ElasticityResults2D(ElasticityResults):
         for i, vector in enumerate(displacement_field_vectors):
             vector.plot(amplitude=amplitude, origin=self.mesh.nodes[i], ax=ax, normalize=True)
 
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+
+        if self.plane_stress:
+            comment = 'Displacement Vectors "Plane Stress"'
+        else:
+            comment = 'Displacement Vectors "Plane Strain"'
+        ax.set_title(comment)
+
     def plot_shear_strain_xy(self, ax=None, fig=None):
 
         return self.plot_constraints(constraint_name='shear_strain_xy', ax=ax, fig=fig)
@@ -693,6 +726,13 @@ class ElasticityResults2D(ElasticityResults):
         for i, name in enumerate(plot_names):
             axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
 
+        if self.plane_stress:
+            comment = 'Strain "Plane Stress"'
+        else:
+            comment = 'Strain "Plane Strain"'
+
+        fig.suptitle(comment)
+
         return axs
 
     def plot_stress(self, axs=None, fig=None, row=1):
@@ -703,6 +743,13 @@ class ElasticityResults2D(ElasticityResults):
         axs = []
         for i, name in enumerate(plot_names):
             axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+
+        if self.plane_stress:
+            comment = 'Stress "Plane Stress"'
+        else:
+            comment = 'Stress "Plane Strain"'
+
+        fig.suptitle(comment)
 
         return axs
 
