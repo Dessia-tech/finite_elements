@@ -33,7 +33,8 @@ def find_points_with_y(nodes, y):
 # %% Data
 
 files_path = ['../InputFiles/2D/poutre_2d_0.8', '../InputFiles/2D/poutre_2d_0.5',
-              '../InputFiles/2D/poutre_2d_0.3', '../InputFiles/2D/poutre_2d_0.1']
+              '../InputFiles/2D/poutre_2d_0.3', '../InputFiles/2D/poutre_2d_0.18',
+              '../InputFiles/2D/poutre_2d_0.1']
 
 elasticity_results_displacements = {}
 y_displacements = []
@@ -52,7 +53,8 @@ for file_path in files_path:
 
     mesh = gmsh.define_triangular_element_mesh()
 
-    # mesh.plot()
+    ax= mesh.plot()
+    ax.set_title(str(len(mesh.nodes))+' Nodes')
 
     # %% Finite Element Mesh2D
 
