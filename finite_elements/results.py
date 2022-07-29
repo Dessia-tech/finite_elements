@@ -431,8 +431,12 @@ class ElasticityResults(Result):
 
         return element_to_strain, element_to_stress
 
-    def _deformed_mesh(self):
-        deformed_nodes = self.deformed_nodes
+    def _deformed_mesh(self, amplitude=1):
+        if amplitude==1:
+            deformed_nodes = self.deformed_nodes
+        else:
+            deformed_nodes = self._deformed_nodes(amplitude=amplitude)
+
         group_elasticity_elments = []
         for elements_group in self.mesh.elements_groups:
             elasticity_elments = []
@@ -451,12 +455,12 @@ class ElasticityResults(Result):
 
         return vmmesh.Mesh(group_elasticity_elments)
 
-    def _deformed_nodes(self):
+    def _deformed_nodes(self, amplitude=1):
         displacement_field_vectors = self.displacement_vectors_per_node
         deformed_nodes = []
         for i, node in enumerate(self.mesh.nodes):
             obj=getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
-            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i]))
+            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i]*amplitude))
 
         return deformed_nodes
 
@@ -618,12 +622,14 @@ class ElasticityResults2D(ElasticityResults):
 
         return ax
 
-    def plot_deformed_mesh(self, ax=None):
+    def plot_deformed_mesh(self, ax=None, amplitude=1):
         if ax is None:
             fig, ax = plt.subplots()
             ax.set_aspect('equal')
-
-        self.deformed_mesh.plot(ax=ax)
+        if amplitude != 1:
+            self._deformed_mesh(amplitude=amplitude).plot(ax=ax)
+        else:
+            self.deformed_mesh.plot(ax=ax)
         # self.mesh.plot(ax)
 
         ax.set_xlabel('x')
@@ -637,7 +643,7 @@ class ElasticityResults2D(ElasticityResults):
 
         return ax
 
-    def plot_displacements(self, displacement_name: str, ax=None, fig=None):
+    def plot_displacements(self, displacement_name: str, ax=None, fig=None, amplitude=1):
 
         if hasattr(self, displacement_name):
             x = getattr(self, displacement_name)()
@@ -648,7 +654,12 @@ class ElasticityResults2D(ElasticityResults):
             raise NotImplementedError(
                 f'Class {self.__class__.__name__} does not implement {displacement_name}')
 
-        triang = finite_elements.core.get_triangulation(self.deformed_mesh) #self.mesh
+        if amplitude != 1:
+            mesh_fe = self._deformed_mesh(amplitude=amplitude)
+        else:
+            mesh_fe = self.deformed_mesh
+
+        triang = finite_elements.core.get_triangulation(mesh_fe) #self.mesh
         x_min, x_max = min(x), max(x)
 
         if ax is None:
@@ -678,17 +689,17 @@ class ElasticityResults2D(ElasticityResults):
 
         return ax
 
-    def plot_displacement_per_node_x(self, ax=None):
+    def plot_displacement_per_node_x(self, ax=None, amplitude=1):
 
-        return self.plot_displacements(displacement_name='displacement_per_node_x', ax=ax)
+        return self.plot_displacements(displacement_name='displacement_per_node_x', ax=ax, amplitude=amplitude)
 
-    def plot_displacement_per_node_xy(self, ax=None):
+    def plot_displacement_per_node_xy(self, ax=None, amplitude=1):
 
-        return self.plot_displacements(displacement_name='displacement_per_node_xy', ax=ax)
+        return self.plot_displacements(displacement_name='displacement_per_node_xy', ax=ax, amplitude=amplitude)
 
-    def plot_displacement_per_node_y(self, ax=None):
+    def plot_displacement_per_node_y(self, ax=None, amplitude=1):
 
-        return self.plot_displacements(displacement_name='displacement_per_node_y', ax=ax)
+        return self.plot_displacements(displacement_name='displacement_per_node_y', ax=ax, amplitude=amplitude)
 
     def plot_displacement_vectors_per_node(self, ax=None, amplitude=0.05):
         if ax is None:
