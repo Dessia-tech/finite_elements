@@ -16,7 +16,7 @@ import finite_elements.conditions
 
 # %% Mesh3D
 
-# elasticity_modulus, poisson_ratio = 96, 1/3
+# elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
 elasticity_modulus, poisson_ratio, mass_density = 210*1e9, 0.25, 7860 #acier
 
 
