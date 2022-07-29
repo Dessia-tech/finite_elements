@@ -31,8 +31,8 @@ def find_points_with_y(nodes, y):
 # %% Mesh2D
 
 phase1, phase2, phase3 = 3, 3, 3
+# elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
 elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7860 #acier
-
 
 elements_phase1 = []
 for i in range(3):
