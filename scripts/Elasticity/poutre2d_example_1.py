@@ -6,7 +6,6 @@ Created on Tue Jun 28 2022
 @author: s.bendjebla
 """
 
-import volmdlr as vm
 import volmdlr.mesh as mesh
 import finite_elements as fe
 import finite_elements.elements
@@ -42,29 +41,18 @@ node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(mes
 
 #%% Analysis: plane_strain
 
-analysis = fe.analysis.FiniteElementAnalysis(mesh_fe, [], node_loads, [], [], node_boundary_conditions, [],
-                                              plane_strain=True, plane_stress=False)
-
-m = analysis.create_matrix()
-
-results = analysis.solve()
-
-elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector, analysis.plane_strain, analysis.plane_stress)
-
-elasticity_result.plot_deformed_mesh()
-elasticity_result.plot_displacement_vectors_per_node()
-
-elasticity_result.plot_strain()
-elasticity_result.plot_stress()
-
-# elasticity_result.plot_displacement_per_node_x()
-# elasticity_result.plot_displacement_per_node_y()
-elasticity_result.plot_displacement_per_node_xy()
+plane_strain, plane_stress = True, False
 
 #%% Analysis: plane_stress
 
+# plane_strain, plane_stress = False, True
+
+# %% Analysis
+
 analysis = fe.analysis.FiniteElementAnalysis(mesh_fe, [], node_loads, [], [], node_boundary_conditions, [],
-                                              plane_strain=False, plane_stress=True)
+                                             plane_strain=plane_strain, plane_stress=plane_stress)
+
+# %% Results
 
 m = analysis.create_matrix()
 
@@ -72,13 +60,12 @@ results = analysis.solve()
 
 elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector, analysis.plane_strain, analysis.plane_stress)
 
+# %% Plots
 
 elasticity_result.plot_deformed_mesh()
-elasticity_result.plot_displacement_vectors_per_node()
+elasticity_result.plot_displacement_vectors_per_node(amplitude=0.1)
+
+elasticity_result.plot_displacement_per_node_xy()
 
 elasticity_result.plot_strain()
 elasticity_result.plot_stress()
-
-# elasticity_result.plot_displacement_per_node_x()
-# elasticity_result.plot_displacement_per_node_y()
-elasticity_result.plot_displacement_per_node_xy()
