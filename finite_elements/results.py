@@ -453,7 +453,11 @@ class ElasticityResults(Result):
 
             group_elasticity_elments.append(vmmesh.ElementsGroup(elasticity_elments, ''))
 
-        return vmmesh.Mesh(group_elasticity_elments)
+        mesh = vmmesh.Mesh(group_elasticity_elments)
+        mesh.nodes = deformed_nodes #Keep self.mesh order
+        mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
+
+        return mesh
 
     def _deformed_nodes(self, amplitude=1):
         displacement_field_vectors = self.displacement_vectors_per_node
