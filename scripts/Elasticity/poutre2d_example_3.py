@@ -65,10 +65,12 @@ for file_path in files_path:
         for triangle in group.elements:
             solid_elments2d.append(fe.elements.ElasticityTriangularElement2D(
                 triangle, elasticity_modulus, poisson_ratio, mass_density, thickness))
-    
+
         group_elements.append(vmmesh.ElementsGroup(solid_elments2d, ''))
 
     mesh = vmmesh.Mesh(group_elements)
+    # mesh.nodes = gmsh.nodes[0]['all_nodes'] #Keep Gmsh order
+    # mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
 
     # %% Loads/Conditions
 
@@ -108,6 +110,10 @@ for file_path in files_path:
                                                          'displacement_vector':elasticity_result.displacement_vectors_per_node[application_index],
                                                          'time':end-start}
     # y_displacements.append(elasticity_result.displacement_vectors_per_node[application_index].y)
+
+    elasticity_result.update_vtk_with_results(
+                input_file_name = file_path+'.vtk',
+                output_file_name = file_path+'_displacements'+'.vtk')
 
     # %% Plots
 
