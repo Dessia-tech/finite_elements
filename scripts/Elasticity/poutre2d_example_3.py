@@ -69,8 +69,8 @@ for file_path in files_path:
         group_elements.append(vmmesh.ElementsGroup(solid_elments2d, ''))
 
     mesh = vmmesh.Mesh(group_elements)
-    # mesh.nodes = gmsh.nodes[0]['all_nodes'] #Keep Gmsh order
-    # mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
+    mesh.nodes = gmsh.nodes[0]['all_nodes'] #Keep Gmsh order
+    mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
 
     # %% Loads/Conditions
 
