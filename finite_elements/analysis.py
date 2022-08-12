@@ -66,18 +66,33 @@ class FiniteElements(DessiaObject):
 
         return data, row_ind, col_ind
 
-    def c_matrix_node_boundary_conditions(self):
+    def c_matrix_boundary_conditions(self, node_boundary_conditions):
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                  nodes_number=len(self.mesh.nodes))
+                                                                 nodes_number=len(self.mesh.nodes))
         row_ind, col_ind, data = [], [],[]
-        for i, node_condition in enumerate(self.node_boundary_conditions):
+        for i, node_condition in enumerate(node_boundary_conditions):
             data.extend(node_condition.c_matrix())
             pos = positions[(self.mesh.node_to_index[node_condition.application],
-                              node_condition.dimension)]
+                             node_condition.dimension)]
             row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
             col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
 
         return data, row_ind, col_ind
+
+    def c_matrix_node_boundary_conditions(self):
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                           nodes_number=len(self.mesh.nodes))
+        # row_ind, col_ind, data = [], [],[]
+        # for i, node_condition in enumerate(self.node_boundary_conditions):
+        #     data.extend(node_condition.c_matrix())
+        #     pos = positions[(self.mesh.node_to_index[node_condition.application],
+        #                       node_condition.dimension)]
+        #     row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
+        #     col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
+
+        # return data, row_ind, col_ind
+
+        return self.c_matrix_boundary_conditions(self.node_boundary_conditions)
 
     def c_matrix_element_boundary_conditions(self):
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
