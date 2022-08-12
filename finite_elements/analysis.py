@@ -324,9 +324,42 @@ class FiniteElementAnalysis(FiniteElements):
 
         matrix_k, matrix_m = matrices
 
+        if self.node_boundary_conditions:
+            positions = finite_elements.core.global_matrix_positions(
+                dimension=self.dimension, nodes_number=len(self.mesh.nodes))
+            zeros_positions = []
+
+            for boundary_condition in self.node_boundary_conditions:
+                position = positions[(self.mesh.node_to_index[boundary_condition.application],
+                                      boundary_condition.dimension)]
+                zeros_positions.append(position)
+                matrix_k[position, :] = 0
+                matrix_k[:, position] = 0
+                matrix_m[position, :] = 0
+                matrix_m[:, position] = 0
+
+            zeros_positions.sort(reverse=True)
+            for position in zeros_positions:
+                matrix_k = npy.delete(matrix_k, (position), axis=0)
+                matrix_k = npy.delete(matrix_k, (position), axis=1)
+                matrix_m = npy.delete(matrix_m, (position), axis=0)
+                matrix_m = npy.delete(matrix_m, (position), axis=1)
+
         eigvals, eigvecs = eigh(matrix_k, matrix_m)
 
-        return eigvals, eigvecs
+        if self.node_boundary_conditions:
+            eigvecs_adapted = npy.zeros((len(self.mesh.nodes)*self.dimension,
+                                         len(self.mesh.nodes)*self.dimension))
+            zeros_positions.sort()
+
+            for i, eigvec in enumerate(eigvecs.T):
+                for position in zeros_positions:
+                    eigvec = npy.insert(eigvec, position, 0)
+                eigvecs_adapted[i, :] = eigvec
+        else:
+            eigvecs_adapted = eigvecs.T
+
+        return eigvals, eigvecs_adapted
 
     def solve(self):
         """
