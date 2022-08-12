@@ -28,6 +28,12 @@ class BoundaryCondition(DessiaObject):
 
         DessiaObject.__init__(self, name='')
 
+    def c_matrix(self):
+        return (1, 1)
+
+    def source_c_matrix(self):
+        return self.value
+
 
 class NodeBoundaryCondition(BoundaryCondition):
     # _standalone_in_db = False
