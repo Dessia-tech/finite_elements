@@ -112,7 +112,7 @@ class FiniteElements(DessiaObject):
         # return data, row_ind, col_ind
 
         row_ind, col_ind, data = [], [],[]
-        node_boundary_conditions = 0
+        node_boundary_conditions = []
         for i, element_condition in enumerate(self.element_boundary_conditions):
             for point in element_condition.application.points:
                 node_boundary_conditions.append(
@@ -330,7 +330,8 @@ class FiniteElementAnalysis(FiniteElements):
         #     matrix[source_c_matrix_node_boundary_conditions[1][i]][0] += d
 
         method_names = ['source_c_matrix_elements_loads', 'source_c_matrix_node_loads',
-                        'source_c_matrix_magnet_loads', 'source_c_matrix_node_boundary_conditions']
+                        'source_c_matrix_magnet_loads', 'source_c_matrix_node_boundary_conditions',
+                        'source_c_matrix_element_boundary_conditions']
 
         for method_name in method_names:
             if hasattr(self, method_name):
@@ -370,7 +371,8 @@ class FiniteElementAnalysis(FiniteElements):
 
     def get_source_matrix_length(self):
         return len(self.mesh.nodes)*self.dimension + len(self.continuity_conditions) \
-            + len(self.node_boundary_conditions) + len(self.element_boundary_conditions)
+            + len(self.node_boundary_conditions) \
+                + len(self.element_boundary_conditions*len(self.mesh.elements_groups[0].elements[0].points))
 
     def modal_analysis(self):
         matrices = []
