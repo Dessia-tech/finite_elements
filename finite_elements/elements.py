@@ -21,7 +21,37 @@ import numpy as npy
 import finite_elements.core
 
 
-class MagneticElement2D(vmmesh.TriangularElement2D):
+class Element2D(vmmesh.TriangularElement2D):
+
+    def element_to_node_factors(self):
+        x1 = self.triangular_element.points[0][0]
+        y1 = self.triangular_element.points[0][1]
+        x2 = self.triangular_element.points[1][0]
+        y2 = self.triangular_element.points[1][1]
+        x3 = self.triangular_element.points[2][0]
+        y3 = self.triangular_element.points[2][1]
+
+        det_jacobien = abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))
+
+        element_form_functions = self.triangular_element.form_functions
+        a1 = element_form_functions[0][0]
+        b1 = element_form_functions[0][1]
+        c1 = element_form_functions[0][2]
+        a2 = element_form_functions[1][0]
+        b2 = element_form_functions[1][1]
+        c2 = element_form_functions[1][2]
+        a3 = element_form_functions[2][0]
+        b3 = element_form_functions[2][1]
+        c3 = element_form_functions[2][2]
+
+        double_integral_N1_dS = det_jacobien*(a1 + 0.5*b1*x2 + 0.5*c1*y2 + 0.5*b1*x3 + 0.5*c1*y3)
+        double_integral_N2_dS = det_jacobien*(a2 + 0.5*b2*x2 + 0.5*c2*y2 + 0.5*b2*x3 + 0.5*c2*y3)
+        double_integral_N3_dS = det_jacobien*(a3 + 0.5*b3*x2 + 0.5*c3*y2 + 0.5*b3*x3 + 0.5*c3*y3)
+
+        return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
+
+
+class MagneticElement2D(Element2D):
     """
     """
     # _standalone_in_db = False
@@ -68,38 +98,38 @@ class MagneticElement2D(vmmesh.TriangularElement2D):
 
         return data
 
-    def elementary_source_matrix(self, indexes):
-        """
-        Create the elementary source matrix of the MagneticElement2D
+    # def elementary_source_matrix(self, indexes):
+    #     """
+    #     Create the elementary source matrix of the MagneticElement2D
 
-        :return: (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
-        """
+    #     :return: (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
+    #     """
 
-        x1 = self.triangular_element.points[0][0]
-        y1 = self.triangular_element.points[0][1]
-        x2 = self.triangular_element.points[1][0]
-        y2 = self.triangular_element.points[1][1]
-        x3 = self.triangular_element.points[2][0]
-        y3 = self.triangular_element.points[2][1]
+    #     x1 = self.triangular_element.points[0][0]
+    #     y1 = self.triangular_element.points[0][1]
+    #     x2 = self.triangular_element.points[1][0]
+    #     y2 = self.triangular_element.points[1][1]
+    #     x3 = self.triangular_element.points[2][0]
+    #     y3 = self.triangular_element.points[2][1]
 
-        det_jacobien = abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))
+    #     det_jacobien = abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))
 
-        element_form_functions = self.triangular_element.form_functions
-        a1 = element_form_functions[0][0]
-        b1 = element_form_functions[0][1]
-        c1 = element_form_functions[0][2]
-        a2 = element_form_functions[1][0]
-        b2 = element_form_functions[1][1]
-        c2 = element_form_functions[1][2]
-        a3 = element_form_functions[2][0]
-        b3 = element_form_functions[2][1]
-        c3 = element_form_functions[2][2]
+    #     element_form_functions = self.triangular_element.form_functions
+    #     a1 = element_form_functions[0][0]
+    #     b1 = element_form_functions[0][1]
+    #     c1 = element_form_functions[0][2]
+    #     a2 = element_form_functions[1][0]
+    #     b2 = element_form_functions[1][1]
+    #     c2 = element_form_functions[1][2]
+    #     a3 = element_form_functions[2][0]
+    #     b3 = element_form_functions[2][1]
+    #     c3 = element_form_functions[2][2]
 
-        double_integral_N1_dS = det_jacobien*(a1 + 0.5*b1*x2 + 0.5*c1*y2 + 0.5*b1*x3 + 0.5*c1*y3)
-        double_integral_N2_dS = det_jacobien*(a2 + 0.5*b2*x2 + 0.5*c2*y2 + 0.5*b2*x3 + 0.5*c2*y3)
-        double_integral_N3_dS = det_jacobien*(a3 + 0.5*b3*x2 + 0.5*c3*y2 + 0.5*b3*x3 + 0.5*c3*y3)
+    #     double_integral_N1_dS = det_jacobien*(a1 + 0.5*b1*x2 + 0.5*c1*y2 + 0.5*b1*x3 + 0.5*c1*y3)
+    #     double_integral_N2_dS = det_jacobien*(a2 + 0.5*b2*x2 + 0.5*c2*y2 + 0.5*b2*x3 + 0.5*c2*y3)
+    #     double_integral_N3_dS = det_jacobien*(a3 + 0.5*b3*x2 + 0.5*c3*y2 + 0.5*b3*x3 + 0.5*c3*y3)
 
-        return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
+    #     return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
 
 
 # class MagneticElementsGroup(vmmesh.ElementsGroup):
@@ -167,7 +197,7 @@ class ElasticityElement(DessiaObject):
         elif plane_stress:
             return self.d_matrix_plane_stress
 
-class ElasticityTriangularElement2D(ElasticityElement, vmmesh.TriangularElement2D):
+class ElasticityTriangularElement2D(ElasticityElement, Element2D):
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
