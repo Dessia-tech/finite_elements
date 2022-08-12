@@ -327,12 +327,14 @@ class FiniteElementAnalysis(FiniteElements):
         if self.node_boundary_conditions:
             positions = finite_elements.core.global_matrix_positions(
                 dimension=self.dimension, nodes_number=len(self.mesh.nodes))
-            zeros_positions = []
+            zeros_positions, conditions_value = [], {}
 
             for boundary_condition in self.node_boundary_conditions:
                 position = positions[(self.mesh.node_to_index[boundary_condition.application],
                                       boundary_condition.dimension)]
                 zeros_positions.append(position)
+                conditions_value[position] = boundary_condition.value
+
                 matrix_k[position, :] = 0
                 matrix_k[:, position] = 0
                 matrix_m[position, :] = 0
@@ -354,7 +356,7 @@ class FiniteElementAnalysis(FiniteElements):
 
             for i, eigvec in enumerate(eigvecs.T):
                 for position in zeros_positions:
-                    eigvec = npy.insert(eigvec, position, 0)
+                    eigvec = npy.insert(eigvec, position, conditions_value[position])
                 eigvecs_adapted[i, :] = eigvec
         else:
             eigvecs_adapted = eigvecs.T
