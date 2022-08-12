@@ -95,19 +95,36 @@ class FiniteElements(DessiaObject):
         return self.c_matrix_boundary_conditions(self.node_boundary_conditions)
 
     def c_matrix_element_boundary_conditions(self):
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
-        row_ind, col_ind, data, k = [], [],[], 0
-        for i, element_condition in enumerate(self.element_boundary_conditions):
-            indexes = [self.mesh.node_to_index[point] for point in element_condition.application.points]
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
+        # row_ind, col_ind, data, k = [], [],[], 0
+        # for i, element_condition in enumerate(self.element_boundary_conditions):
+        #     indexes = [self.mesh.node_to_index[point] for point in element_condition.application.points]
 
-            for j in range(len(self.mesh.nodes)):
-                data.extend(element_condition.c_matrix())
-                pos = positions[(indexes[j],
-                                 element_condition.dimension)]
-                row_ind.extend((len(self.mesh.nodes) * self.dimension + k, pos))
-                col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + k))
-                k += 1
+        #     for j in range(len(self.mesh.nodes)):
+        #         data.extend(element_condition.c_matrix())
+        #         pos = positions[(indexes[j],
+        #                          element_condition.dimension)]
+        #         row_ind.extend((len(self.mesh.nodes) * self.dimension + k, pos))
+        #         col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + k))
+        #         k += 1
+
+        # return data, row_ind, col_ind
+
+        row_ind, col_ind, data = [], [],[]
+        node_boundary_conditions = 0
+        for i, element_condition in enumerate(self.element_boundary_conditions):
+            for point in element_condition.application.points:
+                node_boundary_conditions.append(
+                    finite_elements.conditions.NodeBoundaryCondition(
+                        application = point,
+                        value = element_condition.value,
+                        dimension = element_condition.dimension))
+
+            conditions_data = self.c_matrix_boundary_conditions(node_boundary_conditions)
+            data.extend(conditions_data[0])
+            row_ind.extend(conditions_data[1])
+            col_ind.extend(conditions_data[2])
 
         return data, row_ind, col_ind
 
