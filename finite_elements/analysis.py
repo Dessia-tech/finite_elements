@@ -128,6 +128,56 @@ class FiniteElements(DessiaObject):
 
         return data, row_ind, col_ind
 
+    def boundary_conditions(self):
+        #element to node
+        element_to_node_boundary_conditions = []
+        for i, element_condition in enumerate(self.element_boundary_conditions):
+
+            matrix_factors = element_condition.application.element_to_node_factors()
+
+            for p, point in enumerate(element_condition.application.points):
+                element_to_node_boundary_conditions.append(
+                    finite_elements.conditions.NodeBoundaryCondition(
+                        application = point,
+                        value = element_condition.value * matrix_factors[p],
+                        dimension = element_condition.dimension))
+
+        #group node bc
+        node_boundary_conditions_list = self.node_boundary_conditions
+        node_boundary_conditions_list.extend(element_to_node_boundary_conditions)
+
+        #node bc dict
+        node_boundary_conditions_dict = {}
+        for node_bc in node_boundary_conditions_list:
+            try:
+                node_boundary_conditions_dict[(node_bc.application,
+                                               node_bc.dimension)] =+ node_bc.value
+            except KeyError:
+                node_boundary_conditions_dict[(node_bc.application,
+                                               node_bc.dimension)] = node_bc.value
+
+        #node bc dict to class
+        node_boundary_conditions = []
+        for key, value in node_boundary_conditions_dict.items():
+            node_boundary_conditions.append(
+                finite_elements.conditions.NodeBoundaryCondition(
+                    application = key[0],
+                    value = value[0],
+                    dimension = key[1]))
+
+        #c_matrix data
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+        row_ind, col_ind, data = [], [],[]
+        for i, node_condition in enumerate(node_boundary_conditions):
+            data.extend(node_condition.c_matrix())
+            pos = positions[(self.mesh.node_to_index[node_condition.application],
+                             node_condition.dimension)]
+            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
+            col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
+
+        return data, row_ind, col_ind
+
     @property
     def elements_name(self):
         return self.mesh.elements_groups[0].elements[0].__class__.__name__
