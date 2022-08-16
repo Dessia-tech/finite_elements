@@ -141,19 +141,20 @@ class FiniteElements(DessiaObject):
         return edge_to_node_boundary_conditions
 
     def c_matrix_boundary_conditions(self):
-        node_boundary_conditions = self.node_boundary_conditions[:]
-        #element to node
-        node_boundary_conditions.extend(self.boundary_conditions_element_to_node())
-        #edge to node
-        node_boundary_conditions.extend(self.boundary_conditions_edge_to_node())
+        if self._boundary_conditions:
+            node_boundary_conditions = self._boundary_conditions
+        else:
+            node_boundary_conditions = self.node_boundary_conditions[:]
+            #element to node
+            node_boundary_conditions.extend(self.boundary_conditions_element_to_node())
+            #edge to node
+            node_boundary_conditions.extend(self.boundary_conditions_edge_to_node())
 
-        #node_bc to_dict
-        node_boundary_conditions_dict = node_boundary_conditions_to_dict(node_boundary_conditions)
+            #node_bc to_dict
+            node_boundary_conditions_dict = node_boundary_conditions_to_dict(node_boundary_conditions)
 
-        #node_bc dict from_dict
-        node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
-
-        if not self._boundary_conditions:
+            #node_bc dict from_dict
+            node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
             self._boundary_conditions = node_boundary_conditions
 
         #c_matrix data
@@ -276,19 +277,21 @@ class FiniteElements(DessiaObject):
     #     return data, row_ind
 
     def source_c_matrix_boundary_conditions(self):
-        node_boundary_conditions = self.node_boundary_conditions[:]
-        #element to node
-        node_boundary_conditions.extend(self.boundary_conditions_element_to_node())
-        #edge to node
-        node_boundary_conditions.extend(self.boundary_conditions_edge_to_node())
+        if self._boundary_conditions:
+            node_boundary_conditions = self._boundary_conditions
+        else:
+            node_boundary_conditions = self.node_boundary_conditions[:]
+            #element to node
+            node_boundary_conditions.extend(self.boundary_conditions_element_to_node())
+            #edge to node
+            node_boundary_conditions.extend(self.boundary_conditions_edge_to_node())
 
-        #node_bc to_dict
-        node_boundary_conditions_dict = node_boundary_conditions_to_dict(node_boundary_conditions)
+            #node_bc to_dict
+            node_boundary_conditions_dict = node_boundary_conditions_to_dict(node_boundary_conditions)
 
-        #node_bc dict from_dict
-        node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
+            #node_bc dict from_dict
+            node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
 
-        if not self._boundary_conditions:
             self._boundary_conditions = node_boundary_conditions
 
         #source_c_matrix data
