@@ -20,30 +20,58 @@ from scipy.linalg import eigh
 from dessia_common import DessiaObject
 from typing import List #Tuple, TypeVar
 import finite_elements.elements
-from finite_elements.loads import ElementsLoad, NodeLoad, MagnetLoad
+from finite_elements.loads import ElementsLoad, EdgeLoad, NodeLoad, MagnetLoad
 from finite_elements.conditions import ContinuityCondition
 from finite_elements.results import Result
 from finite_elements.core import blue_red
 
+def node_boundary_conditions_to_dict(node_boundary_conditions):
+    node_boundary_conditions_dict = {}
+    for node_bc in node_boundary_conditions:
+        try:
+            node_boundary_conditions_dict[(node_bc.application,
+                                           node_bc.dimension)] =+ node_bc.value
+        except KeyError:
+            node_boundary_conditions_dict[(node_bc.application,
+                                           node_bc.dimension)] = node_bc.value
+    return node_boundary_conditions_dict
+
+def node_boundary_from_dict(node_boundary_conditions_dict):
+    #node bc dict to class
+    node_boundary_conditions = []
+    for key, value in node_boundary_conditions_dict.items():
+        node_boundary_conditions.append(
+            finite_elements.conditions.NodeBoundaryCondition(
+                application = key[0],
+                value = value,
+                dimension = key[1]))
+    return node_boundary_conditions
+
 class FiniteElements(DessiaObject):
     def __init__(self, mesh: vmmesh.Mesh,
                  element_loads: List[ElementsLoad],
+                 edge_loads: List[EdgeLoad],
                  node_loads: List[NodeLoad],
                  magnet_loads: List[MagnetLoad],
                  continuity_conditions: List[ContinuityCondition],
                  node_boundary_conditions: List[finite_elements.conditions.NodeBoundaryCondition],
+                 edge_boundary_conditions: List[finite_elements.conditions.EdgeBoundaryCondition],
                  element_boundary_conditions: List[finite_elements.conditions.ElementBoundaryCondition],
                  plane_strain: bool = None,
                  plane_stress: bool = None):
         self.mesh = mesh
         self.element_loads = element_loads  # current density J
+        self.edge_loads = edge_loads
         self.node_loads = node_loads 
         self.magnet_loads = magnet_loads
         self.continuity_conditions = continuity_conditions
         self.node_boundary_conditions = node_boundary_conditions
+        self.edge_boundary_conditions = edge_boundary_conditions
         self.element_boundary_conditions = element_boundary_conditions
         self.plane_strain = plane_strain
         self.plane_stress = plane_stress
+
+        self._boundary_conditions = None
 
         DessiaObject.__init__(self, name='')
 
@@ -66,70 +94,7 @@ class FiniteElements(DessiaObject):
 
         return data, row_ind, col_ind
 
-    def c_matrix_boundary_conditions(self, node_boundary_conditions):
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
-        row_ind, col_ind, data = [], [],[]
-        for i, node_condition in enumerate(node_boundary_conditions):
-            data.extend(node_condition.c_matrix())
-            pos = positions[(self.mesh.node_to_index[node_condition.application],
-                             node_condition.dimension)]
-            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
-            col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
-
-        return data, row_ind, col_ind
-
-    def c_matrix_node_boundary_conditions(self):
-        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-        #                                                           nodes_number=len(self.mesh.nodes))
-        # row_ind, col_ind, data = [], [],[]
-        # for i, node_condition in enumerate(self.node_boundary_conditions):
-        #     data.extend(node_condition.c_matrix())
-        #     pos = positions[(self.mesh.node_to_index[node_condition.application],
-        #                       node_condition.dimension)]
-        #     row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
-        #     col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
-
-        # return data, row_ind, col_ind
-
-        return self.c_matrix_boundary_conditions(self.node_boundary_conditions)
-
-    def c_matrix_element_boundary_conditions(self):
-        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-        #                                                          nodes_number=len(self.mesh.nodes))
-        # row_ind, col_ind, data, k = [], [],[], 0
-        # for i, element_condition in enumerate(self.element_boundary_conditions):
-        #     indexes = [self.mesh.node_to_index[point] for point in element_condition.application.points]
-
-        #     for j in range(len(self.mesh.nodes)):
-        #         data.extend(element_condition.c_matrix())
-        #         pos = positions[(indexes[j],
-        #                          element_condition.dimension)]
-        #         row_ind.extend((len(self.mesh.nodes) * self.dimension + k, pos))
-        #         col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + k))
-        #         k += 1
-
-        # return data, row_ind, col_ind
-
-        row_ind, col_ind, data = [], [],[]
-        node_boundary_conditions = []
-        for i, element_condition in enumerate(self.element_boundary_conditions):
-            for point in element_condition.application.points:
-                node_boundary_conditions.append(
-                    finite_elements.conditions.NodeBoundaryCondition(
-                        application = point,
-                        value = element_condition.value,
-                        dimension = element_condition.dimension))
-
-            conditions_data = self.c_matrix_boundary_conditions(node_boundary_conditions)
-            data.extend(conditions_data[0])
-            row_ind.extend(conditions_data[1])
-            col_ind.extend(conditions_data[2])
-
-        return data, row_ind, col_ind
-
-    def boundary_conditions(self):
-        #element to node
+    def boundary_conditions_element_to_node(self):
         element_to_node_boundary_conditions = []
         for i, element_condition in enumerate(self.element_boundary_conditions):
 
@@ -141,29 +106,35 @@ class FiniteElements(DessiaObject):
                         application = point,
                         value = element_condition.value * matrix_factors[p],
                         dimension = element_condition.dimension))
+        return element_to_node_boundary_conditions
 
-        #group node bc
-        node_boundary_conditions_list = self.node_boundary_conditions
-        node_boundary_conditions_list.extend(element_to_node_boundary_conditions)
+    def boundary_conditions_edge_to_node(self):
+        edge_to_node_boundary_conditions = []
+        for i, edge_condition in enumerate(self.edge_boundary_conditions):
+            for point in [edge_condition.application.start,
+                          edge_condition.application.end]:
+                edge_to_node_boundary_conditions.append(
+                    finite_elements.conditions.NodeBoundaryCondition(
+                        application = point,
+                        value = edge_condition.value * 0.5,
+                        dimension = edge_condition.dimension))
+        return edge_to_node_boundary_conditions
 
-        #node bc dict
-        node_boundary_conditions_dict = {}
-        for node_bc in node_boundary_conditions_list:
-            try:
-                node_boundary_conditions_dict[(node_bc.application,
-                                               node_bc.dimension)] =+ node_bc.value
-            except KeyError:
-                node_boundary_conditions_dict[(node_bc.application,
-                                               node_bc.dimension)] = node_bc.value
+    def c_matrix_boundary_conditions(self):
+        node_boundary_conditions = self.node_boundary_conditions[:]
+        #element to node
+        node_boundary_conditions.extend(self.boundary_conditions_element_to_node())
+        #edge to node
+        node_boundary_conditions.extend(self.boundary_conditions_edge_to_node())
 
-        #node bc dict to class
-        node_boundary_conditions = []
-        for key, value in node_boundary_conditions_dict.items():
-            node_boundary_conditions.append(
-                finite_elements.conditions.NodeBoundaryCondition(
-                    application = key[0],
-                    value = value[0],
-                    dimension = key[1]))
+        #node_bc to_dict
+        node_boundary_conditions_dict = node_boundary_conditions_to_dict(node_boundary_conditions)
+
+        #node_bc dict from_dict
+        node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
+
+        if not self._boundary_conditions:
+            self._boundary_conditions = node_boundary_conditions
 
         #c_matrix data
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
@@ -230,22 +201,26 @@ class FiniteElements(DessiaObject):
 
         return data, row_ind
 
-    def source_c_matrix_element_boundary_conditions(self):
+    def source_c_matrix_boundary_conditions(self):
+        node_boundary_conditions = self.node_boundary_conditions[:]
+        #element to node
+        node_boundary_conditions.extend(self.boundary_conditions_element_to_node())
+        #edge to node
+        node_boundary_conditions.extend(self.boundary_conditions_edge_to_node())
+
+        #node_bc to_dict
+        node_boundary_conditions_dict = node_boundary_conditions_to_dict(node_boundary_conditions)
+
+        #node_bc dict from_dict
+        node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
+
+        if not self._boundary_conditions:
+            self._boundary_conditions = node_boundary_conditions
+
+        #source_c_matrix data
         data, row_ind = [], []
 
-        for i, element_condition in enumerate(self.element_boundary_conditions):
-            matrix_factors = element_condition.application.element_to_node_factors()
-            k = 0
-            for j in range(len(self.mesh.nodes)):
-                data.append(element_condition.source_c_matrix() * matrix_factors[0])
-                row_ind.append(len(self.mesh.nodes) * self.dimension + k)
-                k += 1
-        return data, row_ind
-
-    def source_c_matrix_node_boundary_conditions(self):
-        data, row_ind = [], []
-
-        for i, node_condition in enumerate(self.node_boundary_conditions):
+        for i, node_condition in enumerate(node_boundary_conditions):
             data.append(node_condition.source_c_matrix())
             row_ind.append(len(self.mesh.nodes) * self.dimension + i)
 
@@ -260,7 +235,6 @@ class FiniteElements(DessiaObject):
             row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
 
         return data, row_ind
-
 
     def source_c_matrix_magnet_loads(self):
         data, row_ind = [], []
@@ -338,8 +312,7 @@ class FiniteElementAnalysis(FiniteElements):
         # col_ind.extend(c_matrix_boundary_conditions[2])
 
         method_names = ['k_matrix', 'c_matrix_continuity_conditions',
-                        'c_matrix_node_boundary_conditions',
-                        'c_matrix_element_boundary_conditions']
+                        'c_matrix_boundary_conditions']
 
         for method_name in method_names:
             if hasattr(self, method_name):
@@ -380,8 +353,7 @@ class FiniteElementAnalysis(FiniteElements):
         #     matrix[source_c_matrix_node_boundary_conditions[1][i]][0] += d
 
         method_names = ['source_c_matrix_elements_loads', 'source_c_matrix_node_loads',
-                        'source_c_matrix_magnet_loads', 'source_c_matrix_node_boundary_conditions',
-                        'source_c_matrix_element_boundary_conditions']
+                        'source_c_matrix_magnet_loads', 'source_c_matrix_boundary_conditions']
 
         for method_name in method_names:
             if hasattr(self, method_name):
@@ -421,8 +393,7 @@ class FiniteElementAnalysis(FiniteElements):
 
     def get_source_matrix_length(self):
         return len(self.mesh.nodes)*self.dimension + len(self.continuity_conditions) \
-            + len(self.node_boundary_conditions) \
-                + len(self.element_boundary_conditions*len(self.mesh.elements_groups[0].elements[0].points))
+            + len(self._boundary_conditions)
 
     def modal_analysis(self):
         matrices = []
