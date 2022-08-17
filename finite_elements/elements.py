@@ -224,6 +224,14 @@ class ElasticityElement(DessiaObject):
         elif plane_stress:
             return self.d_matrix_plane_stress
 
+    def energy(self, plane_strain: bool, plane_stress:bool):
+
+        shape = self.dimension * len(self.mesh_element.points)
+        return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(self.displacements)),
+                                 self.elementary_matrix(plane_strain, plane_stress).reshape(shape,shape)),
+                      npy.array(self.displacements)))
+
+
 class ElasticityTriangularElement2D(ElasticityElement, Element2D):
     # _standalone_in_db = False
     # _non_serializable_attributes = []
@@ -443,12 +451,6 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
 
     #     return mass_matrix.flatten()
 
-    def energy(self, plane_strain: bool, plane_stress:bool):
-
-        return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(self.displacements)),
-                                 self.elementary_matrix(plane_strain, plane_stress).reshape(6,6)),
-                      npy.array(self.displacements)))
-
     @classmethod
     def from_element(cls, mesh_element, elasticity_element):
         return cls(mesh_element, elasticity_element.elasticity_modulus,
@@ -601,6 +603,12 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
             * npy.array(data).reshape(12, 12)
 
         return mass_matrix.flatten()
+
+    def energy(self, plane_strain: bool, plane_stress:bool):
+
+        return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(self.displacements)),
+                                 self.elementary_matrix(plane_strain, plane_stress).reshape(6,6)),
+                      npy.array(self.displacements)))
 
     @classmethod
     def from_element(cls, mesh_element, elasticity_element):
