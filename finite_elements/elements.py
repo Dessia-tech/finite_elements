@@ -604,12 +604,6 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
 
         return mass_matrix.flatten()
 
-    def energy(self, plane_strain: bool, plane_stress:bool):
-
-        return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(self.displacements)),
-                                 self.elementary_matrix(plane_strain, plane_stress).reshape(6,6)),
-                      npy.array(self.displacements)))
-
     @classmethod
     def from_element(cls, mesh_element, elasticity_element):
         return cls(mesh_element, elasticity_element.elasticity_modulus,
