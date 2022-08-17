@@ -49,8 +49,17 @@ mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
 
 # %% Analysis
 
-analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [],
-                                             plane_strain=False, plane_stress=True)
+analysis = fe.analysis.FiniteElementAnalysis(mesh = mesh,
+                                             element_loads = [],
+                                             edge_loads = [],
+                                             node_loads = [],
+                                             magnet_loads = [],
+                                             continuity_conditions = [],
+                                             node_boundary_conditions = [],
+                                             edge_boundary_conditions = [],
+                                             element_boundary_conditions = [],
+                                             plane_strain = False,
+                                             plane_stress = True)
 
 eigvals, eigvecs = analysis.modal_analysis()
 elasticity_results = []

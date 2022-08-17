@@ -93,8 +93,18 @@ plane_strain, plane_stress = True, False
 
 # %% Analysis
 
-analysis = fe.analysis.FiniteElementAnalysis(mesh_fe, [], node_loads, [], [], node_boundary_conditions, [],
-                                             plane_strain=plane_strain, plane_stress=plane_stress)
+analysis = fe.analysis.FiniteElementAnalysis(mesh = mesh_fe,
+                                             element_loads = [],
+                                             edge_loads = [],
+                                             node_loads = node_loads ,
+                                             magnet_loads = [],
+                                             continuity_conditions = [],
+                                             node_boundary_conditions = node_boundary_conditions,
+                                             edge_boundary_conditions = [],
+                                             element_boundary_conditions = [],
+                                             plane_strain = plane_strain,
+                                             plane_stress = plane_stress)
+
 
 # %% Results
 

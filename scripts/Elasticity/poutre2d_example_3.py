@@ -53,8 +53,8 @@ for file_path in files_path:
 
     mesh = gmsh.define_triangular_element_mesh()
 
-    ax= mesh.plot()
-    ax.set_title(str(len(mesh.nodes))+' Nodes')
+    # ax= mesh.plot()
+    # ax.set_title(str(len(mesh.nodes))+' Nodes')
 
     # %% Finite Element Mesh2D
 
@@ -93,8 +93,18 @@ for file_path in files_path:
 
     # %% Analysis
 
-    analysis = fe.analysis.FiniteElementAnalysis(mesh, [], node_loads, [], [], node_boundary_conditions, [],
-                                                 plane_strain=plane_strain, plane_stress=plane_stress)
+    analysis = fe.analysis.FiniteElementAnalysis(mesh = mesh,
+                                                 element_loads = [],
+                                                 edge_loads = [],
+                                                 node_loads = node_loads ,
+                                                 magnet_loads = [],
+                                                 continuity_conditions = [],
+                                                 node_boundary_conditions = node_boundary_conditions,
+                                                 edge_boundary_conditions = [],
+                                                 element_boundary_conditions = [],
+                                                 plane_strain = plane_strain,
+                                                 plane_stress = plane_stress)
+
 
     # %% Results
 
@@ -111,16 +121,16 @@ for file_path in files_path:
                                                          'time':end-start}
     # y_displacements.append(elasticity_result.displacement_vectors_per_node[application_index].y)
 
-    elasticity_result.update_vtk_with_results(
-                input_file_name = file_path+'.vtk',
-                output_file_name = file_path+'_displacements'+'.vtk')
+    # elasticity_result.update_vtk_with_results(
+    #             input_file_name = file_path+'.vtk',
+    #             output_file_name = file_path+'_displacements'+'.vtk')
 
     # %% Plots
 
     # elasticity_result.plot_deformed_mesh(amplitude=10)
     # elasticity_result.plot_displacement_vectors_per_node(amplitude=0.2)
 
-    # elasticity_result.plot_displacement_per_node_xy(amplitude=10)
+    elasticity_result.plot_displacement_per_node_xy(amplitude=10)
 
     # elasticity_result.plot_strain()
     # elasticity_result.plot_stress()

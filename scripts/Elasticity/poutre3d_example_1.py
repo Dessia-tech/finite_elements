@@ -36,8 +36,16 @@ stiffness_matrix = solid_elments3d[0].elementary_matrix(plane_strain=True, plane
 
 # %% Analysis
 
-analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], [], [], plane_strain=True, plane_stress=False)
+analysis = fe.analysis.FiniteElementAnalysis(mesh = mesh,
+                                             element_loads = [],
+                                             edge_loads = [],
+                                             node_loads = [] ,
+                                             magnet_loads = [],
+                                             continuity_conditions = [],
+                                             node_boundary_conditions = [],
+                                             edge_boundary_conditions = [],
+                                             element_boundary_conditions = [],
+                                             plane_strain = True,
+                                             plane_stress = False)
 
 m = analysis.create_matrix()
-
-results = analysis.solve()
