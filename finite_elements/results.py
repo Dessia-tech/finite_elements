@@ -486,13 +486,13 @@ class ElasticityResults(Result):
 
         # return energy
 
-        return sum(self.energy_per_element)
+        return sum([value for value in self.energy_per_element.values()])
 
     def _energy_per_element(self):
-        energy = []
+        energy = {}
         for group in self.mesh.elements_groups:
             for element in group.elements:
-                energy.append(element.energy(self.plane_strain, self.plane_stress))
+                energy[element] = (element.energy(self.plane_strain, self.plane_stress))
         return energy
 
     def displacement_per_node_x(self):
@@ -753,13 +753,8 @@ class ElasticityResults2D(ElasticityResults):
 
     def plot_energy(self, ax=None, fig=None, amplitude=1):
 
-        result_values = self.energy_per_element
-        e=0
-        result = {}
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                result[element] = result_values[e]
-                e +=1
+        result = self.energy_per_element
+        result_values = [value for value in self.energy_per_element.values()]
 
         if amplitude != 1:
             deformed_mesh = self._deformed_mesh(amplitude=amplitude)
