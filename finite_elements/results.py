@@ -375,6 +375,7 @@ class ElasticityResults(Result):
 
         self.displacement_vectors_per_node = self._displacement_vectors_per_node()
         self.displacements_per_element = self._displacements_per_element()
+        self.energy = self._energy()
         self.strain, self.stress = self._strain_stress_per_element()
         self.deformed_nodes = self._deformed_nodes()
         self.deformed_mesh = self._deformed_mesh()
@@ -467,6 +468,22 @@ class ElasticityResults(Result):
             deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i]*amplitude))
 
         return deformed_nodes
+
+    def _energy(self):
+        # shape = len(self.mesh.nodes) * self.dimension
+        # K = self.create_matrix() (!)
+        # displacements = self.result_vector[0:shape]
+
+        # return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(displacements)),
+        #                          K),
+        #               npy.array(displacements)))
+
+        energy = 0
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                energy += element.energy(self.plane_strain, self.plane_stress)
+
+        return energy
 
     def displacement_per_node_x(self):
 
