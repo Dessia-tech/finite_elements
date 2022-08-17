@@ -751,6 +751,50 @@ class ElasticityResults2D(ElasticityResults):
             comment = 'Displacement Vectors "Plane Strain"'
         ax.set_title(comment)
 
+    def plot_energy(self, ax=None, fig=None, amplitude=1):
+
+        result_values = self.energy_per_element
+        e=0
+        result = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                result[element] = result_values[e]
+                e +=1
+
+        if amplitude != 1:
+            deformed_mesh = self._deformed_mesh(amplitude=amplitude)
+        else:
+            deformed_mesh = self.deformed_mesh
+
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = plt.gcf()
+
+        B_max, B_min = finite_elements.core.get_bmin_bmax(result_values, Bmin=None, Bmax=None)
+        B_to_color = finite_elements.core.get_colors(result_values, B_max=B_max, B_min=B_min)
+        for g, group in enumerate(deformed_mesh.elements_groups):
+            for e, element in enumerate(group.elements):
+                element.plot(ax=ax, color=B_to_color[result[self.mesh.elements_groups[g].elements[e]]], fill=True)
+
+        norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
+        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        sm.set_array([])
+        cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10), ax=ax)
+        cbar.set_label('Energy')
+        ax.set_aspect('equal')
+
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+
+        if self.plane_stress:
+            comment = '"Plane Stress"'
+        else:
+            comment = '"Plane Strain"'
+        ax.set_title(comment)
+
+        return ax
+
     def plot_shear_strain_xy(self, ax=None, fig=None):
 
         return self.plot_constraints(constraint_name='shear_strain_xy', ax=ax, fig=fig)
