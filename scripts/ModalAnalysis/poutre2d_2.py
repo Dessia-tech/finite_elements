@@ -48,6 +48,9 @@ elasticity_modulus, poisson_ratio, thickness, mass_density = 30*1e6, 0.25, 1, 2.
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7860 #acier
 
+elasticity_modulus, poisson_ratio, thickness, mass_density = 71.8*1e9, 0.25, 1, 2.7
+
+elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7860 #acier
 
 group_elements = []
 
@@ -93,45 +96,17 @@ for elasticity_result in elasticity_results:
 
 # %%% With Conditions
 
-application_indices = find_points_with_x(nodes=mesh.nodes, x=0)
-application_indices.extend(find_points_with_x(nodes=mesh.nodes, x=10))
-
-node_boundary_conditions = []
-for index in application_indices:
-    node_boundary_conditions.extend([finite_elements.conditions.NodeBoundaryCondition(mesh.nodes[index], 0, 1),
-                                     finite_elements.conditions.NodeBoundaryCondition(mesh.nodes[index], 0, 2)])
-
-# load = -1000
-# application_index = mesh.node_to_index[volmdlr.mesh.Node2D(10,1)]
-# node_loads = [fe.loads.NodeLoad(mesh.nodes[application_index], load, 2)]
-
-analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], node_boundary_conditions, [],
-                                             plane_strain=False, plane_stress=True)
-
-eigvals, eigvecs = analysis.modal_analysis()
-elasticity_results = []
-
-for eigvec in eigvecs[0:10]:
-    elasticity_results.append(fe.results.ElasticityResults2D(analysis.mesh,
-                                                             eigvec,
-                                                             analysis.plane_strain, analysis.plane_stress))
-
-for elasticity_result in elasticity_results:
-    # elasticity_result.plot_deformed_mesh(amplitude=1)
-    elasticity_result.plot_displacement_per_node_xy(amplitude=1)
-
-# %%% With Conditions + Loads
-
 # application_indices = find_points_with_x(nodes=mesh.nodes, x=0)
+# application_indices.extend(find_points_with_x(nodes=mesh.nodes, x=10))
 
 # node_boundary_conditions = []
 # for index in application_indices:
 #     node_boundary_conditions.extend([finite_elements.conditions.NodeBoundaryCondition(mesh.nodes[index], 0, 1),
 #                                      finite_elements.conditions.NodeBoundaryCondition(mesh.nodes[index], 0, 2)])
 
-# load = -1000
-# application_index = mesh.node_to_index[volmdlr.mesh.Node2D(10,1)]
-# node_loads = [fe.loads.NodeLoad(mesh.nodes[application_index], load, 2)]
+# # load = -1000
+# # application_index = mesh.node_to_index[volmdlr.mesh.Node2D(10,1)]
+# # node_loads = [fe.loads.NodeLoad(mesh.nodes[application_index], load, 2)]
 
 # analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], node_boundary_conditions, [],
 #                                              plane_strain=False, plane_stress=True)
@@ -148,10 +123,38 @@ for elasticity_result in elasticity_results:
 #     # elasticity_result.plot_deformed_mesh(amplitude=1)
 #     elasticity_result.plot_displacement_per_node_xy(amplitude=1)
 
+# # %%% With Conditions + Loads
 
-# %% VTK files generation
+# # application_indices = find_points_with_x(nodes=mesh.nodes, x=0)
 
-# for i, elasticity_result in enumerate(elasticity_results):
-#     elasticity_result.update_vtk_with_results(
-#         input_file_name = file_path+'.vtk',
-#         output_file_name = file_path+'_mode_n°_'+str(i)+'.vtk')
+# # node_boundary_conditions = []
+# # for index in application_indices:
+# #     node_boundary_conditions.extend([finite_elements.conditions.NodeBoundaryCondition(mesh.nodes[index], 0, 1),
+# #                                      finite_elements.conditions.NodeBoundaryCondition(mesh.nodes[index], 0, 2)])
+
+# # load = -1000
+# # application_index = mesh.node_to_index[volmdlr.mesh.Node2D(10,1)]
+# # node_loads = [fe.loads.NodeLoad(mesh.nodes[application_index], load, 2)]
+
+# # analysis = fe.analysis.FiniteElementAnalysis(mesh, [], [], [], [], node_boundary_conditions, [],
+# #                                              plane_strain=False, plane_stress=True)
+
+# # eigvals, eigvecs = analysis.modal_analysis()
+# # elasticity_results = []
+
+# # for eigvec in eigvecs[0:10]:
+# #     elasticity_results.append(fe.results.ElasticityResults2D(analysis.mesh,
+# #                                                              eigvec,
+# #                                                              analysis.plane_strain, analysis.plane_stress))
+
+# # for elasticity_result in elasticity_results:
+# #     # elasticity_result.plot_deformed_mesh(amplitude=1)
+# #     elasticity_result.plot_displacement_per_node_xy(amplitude=1)
+
+
+# # %% VTK files generation
+
+# # for i, elasticity_result in enumerate(elasticity_results):
+# #     elasticity_result.update_vtk_with_results(
+# #         input_file_name = file_path+'.vtk',
+# #         output_file_name = file_path+'_mode_n°_'+str(i)+'.vtk')

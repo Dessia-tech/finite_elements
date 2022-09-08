@@ -81,3 +81,8 @@ for elasticity_result in elasticity_results[0:10]:
     # elasticity_result.plot_deformed_mesh(amplitude=50)
     elasticity_result.plot_displacement_per_node_xy(amplitude=50)
 
+import math
+
+frequency = []
+for eigval in eigvals[3::]:
+    frequency.append((math.sqrt(eigval)/(2*math.pi)))

@@ -134,22 +134,22 @@ elasticity_result.update_vtk_with_results(
             input_file_name = file_path+'.vtk',
             output_file_name = file_path+'_displacements'+'.vtk')
 
-# %% Anaytic Result
+# # %% Anaytic Result
 
-b = 2
-thickness = 2
-I = ((b**3)*thickness)/12 #I = (b*(thickness**3) + thickness*(b**3))/12
-z_displacement = (load*10**3)/(3*elasticity_modulus*I)
-
-
-# %% Comparaison
-
-application_indices = find_points_with_xz(nodes=mesh_fe.nodes, x=10, z=2)
-
-z_displacements = []
-for index in application_indices:
-    z_displacements.append(elasticity_result.displacement_vectors_per_node[index].z)
+# b = 2
+# thickness = 2
+# I = ((b**3)*thickness)/12 #I = (b*(thickness**3) + thickness*(b**3))/12
+# z_displacement = (load*10**3)/(3*elasticity_modulus*I)
 
 
-print('Analytic:', z_displacement)
-print('Solver:', z_displacements)
+# # %% Comparaison
+
+# application_indices = find_points_with_xz(nodes=mesh_fe.nodes, x=10, z=2)
+
+# z_displacements = []
+# for index in application_indices:
+#     z_displacements.append(elasticity_result.displacement_vectors_per_node[index].z)
+
+
+# print('Analytic:', z_displacement)
+# print('Solver:', z_displacements)

@@ -30,7 +30,7 @@ ax.set_title("Initial Mesh")
 
 # %% Loads/Conditions
 
-load = -1000000
+load = -1000 #-1000000
 node_loads = [fe.loads.NodeLoad(mesh_fe.nodes[mesh_fe.node_to_index[mesh.Node2D(3,2)]], load, 2)] #1000
 
 node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(mesh.Node2D(3,0), 0, 2),
@@ -42,11 +42,11 @@ node_boundary_conditions = [finite_elements.conditions.NodeBoundaryCondition(mes
 
 #%% Analysis: plane_strain
 
-plane_strain, plane_stress = True, False
+# plane_strain, plane_stress = True, False
 
 #%% Analysis: plane_stress
 
-# plane_strain, plane_stress = False, True
+plane_strain, plane_stress = False, True
 
 # %% Analysis
 
