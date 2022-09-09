@@ -256,7 +256,7 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
     #     self.stress = stress
     #     self.strain = strain
 
-    def __init__(self, mesh_element: vmmesh.TetrahedralElement,
+    def __init__(self, mesh_element: vmmesh.TriangularElement2D,
                  elasticity_modulus, poisson_ratio, mass_density,
                  thickness: float = 1.0,
                  displacements = None,
@@ -360,16 +360,16 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
                 1, 0, 1, 0, 2, 0,
                 0, 1, 0, 1, 0, 2]
 
-        x1 = self.mesh_element.points[0][0]
-        y1 = self.mesh_element.points[0][1]
-        x2 = self.mesh_element.points[1][0]
-        y2 = self.mesh_element.points[1][1]
-        x3 = self.mesh_element.points[2][0]
-        y3 = self.mesh_element.points[2][1]
+        # x1 = self.mesh_element.points[0][0]
+        # y1 = self.mesh_element.points[0][1]
+        # x2 = self.mesh_element.points[1][0]
+        # y2 = self.mesh_element.points[1][1]
+        # x3 = self.mesh_element.points[2][0]
+        # y3 = self.mesh_element.points[2][1]
 
-        det_jacobien = (abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1)))
+        # det_jacobien = (abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1)))
 
-        mass_matrix = det_jacobien * ((self.mass_density * self.area \
+        mass_matrix =  ((self.mass_density * self.area \
                         * self.thickness)/12) * npy.array(data).reshape(6, 6)
 
         # mass_matrix = 0.5* det_jacobien * ((self.mass_density * self.area \
