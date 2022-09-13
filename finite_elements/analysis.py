@@ -14,6 +14,7 @@ import volmdlr.mesh as vmmesh
 # import math
 from scipy import sparse
 from scipy.linalg import eigh
+from scipy.sparse.linalg import eigs
 # from scipy.sparse import csr_matrix
 # from scipy import linalg
 # import time 
@@ -475,14 +476,36 @@ class FiniteElementAnalysis(FiniteElements):
     def modal_analysis(self):
         matrices = []
         method_names = ['k_matrix', 'm_matrix']
-        for method_name in method_names:
-            matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
-                               len(self.mesh.nodes)*self.dimension))
+        # for method_name in method_names:
+        #     matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
+        #                         len(self.mesh.nodes)*self.dimension))
 
+        #     if hasattr(self, method_name):
+        #         data, row_ind, col_ind = getattr(self, method_name)()
+        #         for i, d in enumerate(data):
+        #             matrix[row_ind[i], col_ind[i]] += d
+        #         matrices.append(matrix)
+        #     else:
+        #         raise NotImplementedError(
+        #             f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        for method_name in method_names:
             if hasattr(self, method_name):
                 data, row_ind, col_ind = getattr(self, method_name)()
+                dict_data = {}
                 for i, d in enumerate(data):
-                    matrix[row_ind[i]][col_ind[i]] += d
+                    try:
+                        dict_data[(row_ind[i], col_ind[i])] += d
+                    except KeyError:
+                        dict_data[(row_ind[i], col_ind[i])] = d
+
+                data_new, row_ind_new, col_ind_new = [], [], []
+                for key, value in dict_data.items():
+                    data_new.append(value)
+                    row_ind_new.append(key[0])
+                    col_ind_new.append(key[1])
+
+                matrix = sparse.csr_matrix((data_new, (row_ind_new, col_ind_new)))
                 matrices.append(matrix)
             else:
                 raise NotImplementedError(
@@ -513,7 +536,8 @@ class FiniteElementAnalysis(FiniteElements):
                 matrix_m = npy.delete(matrix_m, (position), axis=0)
                 matrix_m = npy.delete(matrix_m, (position), axis=1)
 
-        eigvals, eigvecs = eigh(matrix_k, matrix_m)
+        # eigvals, eigvecs = eigh(matrix_k, matrix_m)
+        eigvals, eigvecs = eigs(A=matrix_k, M=matrix_m, k=6, which='SM')
 
         if self.node_boundary_conditions:
             eigvecs_adapted = npy.zeros((len(self.mesh.nodes)*self.dimension,
