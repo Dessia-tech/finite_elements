@@ -537,7 +537,7 @@ class FiniteElementAnalysis(FiniteElements):
                 matrix_m = npy.delete(matrix_m, (position), axis=1)
 
         # eigvals, eigvecs = eigh(matrix_k, matrix_m)
-        eigvals, eigvecs = eigs(A=matrix_k, M=matrix_m, k=6, which='SM')
+        eigvals, eigvecs = eigsh(A=matrix_k, M=matrix_m, k=1000, which='LA')
 
         if self.node_boundary_conditions:
             eigvecs_adapted = npy.zeros((len(self.mesh.nodes)*self.dimension,
