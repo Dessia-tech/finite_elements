@@ -92,7 +92,7 @@ for eigvec in eigvecs[0:10]:
 
 for elasticity_result in elasticity_results:
     # elasticity_result.plot_deformed_mesh(amplitude=1)
-    elasticity_result.plot_displacement_per_node_xy(amplitude=1)
+    elasticity_result.plot_displacement_per_node_xy(amplitude=20)
 
 # %%% With Conditions
 

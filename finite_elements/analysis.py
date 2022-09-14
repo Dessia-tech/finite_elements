@@ -14,7 +14,7 @@ import volmdlr.mesh as vmmesh
 # import math
 from scipy import sparse
 from scipy.linalg import eigh
-from scipy.sparse.linalg import eigs
+from scipy.sparse.linalg import eigs, eigsh
 # from scipy.sparse import csr_matrix
 # from scipy import linalg
 # import time 
@@ -537,7 +537,8 @@ class FiniteElementAnalysis(FiniteElements):
                 matrix_m = npy.delete(matrix_m, (position), axis=1)
 
         # eigvals, eigvecs = eigh(matrix_k, matrix_m)
-        eigvals, eigvecs = eigsh(A=matrix_k, M=matrix_m, k=1000, which='LA')
+        eigvals, eigvecs = eigsh(A=matrix_k, M=matrix_m,
+                                 k=len(self.mesh.nodes)*self.dimension-1, which='LM')
 
         if self.node_boundary_conditions:
             eigvecs_adapted = npy.zeros((len(self.mesh.nodes)*self.dimension,
