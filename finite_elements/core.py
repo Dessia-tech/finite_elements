@@ -149,5 +149,6 @@ class Material(DessiaObject):
         self.elasticity_modulus = elasticity_modulus
         self.poisson_ratio = poisson_ratio
         self.mass_density = mass_density
+        self.name = name
 
         DessiaObject.__init__(self, name=name)

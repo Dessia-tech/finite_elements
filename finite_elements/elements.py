@@ -210,6 +210,7 @@ class ElasticityElement(DessiaObject):
         self.displacements = displacements
         self.stress = stress
         self.strain = strain
+        self.name = name
 
         DessiaObject.__init__(self, name=name)
 
@@ -233,12 +234,20 @@ class ElasticityElement(DessiaObject):
 
     @classmethod
     def with_material_object(cls, mesh_element,
-                             material: finite_elements.core.Material):
+                             material: finite_elements.core.Material,
+                             displacements = None,
+                             stress = None,
+                             strain = None,
+                             name : str = ''):
 
         return cls(mesh_element=mesh_element,
                    elasticity_modulus=material.elasticity_modulus,
                    poisson_ratio=material.poisson_ratio,
-                   mass_density=material.mass_density)
+                   mass_density=material.mass_density,
+                   displacements=displacements,
+                   stress=stress,
+                   strain=strain,
+                   name=name)
 
 
 class ElasticityTriangularElement2D(ElasticityElement, Element2D):
@@ -275,8 +284,8 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
         self.thickness = thickness
 
         ElasticityElement.__init__(self, mesh_element,
-                                       elasticity_modulus, poisson_ratio, mass_density)
-        vmmesh.TriangularElement2D.__init__(self, points=mesh_element.points)
+                                       elasticity_modulus, poisson_ratio, mass_density, name=name)
+        vmmesh.TriangularElement2D.__init__(self, points=mesh_element.points, name=name)
 
         # DessiaObject.__init__(self, name=name)
 
@@ -514,8 +523,8 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
                  name : str = ''):
 
         ElasticityElement.__init__(self, mesh_element,
-                                       elasticity_modulus, poisson_ratio, mass_density)
-        vmmesh.TetrahedralElement.__init__(self, points=mesh_element.points)
+                                   elasticity_modulus, poisson_ratio, mass_density, name=name)
+        vmmesh.TetrahedralElement.__init__(self, points=mesh_element.points, name=name)
 
         # DessiaObject.__init__(self, name=name)
 
