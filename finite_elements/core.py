@@ -15,7 +15,7 @@ import matplotlib.tri as mtri
 # from scipy import sparse
 # from scipy import linalg
 # import time
-# from dessia_common import DessiaObject
+from dessia_common import DessiaObject
 # from typing import TypeVar, List, Tuple
 
 
@@ -133,3 +133,21 @@ def get_triangulation(mesh):
     triang = mtri.Triangulation(x, y, triangles)
 
     return triang
+
+class Material(DessiaObject):
+    _standalone_in_db = False
+    _non_serializable_attributes = []
+    _non_eq_attributes = ['name']
+    _non_hash_attributes = ['name']
+    _generic_eq = True
+
+    def __init__(self,
+                 elasticity_modulus,
+                 poisson_ratio,
+                 mass_density,
+                 name : str = ''):
+        self.elasticity_modulus = elasticity_modulus
+        self.poisson_ratio = poisson_ratio
+        self.mass_density = mass_density
+
+        DessiaObject.__init__(self, name=name)
