@@ -231,6 +231,15 @@ class ElasticityElement(DessiaObject):
                                  self.elementary_matrix(plane_strain, plane_stress).reshape(shape,shape)),
                       npy.array(self.displacements)))
 
+    @classmethod
+    def with_material_object(cls, mesh_element,
+                             material: finite_elements.core.Material):
+
+        return cls(mesh_element=mesh_element,
+                   elasticity_modulus=material.elasticity_modulus,
+                   poisson_ratio=material.poisson_ratio,
+                   mass_density=material.mass_density)
+
 
 class ElasticityTriangularElement2D(ElasticityElement, Element2D):
     # _standalone_in_db = False
