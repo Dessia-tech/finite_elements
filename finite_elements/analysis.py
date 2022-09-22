@@ -12,6 +12,7 @@ import numpy as npy
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
 # import math
+import scipy
 from scipy import sparse
 from scipy.linalg import eigh
 from scipy.sparse.linalg import eigs, eigsh
@@ -469,6 +470,42 @@ class FiniteElementAnalysis(FiniteElements):
 
         return row_ind, col_ind
 
+    def eig(self):
+        matrices = []
+        method_names = ['k_matrix', 'm_matrix']
+        for method_name in method_names:
+            matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
+                                len(self.mesh.nodes)*self.dimension))
+
+            if hasattr(self, method_name):
+                data, row_ind, col_ind = getattr(self, method_name)()
+                for i, d in enumerate(data):
+                    matrix[row_ind[i], col_ind[i]] += d
+                matrices.append(matrix)
+            else:
+                raise NotImplementedError(
+                    f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        matrix_k, matrix_m = matrices
+
+        # Calcul des valeurs propres du système Mass-Spring-Dampers
+        D, V = scipy.linalg.eig(matrix_m, matrix_k)
+
+        # Tri des vecteurs propres dans l'ordre des valeurs propres croissantes
+        index = D.argsort()
+        V = V[ :, index[ ::-1 ] ]
+
+        # Résolution du système V.T*M*V = V.T*Phi
+        Factor = npy.diag( V.T @ matrix_m @ V )
+        Phi = npy.linalg.lstsq( npy.sqrt( npy.diag( Factor ) ).T, V.T, rcond = -1 )[ 0 ] # pseudo inverse
+
+        # Construction des matrices des vecteurs et valeurs propres
+        Phi = Phi.T
+        Omega = npy.diag( npy.sqrt( Phi.T @ matrix_k @ Phi ) )
+        w = npy.diag( Omega[ :len(self.mesh.nodes)*self.dimension ] );
+
+        return w, Phi
+
     def get_source_matrix_length(self):
         return len(self.mesh.nodes)*self.dimension + len(self.continuity_conditions) \
             + len(self._boundary_conditions)
@@ -476,40 +513,40 @@ class FiniteElementAnalysis(FiniteElements):
     def modal_analysis(self):
         matrices = []
         method_names = ['k_matrix', 'm_matrix']
-        # for method_name in method_names:
-        #     matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
-        #                         len(self.mesh.nodes)*self.dimension))
-
-        #     if hasattr(self, method_name):
-        #         data, row_ind, col_ind = getattr(self, method_name)()
-        #         for i, d in enumerate(data):
-        #             matrix[row_ind[i], col_ind[i]] += d
-        #         matrices.append(matrix)
-        #     else:
-        #         raise NotImplementedError(
-        #             f'Class {self.__class__.__name__} does not implement {method_name}')
-
         for method_name in method_names:
+            matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
+                                len(self.mesh.nodes)*self.dimension))
+
             if hasattr(self, method_name):
                 data, row_ind, col_ind = getattr(self, method_name)()
-                dict_data = {}
                 for i, d in enumerate(data):
-                    try:
-                        dict_data[(row_ind[i], col_ind[i])] += d
-                    except KeyError:
-                        dict_data[(row_ind[i], col_ind[i])] = d
-
-                data_new, row_ind_new, col_ind_new = [], [], []
-                for key, value in dict_data.items():
-                    data_new.append(value)
-                    row_ind_new.append(key[0])
-                    col_ind_new.append(key[1])
-
-                matrix = sparse.csr_matrix((data_new, (row_ind_new, col_ind_new)))
+                    matrix[row_ind[i], col_ind[i]] += d
                 matrices.append(matrix)
             else:
                 raise NotImplementedError(
                     f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        # for method_name in method_names:
+        #     if hasattr(self, method_name):
+        #         data, row_ind, col_ind = getattr(self, method_name)()
+        #         dict_data = {}
+        #         for i, d in enumerate(data):
+        #             try:
+        #                 dict_data[(row_ind[i], col_ind[i])] += d
+        #             except KeyError:
+        #                 dict_data[(row_ind[i], col_ind[i])] = d
+
+        #         data_new, row_ind_new, col_ind_new = [], [], []
+        #         for key, value in dict_data.items():
+        #             data_new.append(value)
+        #             row_ind_new.append(key[0])
+        #             col_ind_new.append(key[1])
+
+        #         matrix = sparse.csr_matrix((data_new, (row_ind_new, col_ind_new)))
+        #         matrices.append(matrix)
+        #     else:
+        #         raise NotImplementedError(
+        #             f'Class {self.__class__.__name__} does not implement {method_name}')
 
         matrix_k, matrix_m = matrices
 
@@ -536,9 +573,23 @@ class FiniteElementAnalysis(FiniteElements):
                 matrix_m = npy.delete(matrix_m, (position), axis=0)
                 matrix_m = npy.delete(matrix_m, (position), axis=1)
 
-        # eigvals, eigvecs = eigh(matrix_k, matrix_m)
-        eigvals, eigvecs = eigsh(A=matrix_k, M=matrix_m,
-                                 k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+        # eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
+        print('inv(M)')
+        import numpy.linalg
+        # eigvals, eigvecs = eigh(matrix_k*numpy.linalg.inv(matrix_m))
+        eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
+
+        # # print('eigsh')
+        # # eigvals, eigvecs = eigsh(A=matrix_k, M=matrix_m,
+        # #                          k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+
+        # # print('eigs')
+        # # eigvals, eigvecs = eigs(A=matrix_k, M=matrix_m,
+        # #                         k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+
+        # print('inv(M)')
+        # eigvals, eigvecs = eigsh(A=matrix_k*sparse.linalg.inv(matrix_m),
+        #                          k=len(self.mesh.nodes)*self.dimension-1, which='LM')
 
         if self.node_boundary_conditions:
             eigvecs_adapted = npy.zeros((len(self.mesh.nodes)*self.dimension,
