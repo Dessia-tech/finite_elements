@@ -11,41 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Divide electromag.py into different small thematic files
   elements.py, conditions.py, loads.py, analysis.py, results.py, core.py
-
 * Generalize methods to be used in different fields (magnetic, elasticity, etc.)
-
-** elements.py
-  elementary_source_matrix > element_to_node_factors
-
-** conditions.py
-  ConstantLoad > ElementsLoad
-
-** loads.py
-  SingleNodeLoad > NodeLoad
-
+* Update classes and methods:
+   - elementary_source_matrix > element_to_node_factors
+   - ConstantLoad > ElementsLoad
+   - SingleNodeLoad > NodeLoad
 
 ### New Features
 
-** elements.py
-* Add new class and new methods: MagneticElement2D
-
-** conditions.py
-* Add new classes and new methods: BoundaryCondition, NodeBoundaryCondition, EdgeBoundaryCondition, ElementBoundaryCondition
-
-** loads.py
-* Add new classes and new methods: ElementLoad, EdgeLoad
-
-** analysis.py
-* Add new class and new methods: FiniteElementAnalysis
-
-** results.py
-* Add new class and new methods: MagneticResults
-
+* Add new classes and methods:
+   - MagneticElement2D
+   - BoundaryCondition, NodeBoundaryCondition, EdgeBoundaryCondition, ElementBoundaryCondition
+   - ElementLoad, EdgeLoad
+   - FiniteElementAnalysis
+   - MagneticResults
 
 ### Performance improvements
 
 * Add new scripts with usecases and examples for tests
-
 
 ### Fixed
 
