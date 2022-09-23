@@ -25,7 +25,7 @@ steps:
   - pip install Cython sphinx sphinx_rtd_theme coverage
   - python setup.py install
   - cd ../scripts
-  - coverage run --source volmdlr -a ci_scripts.py
+  - coverage run --source finite_elements -a ci_scripts.py
   - coverage json
   - coverage report
   - python coverage.py
