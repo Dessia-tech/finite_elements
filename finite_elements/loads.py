@@ -20,6 +20,7 @@ class ElementsLoad(DessiaObject):
     :param value: Set the elements' current density vector J value.
     :type value: float
     """
+
     def __init__(self, elements: List[vmmesh.TriangularElement],
                  value: float,
                  dimension: int):
@@ -30,7 +31,7 @@ class ElementsLoad(DessiaObject):
         self.value_per_element = []
         total_area = sum([elem.area for elem in self.elements])
         for element in self.elements:
-            self.value_per_element.append(value * element.area/total_area)
+            self.value_per_element.append(value * element.area / total_area)
         DessiaObject.__init__(self, name='')
 
 
@@ -44,6 +45,7 @@ class ElementLoad(DessiaObject):
     :param value: Set the elements' current density vector J value.
     :type value: float
     """
+
     def __init__(self, element: vmmesh.TriangularElement,
                  value: float,
                  dimension: int):
@@ -53,9 +55,11 @@ class ElementLoad(DessiaObject):
 
         DessiaObject.__init__(self, name='')
 
+
 class EdgeLoad(DessiaObject):
     """
     """
+
     def __init__(self, edge, value, dimension):
         self.edge = edge
         self.value = value
@@ -74,6 +78,7 @@ class NodeLoad(DessiaObject):
     :param value: Set the node's vector potential A value.
     :type value: float
     """
+
     def __init__(self, node: vm.Point2D, value: float, dimension):
         self.node = node
         self.value = value
@@ -104,6 +109,7 @@ class MagnetLoad(DessiaObject):
     :param magnetization_vector: Set the elements' magnetization vector M.
     :type magnetization_vector: volmdlr.Vector2D object
     """
+
     def __init__(self, elements: List[vmmesh.TriangularElement],
                  non_contour_nodes: List[vm.Point2D],
                  magnetization_vector: vm.Vector2D):
@@ -129,7 +135,7 @@ class MagnetLoad(DessiaObject):
         contour_linear_elements = []
         for linear_element, count in linear_elements_count.items():
             if count == 1 \
-             and (linear_element.points[0] not in self.non_contour_nodes \
-             or linear_element.points[1] not in self.non_contour_nodes):
+                and (linear_element.points[0] not in self.non_contour_nodes
+                     or linear_element.points[1] not in self.non_contour_nodes):
                 contour_linear_elements.append(linear_element)
         return contour_linear_elements

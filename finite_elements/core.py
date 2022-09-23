@@ -19,16 +19,16 @@ from dessia_common import DessiaObject
 # from typing import TypeVar, List, Tuple
 
 
-cdict = {'red':  [(0.0, 0.0, 0.0),
-                   (1.0, 1.0, 1.0)],
+cdict = {'red': [(0.0, 0.0, 0.0),
+                 (1.0, 1.0, 1.0)],
          'green': [(0.0, 0.0, 0.0),
                    (1.0, 0.0, 0.0)],
-         'blue':  [(0.0, 1.0, 1.0),
-                   (1.0, 0.0, 0.0)]}
+         'blue': [(0.0, 1.0, 1.0),
+                  (1.0, 0.0, 0.0)]}
 
 blue_red = LinearSegmentedColormap('BLueRed', cdict)
 
-MU = 4*math.pi*1e-7
+MU = 4 * math.pi * 1e-7
 
 
 def get_bmin_bmax(Bs, Bmax=None, Bmin=None):
@@ -56,6 +56,7 @@ def get_bmin_bmax(Bs, Bmax=None, Bmin=None):
 
     return B_max, B_min
 
+
 def get_colors(Bs, B_max=None, B_min=None):
     """
 
@@ -70,7 +71,7 @@ def get_colors(Bs, B_max=None, B_min=None):
     :rtype: TYPE
     """
 
-    color_map = ((0,0,1), (1,0,0))
+    color_map = ((0, 0, 1), (1, 0, 0))
 
     B_to_color = {}
     for B in Bs:
@@ -79,12 +80,13 @@ def get_colors(Bs, B_max=None, B_min=None):
         else:
             x = (B - B_min) / (B_max - B_min)
 
-        color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x,
-                 color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
-                 color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
+        color = (color_map[0][0] - (color_map[0][0] - color_map[1][0]) * x,
+                 color_map[0][1] - (color_map[0][1] - color_map[1][1]) * x,
+                 color_map[0][2] - (color_map[0][2] - color_map[1][2]) * x)
         B_to_color[B] = color
 
     return B_to_color
+
 
 def global_matrix_positions(dimension, nodes_number):
     """
@@ -102,10 +104,11 @@ def global_matrix_positions(dimension, nodes_number):
     count = 0
     for i in range(nodes_number):
         for j in range(dimension):
-            positions[(i, j+1)] = count
+            positions[(i, j + 1)] = count
             count += 1
 
     return positions
+
 
 def get_triangulation(mesh):
     """
