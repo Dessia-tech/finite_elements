@@ -573,11 +573,11 @@ class FiniteElementAnalysis(FiniteElements):
                 matrix_m = npy.delete(matrix_m, (position), axis=0)
                 matrix_m = npy.delete(matrix_m, (position), axis=1)
 
-        # eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
-        print('inv(M)')
-        import numpy.linalg
+        eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
+        # print('inv(M)')
+        # import numpy.linalg
         # eigvals, eigvecs = eigh(matrix_k*numpy.linalg.inv(matrix_m))
-        eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
+        # eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
 
         # # print('eigsh')
         # # eigvals, eigvecs = eigsh(A=matrix_k, M=matrix_m,
