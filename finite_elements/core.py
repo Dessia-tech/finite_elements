@@ -136,3 +136,23 @@ def get_triangulation(mesh):
     triang = mtri.Triangulation(x, y, triangles)
 
     return triang
+
+
+class Material(DessiaObject):
+    _standalone_in_db = False
+    _non_serializable_attributes = []
+    _non_eq_attributes = ['name']
+    _non_hash_attributes = ['name']
+    _generic_eq = True
+
+    def __init__(self,
+                 elasticity_modulus,
+                 poisson_ratio,
+                 mass_density,
+                 name : str = ''):
+        self.elasticity_modulus = elasticity_modulus
+        self.poisson_ratio = poisson_ratio
+        self.mass_density = mass_density
+        self.name = name
+
+        DessiaObject.__init__(self, name=name)
