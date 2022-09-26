@@ -513,6 +513,8 @@ class FiniteElementAnalysis(FiniteElements):
     def modal_analysis(self):
         matrices = []
         method_names = ['k_matrix', 'm_matrix']
+        import time
+        start = time.time()
         for method_name in method_names:
             matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
                                 len(self.mesh.nodes)*self.dimension))
@@ -526,6 +528,10 @@ class FiniteElementAnalysis(FiniteElements):
                 raise NotImplementedError(
                     f'Class {self.__class__.__name__} does not implement {method_name}')
 
+        matrix_k, matrix_m = matrices
+        print('matrices numpy: ', time.time() - start)
+
+        # start = time.time()
         # for method_name in method_names:
         #     if hasattr(self, method_name):
         #         data, row_ind, col_ind = getattr(self, method_name)()
@@ -548,7 +554,8 @@ class FiniteElementAnalysis(FiniteElements):
         #         raise NotImplementedError(
         #             f'Class {self.__class__.__name__} does not implement {method_name}')
 
-        matrix_k, matrix_m = matrices
+        # matrix_k, matrix_m = matrices
+        # print('matrices sparse: ', time.time() - start)
 
         if self.node_boundary_conditions:
             positions = finite_elements.core.global_matrix_positions(
@@ -572,24 +579,42 @@ class FiniteElementAnalysis(FiniteElements):
                 matrix_k = npy.delete(matrix_k, (position), axis=1)
                 matrix_m = npy.delete(matrix_m, (position), axis=0)
                 matrix_m = npy.delete(matrix_m, (position), axis=1)
+        print('shape', matrix_m.shape[0])
+        print('numpy Inv_Identity')
+        # eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
+        import numpy.linalg
+        # eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
+        eigvals, eigvecs = eigh(numpy.matmul(numpy.linalg.inv(matrix_m), matrix_k),
+                                npy.eye(matrix_m.shape[0]))
 
-        eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
         # print('inv(M)')
         # import numpy.linalg
         # eigvals, eigvecs = eigh(matrix_k*numpy.linalg.inv(matrix_m))
         # eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
 
-        # # print('eigsh')
-        # # eigvals, eigvecs = eigsh(A=matrix_k, M=matrix_m,
-        # #                          k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+        # print('eigs')
+        # eigvals, eigvecs = eigs(A=matrix_k, M=matrix_m,
+        #                           k=len(self.mesh.nodes)*self.dimension-1, which='LM')
 
-        # # print('eigs')
-        # # eigvals, eigvecs = eigs(A=matrix_k, M=matrix_m,
-        # #                         k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+        # start = time.time()
+        # eigvals, eigvecs = eigsh(A=matrix_k, M=matrix_m,
+        #                         k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+        # print('eigsh: ', time.time() - start)
+        # import numpy.linalg
+        # import scipy.sparse.linalg
+        # print('inv(M)_2_')
+        # # eigvals, eigvecs = eigsh(A=numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)),
+        # #                           k=len(self.mesh.nodes)*self.dimension-1, which='LM')
 
-        # print('inv(M)')
-        # eigvals, eigvecs = eigsh(A=matrix_k*sparse.linalg.inv(matrix_m),
-        #                          k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+        # eigvals, eigvecs = eigsh(A=scipy.sparse.linalg.inv(matrix_m).multiply(matrix_k),
+        #                           k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+
+        # # eigvals, eigvecs = eigsh(A=matrix_k.multiply(scipy.sparse.linalg.inv(matrix_m)),
+        # #                           k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+
+        # print('eigsh: ', time.time() - start)
+        # import numpy.linalg
+        # eigvals, eigvecs = numpy.linalg.svd(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
 
         if self.node_boundary_conditions:
             eigvecs_adapted = npy.zeros((len(self.mesh.nodes)*self.dimension,
