@@ -149,7 +149,7 @@ class Material(DessiaObject):
                  elasticity_modulus,
                  poisson_ratio,
                  mass_density,
-                 name : str = ''):
+                 name: str = ''):
         self.elasticity_modulus = elasticity_modulus
         self.poisson_ratio = poisson_ratio
         self.mass_density = mass_density

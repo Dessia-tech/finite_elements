@@ -364,6 +364,7 @@ class ElasticityResults(Result):
     _non_eq_attributes = ['name']
     _non_hash_attributes = ['name']
     _generic_eq = True
+
     def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float],
                  plane_strain: bool,
                  plane_stress: bool):
@@ -395,7 +396,7 @@ class ElasticityResults(Result):
                 indexes = [self.mesh.node_to_index[point] for point in element.points]
                 for index in indexes:
                     for i in range(self.dimension):
-                        displacements.append(q[positions[(index, i+1)]])
+                        displacements.append(q[positions[(index, i + 1)]])
 
                 displacements_per_element[element] = displacements
                 element.displacements = displacements
@@ -412,7 +413,7 @@ class ElasticityResults(Result):
         for node in range(0, nodes_number):
             displacement = []
             for i in range(self.dimension):
-                displacement.append(q[positions[(node, i+1)]])
+                displacement.append(q[positions[(node, i + 1)]])
 
             displacement_field_vectors.append(
                 getattr(vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement))
@@ -427,14 +428,14 @@ class ElasticityResults(Result):
                 element_to_strain[element] = (npy.matmul(element.b_matrix, element.displacements))
                 element.strain = element_to_strain[element]
                 element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress),
-                                                                                     element.b_matrix),
-                                                                    element.displacements))
+                                                                    element.b_matrix),
+                                                         element.displacements))
                 element.stress = element_to_stress[element]
 
         return element_to_strain, element_to_stress
 
     def _deformed_mesh(self, amplitude=1):
-        if amplitude==1:
+        if amplitude == 1:
             deformed_nodes = self.deformed_nodes
         else:
             deformed_nodes = self._deformed_nodes(amplitude=amplitude)
@@ -456,7 +457,7 @@ class ElasticityResults(Result):
             group_elasticity_elments.append(vmmesh.ElementsGroup(elasticity_elments, ''))
 
         mesh = vmmesh.Mesh(group_elasticity_elments)
-        mesh.nodes = deformed_nodes #Keep self.mesh order
+        mesh.nodes = deformed_nodes  # Keep self.mesh order
         mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
 
         return mesh
@@ -465,8 +466,8 @@ class ElasticityResults(Result):
         displacement_field_vectors = self.displacement_vectors_per_node
         deformed_nodes = []
         for i, node in enumerate(self.mesh.nodes):
-            obj=getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
-            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i]*amplitude))
+            obj = getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
+            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i] * amplitude))
 
         return deformed_nodes
 
@@ -519,10 +520,10 @@ class ElasticityResults(Result):
 
         lines.append('VECTORS Displacement_Vectors float')
         for displacement in self.displacement_vectors_per_node:
-            line=''
+            line = ''
             for i in range(len([*displacement])):
                 line += str(displacement[i]) + ' '
-            if i==1:
+            if i == 1:
                 line += '0'
             lines.append(line)
             # lines.append(str(displacement.x)+' '+str(displacement.y)+' '+str(displacement.z))
@@ -606,7 +607,6 @@ class ElasticityResults2D(ElasticityResults):
 
         return axial_stress_y
 
-
     def plot_axial_strain_x(self, ax=None, fig=None):
 
         return self.plot_constraints(constraint_name='axial_strain_x', ax=ax, fig=fig)
@@ -670,7 +670,7 @@ class ElasticityResults2D(ElasticityResults):
         else:
             comment = '"Plane Strain"'
 
-        ax.set_title('Deformed Mesh '+ comment)
+        ax.set_title('Deformed Mesh ' + comment)
 
         return ax
 
@@ -690,7 +690,7 @@ class ElasticityResults2D(ElasticityResults):
         else:
             mesh_fe = self.deformed_mesh
 
-        triang = finite_elements.core.get_triangulation(mesh_fe) #self.mesh
+        triang = finite_elements.core.get_triangulation(mesh_fe)  # self.mesh
         x_min, x_max = min(x), max(x)
 
         if ax is None:
@@ -703,7 +703,7 @@ class ElasticityResults2D(ElasticityResults):
         ax.triplot(triang, 'k-')
         # ax.set_title('Triangular grid')
 
-        norm = mpl.colors.Normalize(vmin=x_min,vmax=x_max)
+        norm = mpl.colors.Normalize(vmin=x_min, vmax=x_max)
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(x_min, x_max, 10))
@@ -805,7 +805,7 @@ class ElasticityResults2D(ElasticityResults):
         plot_names = ['plot_axial_strain_x', 'plot_axial_strain_y', 'plot_shear_strain_xy']
         axs = []
         for i, name in enumerate(plot_names):
-            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i + 1), fig=fig))
 
         if self.plane_stress:
             comment = 'Strain "Plane Stress"'
@@ -823,7 +823,7 @@ class ElasticityResults2D(ElasticityResults):
         plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy']
         axs = []
         for i, name in enumerate(plot_names):
-            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i + 1), fig=fig))
 
         if self.plane_stress:
             comment = 'Stress "Plane Stress"'
