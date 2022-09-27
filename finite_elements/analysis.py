@@ -195,6 +195,16 @@ class FiniteElements(DessiaObject):
                 col_ind.extend(col_ind_n)
         return data, row_ind, col_ind
 
+    def m_matrix(self):
+        row_ind, col_ind, data = [], [], []
+        for elements_group in self.mesh.elements_groups:
+            for element in elements_group.elements:
+                data.extend(element.elementary_mass_matrix())
+                row_ind_n, col_ind_n = self.get_row_col_indices(element)
+                row_ind.extend(row_ind_n)
+                col_ind.extend(col_ind_n)
+        return data, row_ind, col_ind
+
     def loads_element_to_node(self):
         element_to_node_loads = []
         for i, elements_load in enumerate(self.element_loads):
