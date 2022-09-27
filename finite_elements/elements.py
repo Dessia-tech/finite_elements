@@ -200,8 +200,8 @@ class ElasticityElement(DessiaObject):
 
         shape = self.dimension * len(self.mesh_element.points)
         return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(self.displacements)),
-                                 self.elementary_matrix(plane_strain, plane_stress).reshape(shape, shape)),
-                      npy.array(self.displacements)))
+                                            self.elementary_matrix(plane_strain, plane_stress).reshape(shape, shape)),
+                                 npy.array(self.displacements)))
 
     @classmethod
     def from_element(cls, mesh_element, elasticity_element):
@@ -389,10 +389,10 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
 
     def __init__(self, mesh_element: vmmesh.TetrahedralElement,
                  elasticity_modulus, poisson_ratio, mass_density,
-                 displacements = None,
-                 stress = None,
-                 strain = None,
-                 name : str = ''):
+                 displacements=None,
+                 stress=None,
+                 strain=None,
+                 name: str = ''):
 
         ElasticityElement.__init__(self, mesh_element,
                                    elasticity_modulus, poisson_ratio, mass_density, name=name)
@@ -424,12 +424,13 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
                 0, c1, b1, 0, c2, b2, 0, c3, b3, 0, c4, b4,
                 c1, 0, a1, c2, 0, a2, c3, 0, a3, c4, 0, a4]
 
-        b_matrix = (1/(6*self.mesh_element.volume)) * npy.array(data).reshape(6, 12)
+        b_matrix = (1 / (6 * self.mesh_element.volume)) * npy.array(data).reshape(6, 12)
 
         return b_matrix
 
     def _d_matrix_plane_strain(self):
         return self._d_matrix_()
+
     def _d_matrix_plane_stress(self):
         return self._d_matrix_()
 
@@ -437,7 +438,7 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
         elasticity_modulus = self.elasticity_modulus
         poisson_ratio = self.poisson_ratio
         coeff_a = 1 - poisson_ratio
-        coeff_b = (1 - 2 * poisson_ratio)/2
+        coeff_b = (1 - 2 * poisson_ratio) / 2
 
         data = [coeff_a, poisson_ratio, poisson_ratio, 0, 0, 0,
                 poisson_ratio, coeff_a, poisson_ratio, 0, 0, 0,
@@ -446,8 +447,8 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
                 0, 0, 0, 0, coeff_b, 0,
                 0, 0, 0, 0, 0, coeff_b]
 
-        coeff = (elasticity_modulus/((1 + poisson_ratio) * (1 - 2*poisson_ratio)))
-        d_matrix = coeff * npy.array(data).reshape(6,6)
+        coeff = (elasticity_modulus / ((1 + poisson_ratio) * (1 - 2 * poisson_ratio)))
+        d_matrix = coeff * npy.array(data).reshape(6, 6)
 
         return d_matrix
 
@@ -455,7 +456,7 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
     def dimension(self):
         return 3
 
-    def elementary_matrix(self, plane_strain: bool, plane_stress:bool):
+    def elementary_matrix(self, plane_strain: bool, plane_stress: bool):
 
         b_matrix = self.b_matrix
         d_matrix = self.d_matrix(plane_strain, plane_stress)
