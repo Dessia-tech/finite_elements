@@ -363,3 +363,133 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
         stress = (npy.matmul(npy.matmul(d_matrix, b_matrix), q))
 
         return stress
+
+
+class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElement):
+    # _standalone_in_db = False
+    # _non_serializable_attributes = []
+    # _non_eq_attributes = ['name']
+    # _non_hash_attributes = ['name']
+    # _generic_eq = True
+    # def __init__(self, mesh_element: vmmesh.TetrahedralElement,
+    #              elasticity_modulus, poisson_ratio,
+    #              displacements = None,
+    #              stress = None,
+    #              strain = None,
+    #              name : str = ''):
+    #     self.mesh_element = mesh_element
+    #     self.elasticity_modulus = elasticity_modulus
+    #     self.poisson_ratio = poisson_ratio
+    #     self.points = self.mesh_element.points
+    #     self.b_matrix = self._b_matrix()
+    #     self.d_matrix = self._d_matrix()
+    #     self.displacements = displacements
+    #     self.stress = stress
+    #     self.strain = strain
+
+    def __init__(self, mesh_element: vmmesh.TetrahedralElement,
+                 elasticity_modulus, poisson_ratio, mass_density,
+                 displacements = None,
+                 stress = None,
+                 strain = None,
+                 name : str = ''):
+
+        ElasticityElement.__init__(self, mesh_element,
+                                   elasticity_modulus, poisson_ratio, mass_density, name=name)
+        vmmesh.TetrahedralElement.__init__(self, points=mesh_element.points, name=name)
+
+        # DessiaObject.__init__(self, name=name)
+
+    def _b_matrix(self):
+
+        N1, N2, N3, N4 = self.mesh_element.form_functions
+
+        a1 = N1[1]
+        b1 = N1[2]
+        c1 = N1[3]
+        a2 = N2[1]
+        b2 = N2[2]
+        c2 = N2[3]
+        a3 = N3[1]
+        b3 = N3[2]
+        c3 = N3[3]
+        a4 = N4[1]
+        b4 = N4[2]
+        c4 = N4[3]
+
+        data = [a1, 0, 0, a2, 0, 0, a3, 0, 0, a4, 0, 0,
+                0, b1, 0, 0, b2, 0, 0, b3, 0, 0, b4, 0,
+                0, 0, c1, 0, 0, c2, 0, 0, c3, 0, 0, c4,
+                b1, a1, 0, b2, a2, 0, b3, a3, 0, b4, a4, 0,
+                0, c1, b1, 0, c2, b2, 0, c3, b3, 0, c4, b4,
+                c1, 0, a1, c2, 0, a2, c3, 0, a3, c4, 0, a4]
+
+        b_matrix = (1/(6*self.mesh_element.volume)) * npy.array(data).reshape(6, 12)
+
+        return b_matrix
+
+    def _d_matrix_plane_strain(self):
+        return self._d_matrix_()
+    def _d_matrix_plane_stress(self):
+        return self._d_matrix_()
+
+    def _d_matrix_(self):
+        elasticity_modulus = self.elasticity_modulus
+        poisson_ratio = self.poisson_ratio
+        coeff_a = 1 - poisson_ratio
+        coeff_b = (1 - 2 * poisson_ratio)/2
+
+        data = [coeff_a, poisson_ratio, poisson_ratio, 0, 0, 0,
+                poisson_ratio, coeff_a, poisson_ratio, 0, 0, 0,
+                poisson_ratio, poisson_ratio, coeff_a, 0, 0, 0,
+                0, 0, 0, coeff_b, 0, 0,
+                0, 0, 0, 0, coeff_b, 0,
+                0, 0, 0, 0, 0, coeff_b]
+
+        coeff = (elasticity_modulus/((1 + poisson_ratio) * (1 - 2*poisson_ratio)))
+        d_matrix = coeff * npy.array(data).reshape(6,6)
+
+        return d_matrix
+
+    @property
+    def dimension(self):
+        return 3
+
+    def elementary_matrix(self, plane_strain: bool, plane_stress:bool):
+
+        b_matrix = self.b_matrix
+        d_matrix = self.d_matrix(plane_strain, plane_stress)
+
+        stiffness_matrix = self.volume * (
+            npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
+
+        return stiffness_matrix.flatten()
+
+    def elementary_mass_matrix(self):
+        data = [2, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+                0, 2, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+                0, 0, 2, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+                1, 0, 0, 2, 0, 0, 1, 0, 0, 1, 0, 0,
+                0, 1, 0, 0, 2, 0, 0, 1, 0, 0, 1, 0,
+                0, 0, 1, 0, 0, 2, 0, 0, 1, 0, 0, 1,
+                1, 0, 0, 1, 0, 0, 2, 0, 0, 1, 0, 0,
+                0, 1, 0, 0, 1, 0, 0, 2, 0, 0, 1, 0,
+                0, 0, 1, 0, 0, 1, 0, 0, 2, 0, 0, 1,
+                1, 0, 0, 1, 0, 0, 1, 0, 0, 2, 0, 0,
+                0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 2, 0,
+                0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 2]
+
+        # # jacobian = []
+        # # for p in self.points:
+        # #     jacobian.extend([1, *p])
+        # # det_jacobian = npy.linalg.det(npy.array(jacobian).reshape(4, 4))
+
+        # det_jacobian = self.volume * 6
+
+        # mass_matrix = det_jacobian * ((self.mass_density * self.volume) / 20) \
+        #     * npy.array(data).reshape(12, 12)
+
+        mass_matrix = ((self.mass_density * self.volume) / 20) \
+            * npy.array(data).reshape(12, 12)
+
+        return mass_matrix.flatten()
