@@ -204,12 +204,6 @@ class ElasticityElement(DessiaObject):
                                  npy.array(self.displacements)))
 
     @classmethod
-    def from_element(cls, mesh_element, elasticity_element):
-        return cls(mesh_element, elasticity_element.elasticity_modulus,
-                   elasticity_element.poisson_ratio, elasticity_element.mass_density,
-                   elasticity_element.thickness)
-
-    @classmethod
     def with_material_object(cls, mesh_element,
                              material: finite_elements.core.Material,
                              displacements=None,
@@ -347,6 +341,12 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
 
         return stiffness_matrix.flatten()
 
+    @classmethod
+    def from_element(cls, mesh_element, elasticity_element):
+        return cls(mesh_element, elasticity_element.elasticity_modulus,
+                   elasticity_element.poisson_ratio, elasticity_element.mass_density,
+                   elasticity_element.thickness)
+
     def strain(self):
         b_matrix = self.b_matrix()
         q = self.displacements
@@ -465,3 +465,8 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
             npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
 
         return stiffness_matrix.flatten()
+
+    @classmethod
+    def from_element(cls, mesh_element, elasticity_element):
+        return cls(mesh_element, elasticity_element.elasticity_modulus,
+                   elasticity_element.poisson_ratio, elasticity_element.mass_density)
