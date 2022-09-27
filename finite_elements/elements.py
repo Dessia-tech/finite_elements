@@ -464,32 +464,3 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
             npy.matmul(npy.matmul(b_matrix.transpose(), d_matrix), b_matrix))
 
         return stiffness_matrix.flatten()
-
-    def elementary_mass_matrix(self):
-        data = [2, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
-                0, 2, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
-                0, 0, 2, 0, 0, 1, 0, 0, 1, 0, 0, 1,
-                1, 0, 0, 2, 0, 0, 1, 0, 0, 1, 0, 0,
-                0, 1, 0, 0, 2, 0, 0, 1, 0, 0, 1, 0,
-                0, 0, 1, 0, 0, 2, 0, 0, 1, 0, 0, 1,
-                1, 0, 0, 1, 0, 0, 2, 0, 0, 1, 0, 0,
-                0, 1, 0, 0, 1, 0, 0, 2, 0, 0, 1, 0,
-                0, 0, 1, 0, 0, 1, 0, 0, 2, 0, 0, 1,
-                1, 0, 0, 1, 0, 0, 1, 0, 0, 2, 0, 0,
-                0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 2, 0,
-                0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 2]
-
-        # # jacobian = []
-        # # for p in self.points:
-        # #     jacobian.extend([1, *p])
-        # # det_jacobian = npy.linalg.det(npy.array(jacobian).reshape(4, 4))
-
-        # det_jacobian = self.volume * 6
-
-        # mass_matrix = det_jacobian * ((self.mass_density * self.volume) / 20) \
-        #     * npy.array(data).reshape(12, 12)
-
-        mass_matrix = ((self.mass_density * self.volume) / 20) \
-            * npy.array(data).reshape(12, 12)
-
-        return mass_matrix.flatten()

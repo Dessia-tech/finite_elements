@@ -7,11 +7,15 @@ scripts = [
     'Magnetic/finite_element_poutre.py',
     # 'Magnetic/magnet_in_void.py',
 
-    # Elasticity
+    # Elasticity2D
     'Elasticity/poutre2d_example_1.py',
     'Elasticity/poutre2d_example_2.py',
     'Elasticity/poutre2d_example_3.py',
-    'Elasticity/poutre2d_example_4.py'
+    'Elasticity/poutre2d_example_4.py',
+
+    # Elasticity3D
+    'Elasticity/poutre3d_example_1.py',
+    'Elasticity/poutre3d_example_2.py'
     ]
 
 # Testing if all scripts exists before launching them
