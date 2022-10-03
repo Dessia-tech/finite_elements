@@ -14,7 +14,7 @@ from typing import List  # Tuple, TypeVar
 from finite_elements.core import MU, blue_red
 import finite_elements.core
 from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
-import matplotlib.cm as cm
+from matplotlib import cm
 
 
 class Result(DessiaObject):
@@ -38,6 +38,13 @@ class Result(DessiaObject):
 
     @property
     def dimension(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return self.mesh.elements_groups[0].elements[0].dimension
 
 
@@ -72,12 +79,26 @@ class MagneticResults(Result):
         return all_BrBtetha
 
     def _magnetic_field_norm(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         element_to_magnetic_field = self.magnetic_field_per_element
         Bs = [B.norm() for B in list(element_to_magnetic_field.values())]
 
         return Bs
 
     def _magnetic_field_per_element(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         element_to_magnetic_field = {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
@@ -126,7 +147,8 @@ class MagneticResults(Result):
         sigma_rr_rteta_tetateta = [sigma_rr, sigma_rteta, sigma_tetateta]
         return sigma_rr_rteta_tetateta
 
-    def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor, nb_notches):
+    def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor,
+               nb_notches):
         """
         Computes the resistant magnetic torque when the rotor is blocked and \
         the current inside the stator is evolving. Unit : N.m.
@@ -183,6 +205,10 @@ class MagneticResults(Result):
         return T
 
     def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
+        """
+        Plots
+        """
+
         if ax is None:
             fig, ax = plt.subplots()
             # ax = self.mesh.plot()
@@ -219,7 +245,8 @@ class MagneticResults(Result):
             all_colors.append(color)
         # print(B_to_color)
         for i, element in enumerate(gap_elements_group.elements):
-            # element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].Norm()], fill=True)
+            # element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].Norm()],
+            #              fill=True)
             element.plot(ax=ax, color=all_colors[i], fill=True)
 
         norm = mpl.colors.Normalize(vmin=BrBtetha_min, vmax=BrBtetha_max)
@@ -237,6 +264,7 @@ class MagneticResults(Result):
         Plots the mesh with colored triangular elements representing the \
         intensity of the induction field inside the Machine.
         """
+
         if ax is None:
             fig, ax = plt.subplots()
         else:
@@ -249,7 +277,8 @@ class MagneticResults(Result):
 
         for group in self.mesh.elements_groups:
             for element in group.elements:
-                element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].norm()], fill=True)
+                element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].norm()],
+                             fill=True)
 
         norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
@@ -260,6 +289,10 @@ class MagneticResults(Result):
         return ax
 
     def plot_magnetic_field_contour(self, ax=None):
+        """
+        Plots
+        """
+
         if ax is None:
             fig, ax = plt.subplots()
         else:
@@ -427,8 +460,9 @@ class ElasticityResults(Result):
             for element in elements_group.elements:
                 element_to_strain[element] = (npy.matmul(element.b_matrix, element.displacements))
                 element.strain = element_to_strain[element]
-                element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress),
-                                                                    element.b_matrix),
+                element_to_stress[element] = (npy.matmul(
+                    npy.matmul(element.d_matrix(plane_strain=self.plane_strain,
+                                                plane_stress=self.plane_stress), element.b_matrix),
                                                          element.displacements))
                 element.stress = element_to_stress[element]
 
@@ -467,7 +501,8 @@ class ElasticityResults(Result):
         deformed_nodes = []
         for i, node in enumerate(self.mesh.nodes):
             obj = getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
-            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i] * amplitude))
+            deformed_nodes.append(
+                getattr(obj, 'from_point')(node + displacement_field_vectors[i] * amplitude))
 
         return deformed_nodes
 
@@ -640,7 +675,9 @@ class ElasticityResults2D(ElasticityResults):
         B_to_color = finite_elements.core.get_colors(result_values, B_max=B_max, B_min=B_min)
         for g, group in enumerate(deformed_mesh.elements_groups):
             for e, element in enumerate(group.elements):
-                element.plot(ax=ax, color=B_to_color[result[self.mesh.elements_groups[g].elements[e]]], fill=True)
+                element.plot(ax=ax,
+                             color=B_to_color[result[self.mesh.elements_groups[g].elements[e]]],
+                             fill=True)
 
         norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
@@ -722,15 +759,18 @@ class ElasticityResults2D(ElasticityResults):
 
     def plot_displacement_per_node_x(self, ax=None, amplitude=1):
 
-        return self.plot_displacements(displacement_name='displacement_per_node_x', ax=ax, amplitude=amplitude)
+        return self.plot_displacements(displacement_name='displacement_per_node_x', ax=ax,
+                                       amplitude=amplitude)
 
     def plot_displacement_per_node_xy(self, ax=None, amplitude=1):
 
-        return self.plot_displacements(displacement_name='displacement_per_node_xy', ax=ax, amplitude=amplitude)
+        return self.plot_displacements(displacement_name='displacement_per_node_xy', ax=ax,
+                                       amplitude=amplitude)
 
     def plot_displacement_per_node_y(self, ax=None, amplitude=1):
 
-        return self.plot_displacements(displacement_name='displacement_per_node_y', ax=ax, amplitude=amplitude)
+        return self.plot_displacements(displacement_name='displacement_per_node_y', ax=ax,
+                                       amplitude=amplitude)
 
     def plot_displacement_vectors_per_node(self, ax=None, amplitude=0.05):
         if ax is None:
@@ -770,7 +810,9 @@ class ElasticityResults2D(ElasticityResults):
         B_to_color = finite_elements.core.get_colors(result_values, B_max=B_max, B_min=B_min)
         for g, group in enumerate(deformed_mesh.elements_groups):
             for e, element in enumerate(group.elements):
-                element.plot(ax=ax, color=B_to_color[result[self.mesh.elements_groups[g].elements[e]]], fill=True)
+                element.plot(ax=ax,
+                             color=B_to_color[result[self.mesh.elements_groups[g].elements[e]]], 
+                             fill=True)
 
         norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)

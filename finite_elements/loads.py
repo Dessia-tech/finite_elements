@@ -12,8 +12,8 @@ from dessia_common import DessiaObject
 
 class ElementsLoad(DessiaObject):
     """
-    Sets a load on the selected elements by imposing a source value for the \
-    current density vector J. Each element creates a source of the input value.
+    Sets a load on the selected elements by imposing a source value for the
+        current density vector J. Each element creates a source of the input value
 
     :param elements: The triangular elements.
     :type elements: List of volmdlr.TriangularElements objects
@@ -29,7 +29,7 @@ class ElementsLoad(DessiaObject):
         self.dimension = dimension
 
         self.value_per_element = []
-        total_area = sum([elem.area for elem in self.elements])
+        total_area = sum(elem.area for elem in self.elements)
         for element in self.elements:
             self.value_per_element.append(value * element.area / total_area)
         DessiaObject.__init__(self, name='')
@@ -37,8 +37,8 @@ class ElementsLoad(DessiaObject):
 
 class ElementLoad(DessiaObject):
     """
-    Sets a load on the selected elements by imposing a source value for the \
-    current density vector J. Each element creates a source of the input value.
+    Sets a load on the selected elements by imposing a source value for the
+        current density vector J. Each element creates a source of the input value
 
     :param elements: The triangular elements.
     :type elements: List of volmdlr.TriangularElements objects
@@ -58,6 +58,7 @@ class ElementLoad(DessiaObject):
 
 class EdgeLoad(DessiaObject):
     """
+    This class
     """
 
     def __init__(self, edge, value, dimension):
@@ -70,8 +71,8 @@ class EdgeLoad(DessiaObject):
 
 class NodeLoad(DessiaObject):
     """
-    Forces the value of the vector potential A at a node. To set a magnetic wall \
-    the value of the vector potential has to be set to A.
+    Forces the value of the vector potential A at a node. To set a magnetic wall
+        the value of the vector potential has to be set to A
 
     :param node: The node.
     :type node: volmdlr.Point2D object
@@ -88,19 +89,23 @@ class NodeLoad(DessiaObject):
 
     def c_matrix(self):
         """
+        Defines
         """
+
         return ()
 
     def source_c_matrix(self):
         """
+        Defines
         """
+
         return self.value
 
 
 class MagnetLoad(DessiaObject):
     """
-    Sets a load on the selected elements by imposing a source value for the \
-    magnetization vector M. Each element creates a source of the input value.
+    Sets a load on the selected elements by imposing a source value for the
+        magnetization vector M. Each element creates a source of the input value.
 
     :param elements: The triangular elements.
     :type elements: List of volmdlr.TriangularElements
@@ -123,6 +128,7 @@ class MagnetLoad(DessiaObject):
 
     def contour_linear_elements(self):
         """
+        Defines
         """
 
         linear_elements_count = {}

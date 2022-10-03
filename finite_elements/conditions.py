@@ -9,6 +9,19 @@ from dessia_common import DessiaObject
 
 
 class BoundaryCondition(DessiaObject):
+    """
+    This class
+
+    :param application: DESCRIPTION
+    :type application: TYPE
+    :param value: DESCRIPTION
+    :type value: float
+    :param dimension: DESCRIPTION
+    :type dimension: TYPE
+    :param name: DESCRIPTION, defaults to ''
+    :type name: str, optional
+    """
+
     _standalone_in_db = False
     _non_serializable_attributes = []
     _non_eq_attributes = ['name']
@@ -16,6 +29,7 @@ class BoundaryCondition(DessiaObject):
     _generic_eq = True
 
     def __init__(self, application, value: float, dimension, name: str = ''):
+
         self.application = application
         self.value = value
         self.dimension = dimension
@@ -23,13 +37,40 @@ class BoundaryCondition(DessiaObject):
         DessiaObject.__init__(self, name='')
 
     def c_matrix(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return (1, 1)
 
     def source_c_matrix(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return self.value
 
 
 class NodeBoundaryCondition(BoundaryCondition):
+    """
+    This class
+
+    :param application: DESCRIPTION
+    :type application: TYPE
+    :param value: DESCRIPTION
+    :type value: float
+    :param dimension: DESCRIPTION
+    :type dimension: TYPE
+    :param name: DESCRIPTION, defaults to ''
+    :type name: str, optional
+    """
+
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -37,6 +78,7 @@ class NodeBoundaryCondition(BoundaryCondition):
     # _generic_eq = True
 
     def __init__(self, application, value: float, dimension, name: str = ''):
+
         self.application = application  # Node
         self.value = value
         self.dimension = dimension
@@ -44,13 +86,40 @@ class NodeBoundaryCondition(BoundaryCondition):
         BoundaryCondition.__init__(self, application, value, dimension, name='')
 
     def c_matrix(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return (1, 1)
 
     def source_c_matrix(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return self.value
 
 
 class EdgeBoundaryCondition(BoundaryCondition):
+    """
+    This class
+
+    :param application: DESCRIPTION
+    :type application: TYPE
+    :param value: DESCRIPTION
+    :type value: float
+    :param dimension: DESCRIPTION
+    :type dimension: TYPE
+    :param name: DESCRIPTION, defaults to ''
+    :type name: str, optional
+    """
+
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -58,6 +127,7 @@ class EdgeBoundaryCondition(BoundaryCondition):
     # _generic_eq = True
 
     def __init__(self, application, value: float, dimension, name: str = ''):
+
         self.application = application  # Element
         self.value = value
         self.dimension = dimension
@@ -65,6 +135,13 @@ class EdgeBoundaryCondition(BoundaryCondition):
         BoundaryCondition.__init__(self, application, value, dimension, name='')
 
     def to_node_boundary_condition(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         node_boundary_conditions = [NodeBoundaryCondition(
             point, self.value, self.dimension)
                 for point in [self.application.start, self.application.end]]
@@ -73,6 +150,19 @@ class EdgeBoundaryCondition(BoundaryCondition):
 
 
 class ElementBoundaryCondition(BoundaryCondition):
+    """
+    This class
+
+    :param application: DESCRIPTION
+    :type application: TYPE
+    :param value: DESCRIPTION
+    :type value: float
+    :param dimension: DESCRIPTION
+    :type dimension: TYPE
+    :param name: DESCRIPTION, defaults to ''
+    :type name: str, optional
+    """
+
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -80,6 +170,7 @@ class ElementBoundaryCondition(BoundaryCondition):
     # _generic_eq = True
 
     def __init__(self, application, value: float, dimension, name: str = ''):
+
         self.application = application  # Element
         self.value = value
         self.dimension = dimension
@@ -87,6 +178,13 @@ class ElementBoundaryCondition(BoundaryCondition):
         BoundaryCondition.__init__(self, application, value, dimension, name='')
 
     def to_node_boundary_condition(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         node_boundary_conditions = [NodeBoundaryCondition(
             point, self.value, self.dimension)
                 for point in self.application.points]
@@ -122,7 +220,21 @@ class ContinuityCondition(DessiaObject):
         DessiaObject.__init__(self, name='')
 
     def c_matrix(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return (1, 1, -self.value, -self.value)
 
     def source_c_matrix(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return ()

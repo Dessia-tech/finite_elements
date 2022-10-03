@@ -33,9 +33,12 @@ class Element2D(vmmesh.TriangularElement2D):
         b3 = element_form_functions[2][1]
         c3 = element_form_functions[2][2]
 
-        double_integral_N1_dS = det_jacobien * (a1 + 0.5 * b1 * x2 + 0.5 * c1 * y2 + 0.5 * b1 * x3 + 0.5 * c1 * y3)
-        double_integral_N2_dS = det_jacobien * (a2 + 0.5 * b2 * x2 + 0.5 * c2 * y2 + 0.5 * b2 * x3 + 0.5 * c2 * y3)
-        double_integral_N3_dS = det_jacobien * (a3 + 0.5 * b3 * x2 + 0.5 * c3 * y2 + 0.5 * b3 * x3 + 0.5 * c3 * y3)
+        double_integral_N1_dS = det_jacobien * (a1 + 0.5 * b1 * x2 + 0.5 * c1 * y2 + \
+                                                0.5 * b1 * x3 + 0.5 * c1 * y3)
+        double_integral_N2_dS = det_jacobien * (a2 + 0.5 * b2 * x2 + 0.5 * c2 * y2 + \
+                                                0.5 * b2 * x3 + 0.5 * c2 * y3)
+        double_integral_N3_dS = det_jacobien * (a3 + 0.5 * b3 * x2 + 0.5 * c3 * y2 + \
+                                                0.5 * b3 * x3 + 0.5 * c3 * y3)
 
         return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
 
@@ -142,9 +145,12 @@ class MagneticElement2D(Element2D):
         b3 = element_form_functions[2][1]
         c3 = element_form_functions[2][2]
 
-        double_integral_N1_dS = det_jacobien * (a1 + 0.5 * b1 * x2 + 0.5 * c1 * y2 + 0.5 * b1 * x3 + 0.5 * c1 * y3)
-        double_integral_N2_dS = det_jacobien * (a2 + 0.5 * b2 * x2 + 0.5 * c2 * y2 + 0.5 * b2 * x3 + 0.5 * c2 * y3)
-        double_integral_N3_dS = det_jacobien * (a3 + 0.5 * b3 * x2 + 0.5 * c3 * y2 + 0.5 * b3 * x3 + 0.5 * c3 * y3)
+        double_integral_N1_dS = det_jacobien * (a1 + 0.5 * b1 * x2 + 0.5 * c1 * y2 + \
+                                                0.5 * b1 * x3 + 0.5 * c1 * y3)
+        double_integral_N2_dS = det_jacobien * (a2 + 0.5 * b2 * x2 + 0.5 * c2 * y2 + \
+                                                0.5 * b2 * x3 + 0.5 * c2 * y3)
+        double_integral_N3_dS = det_jacobien * (a3 + 0.5 * b3 * x2 + 0.5 * c3 * y2 + \
+                                                0.5 * b3 * x3 + 0.5 * c3 * y3)
 
         return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
 
@@ -199,9 +205,10 @@ class ElasticityElement(DessiaObject):
     def energy(self, plane_strain: bool, plane_stress: bool):
 
         shape = self.dimension * len(self.mesh_element.points)
-        return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(self.displacements)),
-                                            self.elementary_matrix(plane_strain, plane_stress).reshape(shape, shape)),
-                                 npy.array(self.displacements)))
+        return 0.5 * (npy.matmul(
+            npy.matmul(npy.transpose(npy.array(self.displacements)),
+                       self.elementary_matrix(plane_strain, plane_stress).reshape(shape, shape)),
+            npy.array(self.displacements)))
 
     @classmethod
     def with_material_object(cls, mesh_element,
@@ -265,7 +272,8 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
         y = [(self.points[i].y - self.points[j].y) for (i, j) in [(1, 2), (2, 0), (0, 1)]]
         x = [(self.points[i].x - self.points[j].x) for (i, j) in [(2, 1), (0, 2), (1, 0)]]
 
-        det_jacobian = (self.points[0].x - self.points[2].x) * (self.points[1].y - self.points[2].y) \
+        det_jacobian = \
+        (self.points[0].x - self.points[2].x) * (self.points[1].y - self.points[2].y) \
             - (self.points[0].y - self.points[2].y) * (self.points[1].x - self.points[2].x)
 
         data = [y[0], 0, y[1], 0, y[2], 0,
