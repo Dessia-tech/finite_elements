@@ -11,8 +11,18 @@ import finite_elements.core
 
 
 class Element2D(vmmesh.TriangularElement2D):
+    """
+    This class
+    """
 
     def element_to_node_factors(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         x1 = self.mesh_element.points[0][0]
         y1 = self.mesh_element.points[0][1]
         x2 = self.mesh_element.points[1][0]
@@ -45,7 +55,16 @@ class Element2D(vmmesh.TriangularElement2D):
 
 class MagneticElement2D(Element2D):
     """
+    This class
+
+    :param triangular_element: DESCRIPTION
+    :type triangular_element: vmmesh.TriangularElement2D
+    :param mu_total: DESCRIPTION
+    :type mu_total: float
+    :param name: DESCRIPTION, defaults to ''
+    :type name: str, optional
     """
+
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -62,6 +81,13 @@ class MagneticElement2D(Element2D):
 
     @property
     def dimension(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return 1
 
     def elementary_matrix(self):
