@@ -91,7 +91,7 @@ f = open(os.devnull, 'w')
 old_stdout = sys.stdout
 sys.stdout = f
 
-results = Run(['volmdlr', '--output-format=json', '--reports=no'], do_exit=False)
+results = Run(['finite_elements', '--output-format=json', '--reports=no'], do_exit=False)
 # `exit` is deprecated, use `do_exit` instead
 sys.stdout = old_stdout
 
@@ -130,4 +130,4 @@ if uncontrolled_errors:
     print('Uncontrolled errors', uncontrolled_errors)
 
 if error_detected:
-    raise RuntimeError('Too many errors\nRun pylint dessia_common to get the errors')
+    raise RuntimeError('Too many errors\nRun pylint finite_elements to get the errors')
