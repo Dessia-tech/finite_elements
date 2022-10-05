@@ -2,9 +2,10 @@ import os
 import time
 
 scripts = [
-    'current_loop.py',
-    'finite_element_poutre.py',
-    # 'magnet_in_void.py',
+    # Magnetic
+    'Magnetic/current_loop.py',
+    'Magnetic/finite_element_poutre.py',
+    # 'Magnetic/magnet_in_void.py',
     ]
 
 # Testing if all scripts exists before launching them
