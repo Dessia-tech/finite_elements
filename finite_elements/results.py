@@ -134,17 +134,17 @@ class MagneticResults(Result):
                 c1_param = element_form_functions[0][2]
                 b2_param = element_form_functions[1][1]
                 c2_param = element_form_functions[1][2]
-                b3_param= element_form_functions[2][1]
-                c3_param= element_form_functions[2][2]
+                b3_param = element_form_functions[2][1]
+                c3_param = element_form_functions[2][2]
                 b_x = float(c1_param *
                             self.result_vector[indexes[0]] +
                             c2_param *
                             self.result_vector[indexes[1]] +
-                            c3_param*
+                            c3_param *
                             self.result_vector[indexes[2]])
                 b_y = float(-b1_param * self.result_vector[indexes[0]] - b2_param *
-                            self.result_vector[indexes[1]] - b3_param \
-                                * self.result_vector[indexes[2]])
+                            self.result_vector[indexes[1]] - b3_param
+                            * self.result_vector[indexes[2]])
                 element_to_magnetic_field[element] = vm.Vector2D(b_x, b_y)
         return element_to_magnetic_field
 
@@ -177,7 +177,7 @@ class MagneticResults(Result):
         return sigma_rr_rteta_tetateta
 
     def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor):
-               # nb_notches):
+        # nb_notches):
         """
         Computes the resistant magnetic torque when the rotor is blocked and \
         the current inside the stator is evolving. Unit : N.m.
@@ -273,10 +273,10 @@ class MagneticResults(Result):
         b_to_color = {}
         all_colors = []
         for b_param in all_br_btetha:
-            if b_param> br_btetha_max:
+            if b_param > br_btetha_max:
                 x_param = 1
             else:
-                x_param = (b_param- br_btetha_min) / (br_btetha_max - br_btetha_min)
+                x_param = (b_param - br_btetha_min) / (br_btetha_max - br_btetha_min)
             # color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x,
             #          color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
             #          color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
@@ -425,7 +425,7 @@ class MagneticResults(Result):
 
         for element, b_param in element_to_magnetic_field.items():
             b_param.plot(amplitude=amplitude, origin=element.center, ax=ax,
-                   color=b_to_color[b_param.norm()], normalize=True)
+                         color=b_to_color[b_param.norm()], normalize=True)
 
         norm = mpl.colors.Normalize(vmin=b_min, vmax=b_max)
         scalar_mappable = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
@@ -573,7 +573,7 @@ class ElasticityResults(Result):
                 element_to_stress[element] = (npy.matmul(
                     npy.matmul(element.d_matrix(plane_strain=self.plane_strain,
                                                 plane_stress=self.plane_stress), element.b_matrix),
-                                                         element.displacements))
+                    element.displacements))
                 element.stress = element_to_stress[element]
 
         return element_to_strain, element_to_stress

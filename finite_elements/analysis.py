@@ -510,7 +510,7 @@ class FiniteElements(DessiaObject):
                            self.mesh.node_to_index[linear_element.points[1]]]
                 length = linear_element.length()
                 dl_parameter = vm.Vector2D([-linear_element.interior_normal[1],
-                                  linear_element.interior_normal[0]])
+                                            linear_element.interior_normal[0]])
                 data.append(magnet_load.magnetization_vector.Dot(dl_parameter) * length / 2)
                 data.append(magnet_load.magnetization_vector.Dot(dl_parameter) * length / 2)
                 row_ind.append(indexes[0])
