@@ -510,6 +510,152 @@ class FiniteElementAnalysis(FiniteElements):
         return len(self.mesh.nodes)*self.dimension + len(self.continuity_conditions) \
             + len(self._boundary_conditions)
 
+    def modal_analysis_numpy(self):
+        matrices = []
+        method_names = ['k_matrix', 'm_matrix']
+        import time
+
+        start = time.time()
+        for method_name in method_names:
+            matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
+                                len(self.mesh.nodes)*self.dimension))
+
+            if hasattr(self, method_name):
+                data, row_ind, col_ind = getattr(self, method_name)()
+                for i, d in enumerate(data):
+                    matrix[row_ind[i], col_ind[i]] += d
+                matrices.append(matrix)
+            else:
+                raise NotImplementedError(
+                    f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        matrix_k, matrix_m = matrices
+        print('matrices numpy: ', time.time() - start)
+
+        if self.node_boundary_conditions:
+            positions = finite_elements.core.global_matrix_positions(
+                dimension=self.dimension, nodes_number=len(self.mesh.nodes))
+            zeros_positions, conditions_value = [], {}
+
+            for boundary_condition in self.node_boundary_conditions:
+                position = positions[(self.mesh.node_to_index[boundary_condition.application],
+                                      boundary_condition.dimension)]
+                zeros_positions.append(position)
+                conditions_value[position] = boundary_condition.value
+
+                matrix_k[position, :] = 0
+                matrix_k[:, position] = 0
+                matrix_m[position, :] = 0
+                matrix_m[:, position] = 0
+
+            zeros_positions.sort(reverse=True)
+            for position in zeros_positions:
+                matrix_k = npy.delete(matrix_k, (position), axis=0)
+                matrix_k = npy.delete(matrix_k, (position), axis=1)
+                matrix_m = npy.delete(matrix_m, (position), axis=0)
+                matrix_m = npy.delete(matrix_m, (position), axis=1)
+
+        start = time.time()
+        import scipy.linalg
+        eigvals = scipy.linalg.eigh(matrix_k, matrix_m, eigvals_only=True) #> Don't work with sparse matrix
+        print('scipy.linalg.eigh: ', time.time() - start)
+        
+        # print('shape', matrix_m.shape[0])
+        # print('numpy Inv_Identity')
+        # # eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
+        # import numpy.linalg
+        # # eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
+        # eigvals, eigvecs = eigh(numpy.matmul(numpy.linalg.inv(matrix_m), matrix_k),
+        #                         npy.eye(matrix_m.shape[0]))
+
+        # print('inv(M)')
+        # import numpy.linalg
+        # eigvals, eigvecs = eigh(matrix_k*numpy.linalg.inv(matrix_m))
+        # eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
+        
+        # print('eigs')
+        # start = time.time()
+        # eigvals, eigvecs = eigs(A=matrix_k, M=matrix_m,
+        #                           k=len(self.mesh.nodes)*self.dimension-2, which='LM')
+        # print('eigs: ', time.time() - start)
+
+        # start = time.time()
+        # eigvals, eigvecs = eigsh(A=matrix_k, M=matrix_m,
+        #                         k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+        # print('eigsh: ', time.time() - start)
+
+        # import numpy.linalg
+        # import scipy.sparse.linalg
+        # print('inv(M)_2_')
+        # # eigvals, eigvecs = eigsh(A=numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)),
+        # #                           k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+
+        # eigvals, eigvecs = eigsh(A=scipy.sparse.linalg.inv(matrix_m).multiply(matrix_k),
+        #                           k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+
+        # # eigvals, eigvecs = eigsh(A=matrix_k.multiply(scipy.sparse.linalg.inv(matrix_m)),
+        # #                           k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+
+        # print('eigsh: ', time.time() - start)
+        # import numpy.linalg
+        # eigvals, eigvecs = numpy.linalg.svd(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
+
+        # if self.node_boundary_conditions:
+        #     eigvecs_adapted = npy.zeros((len(self.mesh.nodes)*self.dimension,
+        #                                  len(self.mesh.nodes)*self.dimension))
+        #     zeros_positions.sort()
+
+        #     for i, eigvec in enumerate(eigvecs.T):
+        #         for position in zeros_positions:
+        #             eigvec = npy.insert(eigvec, position, conditions_value[position])
+        #         eigvecs_adapted[i, :] = eigvec
+        # else:
+        #     eigvecs_adapted = eigvecs.T
+
+        return eigvals #, eigvecs_adapted
+
+    def modal_analysis_sparse(self):
+        matrices = []
+        method_names = ['k_matrix', 'm_matrix']
+        import time
+
+        start = time.time()
+        for method_name in method_names:
+            if hasattr(self, method_name):
+                data, row_ind, col_ind = getattr(self, method_name)()
+                dict_data = {}
+                for i, d in enumerate(data):
+                    try:
+                        dict_data[(row_ind[i], col_ind[i])] += d
+                    except KeyError:
+                        dict_data[(row_ind[i], col_ind[i])] = d
+
+                data_new, row_ind_new, col_ind_new = [], [], []
+                for key, value in dict_data.items():
+                    data_new.append(value)
+                    row_ind_new.append(key[0])
+                    col_ind_new.append(key[1])
+
+                matrix = sparse.csr_matrix((data_new, (row_ind_new, col_ind_new)))
+                matrices.append(matrix)
+            else:
+                raise NotImplementedError(
+                    f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        matrix_k, matrix_m = matrices
+        print('matrices sparse: ', time.time() - start)
+
+        import scipy.sparse.linalg
+        start = time.time()
+        eigvals, eigvecs = scipy.sparse.linalg.eigs(A=matrix_k, M=matrix_m,
+                                                    # k=len(self.mesh.nodes)*self.dimension-2,
+                                                    k = 100,
+                                                    which='SM')
+        print('scipy.sparse.linalg.eigs: ', time.time() - start)
+
+        return eigvals
+
+
     def modal_analysis(self):
         matrices = []
         method_names = ['k_matrix', 'm_matrix']
@@ -579,27 +725,35 @@ class FiniteElementAnalysis(FiniteElements):
                 matrix_k = npy.delete(matrix_k, (position), axis=1)
                 matrix_m = npy.delete(matrix_m, (position), axis=0)
                 matrix_m = npy.delete(matrix_m, (position), axis=1)
-        print('shape', matrix_m.shape[0])
-        print('numpy Inv_Identity')
-        # eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
-        import numpy.linalg
-        # eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
-        eigvals, eigvecs = eigh(numpy.matmul(numpy.linalg.inv(matrix_m), matrix_k),
-                                npy.eye(matrix_m.shape[0]))
+
+        start = time.time()
+        eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
+        print('eigh: ', time.time() - start)
+        
+        # print('shape', matrix_m.shape[0])
+        # print('numpy Inv_Identity')
+        # # eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
+        # import numpy.linalg
+        # # eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
+        # eigvals, eigvecs = eigh(numpy.matmul(numpy.linalg.inv(matrix_m), matrix_k),
+        #                         npy.eye(matrix_m.shape[0]))
 
         # print('inv(M)')
         # import numpy.linalg
         # eigvals, eigvecs = eigh(matrix_k*numpy.linalg.inv(matrix_m))
         # eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
-
+        
         # print('eigs')
+        # start = time.time()
         # eigvals, eigvecs = eigs(A=matrix_k, M=matrix_m,
-        #                           k=len(self.mesh.nodes)*self.dimension-1, which='LM')
+        #                           k=len(self.mesh.nodes)*self.dimension-2, which='LM')
+        # print('eigs: ', time.time() - start)
 
         # start = time.time()
         # eigvals, eigvecs = eigsh(A=matrix_k, M=matrix_m,
         #                         k=len(self.mesh.nodes)*self.dimension-1, which='LM')
         # print('eigsh: ', time.time() - start)
+
         # import numpy.linalg
         # import scipy.sparse.linalg
         # print('inv(M)_2_')
