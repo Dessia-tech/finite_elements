@@ -14,7 +14,7 @@ from typing import List  # Tuple, TypeVar
 from finite_elements.core import MU, blue_red
 import finite_elements.core
 from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
-import matplotlib.cm as cm
+from matplotlib import cm
 
 
 class Result(DessiaObject):
