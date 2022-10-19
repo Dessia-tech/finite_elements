@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Setup install script for volmdlr
+Setup install script for finite_elements
 
 """
 
@@ -111,5 +111,5 @@ setup(name='finite_elements',
       packages=['finite_elements'],
       package_dir={},
       include_package_data = True,
-      install_requires=['packaging', 'dessia_common>=0.3.7', 'numpy', 'matplotlib'],
+      install_requires=['packaging', 'dessia_common>=0.3.7', 'volmdlr', 'numpy', 'matplotlib'],
       classifiers=['Topic :: Scientific/Engineering','Development Status :: 3 - Alpha'])

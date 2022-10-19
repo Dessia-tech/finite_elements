@@ -19,6 +19,7 @@ class BoundaryCondition(DessiaObject):
         self.application = application
         self.value = value
         self.dimension = dimension
+        self.name = name
 
         DessiaObject.__init__(self, name='')
 
