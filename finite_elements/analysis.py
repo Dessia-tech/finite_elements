@@ -708,6 +708,72 @@ class FiniteElementAnalysis(FiniteElements):
 
         return eigvals
 
+    def modal_analysis_2(self):
+        matrices = []
+        method_names = ['k_matrix', 'm_matrix']
+        import time
+
+        start = time.time()
+        for method_name in method_names:
+            matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
+                                len(self.mesh.nodes)*self.dimension))
+
+            if hasattr(self, method_name):
+                data, row_ind, col_ind = getattr(self, method_name)()
+                for i, d in enumerate(data):
+                    matrix[row_ind[i], col_ind[i]] += d
+                matrices.append(matrix)
+            else:
+                raise NotImplementedError(
+                    f'Class {self.__class__.__name__} does not implement {method_name}')
+
+        matrix_k, matrix_m = matrices
+        print('matrices numpy: ', time.time() - start)
+
+        if self.node_boundary_conditions:
+            positions = finite_elements.core.global_matrix_positions(
+                dimension=self.dimension, nodes_number=len(self.mesh.nodes))
+            zeros_positions, conditions_value = [], {}
+
+            for boundary_condition in self.node_boundary_conditions:
+                position = positions[(self.mesh.node_to_index[boundary_condition.application],
+                                      boundary_condition.dimension)]
+                zeros_positions.append(position)
+                conditions_value[position] = boundary_condition.value
+
+                matrix_k[position, :] = 0
+                matrix_k[:, position] = 0
+                matrix_m[position, :] = 0
+                matrix_m[:, position] = 0
+
+            zeros_positions.sort(reverse=True)
+            for position in zeros_positions:
+                matrix_k = npy.delete(matrix_k, (position), axis=0)
+                matrix_k = npy.delete(matrix_k, (position), axis=1)
+                matrix_m = npy.delete(matrix_m, (position), axis=0)
+                matrix_m = npy.delete(matrix_m, (position), axis=1)
+
+        import numpy.linalg
+        # import scipy.linalg
+
+        start = time.time()
+        m = numpy.linalg.inv(matrix_m)
+        a = numpy.matmul(m, matrix_k)
+        a_inv = numpy.linalg.inv(a)
+        print('Inv(A): ', time.time() - start)
+
+        start = time.time()
+        sA = sparse.csr_matrix(a_inv)
+        print('Sparse(Inv(A)): ', time.time() - start)
+
+
+        start = time.time()
+        eigvals, eigvecs = eigs(A=sA,
+                                k=30, which='LM')
+        print('scipy.sparse.linalg.eigs _ inv(inv(M)*K): ', time.time() - start)
+
+        return 1/eigvals, eigvecs
+
     def modal_analysis(self):
         matrices = []
         method_names = ['k_matrix', 'm_matrix']
