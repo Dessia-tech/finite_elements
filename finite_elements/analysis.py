@@ -94,6 +94,7 @@ class FiniteElements(DessiaObject):
 
         self._boundary_conditions = None
         self._node_loads = None
+        self._positions = None
 
         DessiaObject.__init__(self, name='')
 
@@ -233,6 +234,15 @@ class FiniteElements(DessiaObject):
                         value = edge_load.value * 0.5,
                         dimension = edge_load.dimension))
         return edge_to_node_loads
+
+    @property
+    def positions(self):
+        if not self._positions:
+            positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                     nodes_number=len(self.mesh.nodes))
+            self._positions = positions
+
+        return self._positions
 
     def source_c_matrix_loads(self):
         node_loads = self.node_loads[:]
