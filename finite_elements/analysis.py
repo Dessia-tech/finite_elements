@@ -555,11 +555,52 @@ class FiniteElementAnalysis(FiniteElements):
                 matrix_m = npy.delete(matrix_m, (position), axis=0)
                 matrix_m = npy.delete(matrix_m, (position), axis=1)
 
-        start = time.time()
+        import numpy.linalg
         import scipy.linalg
-        eigvals = scipy.linalg.eigh(matrix_k, matrix_m, eigvals_only=True) #> Don't work with sparse matrix
-        print('scipy.linalg.eigh: ', time.time() - start)
         
+        start = time.time()
+        eigvals_1, eigvecs = scipy.linalg.eigh(matrix_k, matrix_m, eigvals = (1, 30), check_finite=False) #> Don't work with sparse matrix
+        print('scipy.linalg.eigh: K, M ', time.time() - start)
+        print('___')
+
+        # start = time.time()
+        # m = numpy.linalg.inv(matrix_m)
+        # a = numpy.matmul(m, matrix_k)
+        # print('Inv(M) et A: ', time.time() - start)
+
+
+        # start = time.time()
+        # eigvals_2, eigvecs = scipy.linalg.eig(a, check_finite=False) #> Don't work with sparse matrix
+        # print('scipy.linalg.eig Inv(M)*K: ', time.time() - start)
+        # print('___')
+
+
+        # start = time.time()
+        # m = numpy.linalg.inv(matrix_m)
+        # k= numpy.linalg.inv(matrix_k)
+        # print('Inv(M), Inv(K): ', time.time() - start)
+
+        # start = time.time()
+        # eigvals_3, eigvecs = scipy.linalg.eig(k, m, check_finite=False) #> Don't work with sparse matrix
+        # print('scipy.linalg.eig Inv(k) , Inv(M): ', time.time() - start)
+        # print('___')
+
+
+        # start = time.time()
+        # m = numpy.linalg.inv(matrix_m)
+        # a = numpy.matmul(m, matrix_k)
+        # a_inv = numpy.linalg.inv(a)
+        # print('Inv(A): ', time.time() - start)
+
+        # start = time.time()
+        # eigvals_4, eigvecs = scipy.linalg.eig(a_inv, check_finite=False) #> Don't work with sparse matrix
+        # print('scipy.linalg.eig Inv(Inv(M)*K): ', time.time() - start)
+        # print('___')
+
+        # =============================================================================
+        # # DRAFT # #
+        # =============================================================================
+
         # print('shape', matrix_m.shape[0])
         # print('numpy Inv_Identity')
         # # eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
@@ -572,7 +613,7 @@ class FiniteElementAnalysis(FiniteElements):
         # import numpy.linalg
         # eigvals, eigvecs = eigh(matrix_k*numpy.linalg.inv(matrix_m))
         # eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
-        
+
         # print('eigs')
         # start = time.time()
         # eigvals, eigvecs = eigs(A=matrix_k, M=matrix_m,
@@ -612,7 +653,7 @@ class FiniteElementAnalysis(FiniteElements):
         # else:
         #     eigvecs_adapted = eigvecs.T
 
-        return eigvals #, eigvecs_adapted
+        return eigvals_1, eigvecs #, eigvecs_adapted
 
     def modal_analysis_sparse(self):
         matrices = []
@@ -647,14 +688,25 @@ class FiniteElementAnalysis(FiniteElements):
 
         import scipy.sparse.linalg
         start = time.time()
-        eigvals, eigvecs = scipy.sparse.linalg.eigs(A=matrix_k, M=matrix_m,
-                                                    # k=len(self.mesh.nodes)*self.dimension-2,
-                                                    k = 100,
-                                                    which='SM')
+        eigvals, eigvecs = scipy.sparse.linalg.eigsh(A=matrix_k, M=matrix_m,
+                                                    k=len(self.mesh.nodes)*self.dimension-2,
+                                                    # k = 30,
+                                                    which='LM')
         print('scipy.sparse.linalg.eigs: ', time.time() - start)
 
-        return eigvals
+        start = time.time()
+        # a=scipy.sparse.linalg.inv(scipy.sparse.linalg.inv(matrix_m).multiply(matrix_k))
 
+        a=scipy.sparse.linalg.inv(matrix_k.multiply(scipy.sparse.linalg.inv(matrix_m)))
+
+        print('A=inv(inv(M)*K) : ', time.time() - start)
+
+        start = time.time()
+        eigvals, eigvecs = eigs(A=a,
+                                 k=30, which='LM')
+        print('scipy.sparse.linalg.eigs _ inv(inv(M)*K): ', time.time() - start)
+
+        return eigvals
 
     def modal_analysis(self):
         matrices = []
