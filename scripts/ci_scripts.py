@@ -4,14 +4,14 @@ import time
 scripts = [
     # Magnetic
     'Magnetic/current_loop.py',
-    'Magnetic/finite_element_poutre.py',
+    'Magnetic/finite_element_beam.py',
     # 'Magnetic/magnet_in_void.py',
 
     # Elasticity2D
-    'Elasticity/poutre2d_example_1.py',
-    'Elasticity/poutre2d_example_2.py',
-    'Elasticity/poutre2d_example_3.py',
-    'Elasticity/poutre2d_example_4.py',
+    'Elasticity/beam2d_example_1.py',
+    'Elasticity/beam2d_example_2.py',
+    'Elasticity/beam2d_example_3.py',
+    'Elasticity/beam2d_example_4.py'
 
     # Elasticity3D
     'Elasticity/poutre3d_example_1.py',
