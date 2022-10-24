@@ -719,7 +719,10 @@ class FiniteElementAnalysis(FiniteElements):
                                 len(self.mesh.nodes)*self.dimension))
 
             if hasattr(self, method_name):
+                start = time.time()
                 data, row_ind, col_ind = getattr(self, method_name)()
+                print('matrice computation: ', time.time() - start)
+                print('________')
                 for i, d in enumerate(data):
                     matrix[row_ind[i], col_ind[i]] += d
                 matrices.append(matrix)
@@ -766,6 +769,20 @@ class FiniteElementAnalysis(FiniteElements):
         sA = sparse.csr_matrix(a_inv)
         print('Sparse(Inv(A)): ', time.time() - start)
 
+        # =============================================================================
+        #
+        # =============================================================================
+
+        start = time.time()
+        k = numpy.linalg.inv(matrix_k)
+        print('inv(k): ', time.time() - start)
+        # a = numpy.matmul(k, matrix_m)
+        a = k @ matrix_m
+        print('(A): ', time.time() - start)
+
+        start = time.time()
+        sA = sparse.csr_matrix(a)
+        print('Sparse((A)): ', time.time() - start)
 
         start = time.time()
         eigvals, eigvecs = eigs(A=sA,
