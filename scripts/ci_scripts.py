@@ -4,8 +4,14 @@ import time
 scripts = [
     # Magnetic
     'Magnetic/current_loop.py',
-    'Magnetic/finite_element_poutre.py',
+    'Magnetic/finite_element_beam.py',
     # 'Magnetic/magnet_in_void.py',
+
+    # Elasticity
+    'Elasticity/beam2d_example_1.py',
+    'Elasticity/beam2d_example_2.py',
+    'Elasticity/beam2d_example_3.py',
+    'Elasticity/beam2d_example_4.py'
     ]
 
 # Testing if all scripts exists before launching them

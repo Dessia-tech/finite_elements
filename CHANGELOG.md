@@ -25,10 +25,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - ElementLoad, EdgeLoad
    - FiniteElementAnalysis
    - MagneticResults
+   - ElasticityElement: d_matrix, energy
+   - ElasticityTriangularElement2D: d_matrix(plane_strain, plane_stress), b_matrix, k_matrix, strain, stress
+   - ElasticityResults: displacements, stress, strain, deformed mesh, energy, vtk file
+   - ElasticityResults2D: axial_strain/stress, shear_strain/stress, different plots
+   - Material
+* Add new scripts with usecases and examples for tests (Magnetic, Elasticity2D)
 
 ### Performance improvements
 
-* Add new scripts with usecases and examples for tests
+*
+*
 
 ### Fixed
 
