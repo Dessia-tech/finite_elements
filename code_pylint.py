@@ -3,16 +3,16 @@ from pylint.lint import Run
 MIN_NOTE = 4.95
 
 MAX_ERROR_BY_TYPE = {
-                     'invalid-name': 126,
+                     'invalid-name': 142,
                      'no-else-return': 169,
                      'consider-using-f-string': 2,
                      'no-member': 16,
                      'inconsistent-return-statements': 108,
                      'unused-variable': 11,
                      'arguments-differ': 85,
-                     'too-many-locals': 9,
+                     'too-many-locals': 10,
                      'unused-argument': 2,
-                     'too-many-arguments': 4,
+                     'too-many-arguments': 5,
                      'consider-using-enumerate': 30,
                      'too-many-branches': 29,
                      'too-many-statements': 27,
