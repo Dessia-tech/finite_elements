@@ -464,19 +464,23 @@ class FiniteElementAnalysis(FiniteElements):
 
         indexes = [self.mesh.node_to_index[point] for point in element.points]
 
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
-
-        row_ind, col = [], []
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
+        positions = self.positions
+        row_ind = [] #, col = [], []
         for index in indexes:
             for i in range(element.dimension):
                 row_ind.extend(len(indexes)*element.dimension * [positions[(index, i+1)]])
-                col.append(positions[(index, i+1)])
+                # col.append(positions[(index, i+1)])
 
-        col_ind = []
-        for index in indexes:
-            for i in range(element.dimension):
-                col_ind.extend(col)
+        # col_ind = col * (len(indexes)*element.dimension)
+        print('yes')
+        col_ind = list(set(row_ind)) * (len(indexes)*element.dimension)
+
+        # col_ind = []
+        # for index in indexes:
+        #     for i in range(element.dimension):
+        #         col_ind.extend(col)
 
         return row_ind, col_ind
 
