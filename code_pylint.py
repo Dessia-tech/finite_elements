@@ -91,7 +91,7 @@ f = open(os.devnull, 'w')
 old_stdout = sys.stdout
 sys.stdout = f
 
-results = Run(['volmdlr', '--output-format=json', '--reports=no'], do_exit=False)
+results = Run(['finite_elements', '--output-format=json', '--reports=no'], do_exit=False)
 # `exit` is deprecated, use `do_exit` instead
 sys.stdout = old_stdout
 
@@ -109,7 +109,7 @@ def extract_messages_by_type(type_):
 uncontrolled_errors = {}
 error_detected = False
 for error_type, number_errors in results.linter.stats.by_msg.items():
-    if error_type in MAX_ERROR_BY_TYPE:
+    if error_type in MAX_ERROR_BY_TYPE: 
         if number_errors > MAX_ERROR_BY_TYPE[error_type]:
             error_detected = True
             print('\nFix some {} errors: {}/{}'.format(error_type,

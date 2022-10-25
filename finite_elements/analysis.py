@@ -773,18 +773,22 @@ class FiniteElementAnalysis(FiniteElements):
         import numpy.linalg
         # import scipy.linalg
 
-        start = time.time()
-        m = numpy.linalg.inv(matrix_m)
-        a = numpy.matmul(m, matrix_k)
-        a_inv = numpy.linalg.inv(a)
-        print('Inv(A): ', time.time() - start)
+        # =============================================================================
+        # 1
+        # =============================================================================
 
-        start = time.time()
-        sA = sparse.csr_matrix(a_inv)
-        print('Sparse(Inv(A)): ', time.time() - start)
+        # start = time.time()
+        # m = numpy.linalg.inv(matrix_m)
+        # a = numpy.matmul(m, matrix_k)
+        # a_inv = numpy.linalg.inv(a)
+        # print('Inv(A): ', time.time() - start)
+
+        # start = time.time()
+        # sA = sparse.csc_matrix(a_inv)
+        # print('Sparse(Inv(A)): ', time.time() - start)
 
         # =============================================================================
-        #
+        # 2
         # =============================================================================
 
         start = time.time()
@@ -795,13 +799,14 @@ class FiniteElementAnalysis(FiniteElements):
         print('(A): ', time.time() - start)
 
         start = time.time()
-        sA = sparse.csr_matrix(a)
+        sA = sparse.csc_matrix(a)
         print('Sparse((A)): ', time.time() - start)
 
         start = time.time()
         eigvals, eigvecs = eigs(A=sA,
                                 k=30, which='LM')
         print('scipy.sparse.linalg.eigs _ inv(inv(M)*K): ', time.time() - start)
+
 
         return 1/eigvals, eigvecs
 
