@@ -7,11 +7,15 @@ scripts = [
     'Magnetic/finite_element_beam.py',
     # 'Magnetic/magnet_in_void.py',
 
-    # Elasticity
+    # Elasticity2D
     'Elasticity/beam2d_example_1.py',
     'Elasticity/beam2d_example_2.py',
     'Elasticity/beam2d_example_3.py',
     'Elasticity/beam2d_example_4.py'
+
+    # Elasticity3D
+    'Elasticity/beam3d_example_1.py',
+    'Elasticity/beam3d_example_2.py'
     ]
 
 # Testing if all scripts exists before launching them
