@@ -449,7 +449,7 @@ class MagneticResults(Result):
 
         triang = finite_elements.core.get_triangulation(self.mesh)
         # z_param = npy.asarray([p for p in self.result_vector[:len(self.mesh.nodes)]])  # p[0]
-        z_param = npy.asarray(list(self.result_vector[:len(self.mesh.nodes)])) #unnecessary-comprehension
+        z_param = npy.asarray(list(self.result_vector[:len(self.mesh.nodes)]))  # unnecessary-comprehension
         z_min, z_max = min(z_param), max(z_param)
 
         if ax is None:
