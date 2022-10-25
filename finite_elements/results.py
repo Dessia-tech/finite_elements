@@ -448,7 +448,8 @@ class MagneticResults(Result):
         """
 
         triang = finite_elements.core.get_triangulation(self.mesh)
-        z_param = npy.asarray([p for p in self.result_vector[:len(self.mesh.nodes)]])  # p[0]
+        # z_param = npy.asarray([p for p in self.result_vector[:len(self.mesh.nodes)]])  # p[0]
+        z_param = npy.asarray(list(self.result_vector[:len(self.mesh.nodes)])) #unnecessary-comprehension
         z_min, z_max = min(z_param), max(z_param)
 
         if ax is None:
@@ -659,7 +660,8 @@ class ElasticityResults(Result):
 
         # return energy
 
-        return sum([value for value in self.energy_per_element.values()])
+        # return sum([value for value in self.energy_per_element.values()]) #unnecessary-comprehension
+        return sum(list(self.energy_per_element.values()))
 
     def _energy_per_element(self):
         """
@@ -899,7 +901,8 @@ class ElasticityResults2D(ElasticityResults):
 
         if hasattr(self, constraint_name):
             result = getattr(self, constraint_name)()
-            result_values = [value for value in result.values()]
+            # result_values = [value for value in result.values()] #unnecessary-comprehension
+            result_values = list(result.values())
         else:
             raise NotImplementedError(
                 f'Class {self.__class__.__name__} does not implement {constraint_name}')
@@ -1117,7 +1120,8 @@ class ElasticityResults2D(ElasticityResults):
         """
 
         result = self.energy_per_element
-        result_values = [value for value in self.energy_per_element.values()]
+        # result_values = [value for value in self.energy_per_element.values()] #unnecessary-comprehension
+        result_values = list(self.energy_per_element.values())
 
         if amplitude != 1:
             deformed_mesh = self._deformed_mesh(amplitude=amplitude)
