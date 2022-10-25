@@ -176,8 +176,12 @@ class MagneticResults(Result):
         sigma_rr_rteta_tetateta = [sigma_rr, sigma_rteta, sigma_tetateta]
         return sigma_rr_rteta_tetateta
 
+<<<<<<< HEAD
     def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor):
         # nb_notches):
+=======
+    def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor):  # , nb_notches):
+>>>>>>> master
         """
         Computes the resistant magnetic torque when the rotor is blocked and \
         the current inside the stator is evolving. Unit : N.m.
