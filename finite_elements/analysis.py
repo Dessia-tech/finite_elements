@@ -16,7 +16,7 @@ import scipy
 from scipy import sparse
 from scipy.linalg import eigh
 from scipy.sparse.linalg import eigs, eigsh
-# from scipy.sparse import csr_matrix
+# from scipy.sparse import csc_matrix
 # from scipy import linalg
 # import time 
 from dessia_common import DessiaObject
@@ -414,7 +414,7 @@ class FiniteElementAnalysis(FiniteElements):
                 raise NotImplementedError(
                     f'Class {self.__class__.__name__} does not implement {method_name}')
 
-        matrix = sparse.csr_matrix((data, (row_ind, col_ind)))
+        matrix = sparse.csc_matrix((data, (row_ind, col_ind)))
 
         return matrix
 
@@ -691,7 +691,7 @@ class FiniteElementAnalysis(FiniteElements):
                     row_ind_new.append(key[0])
                     col_ind_new.append(key[1])
 
-                matrix = sparse.csr_matrix((data_new, (row_ind_new, col_ind_new)))
+                matrix = sparse.csc_matrix((data_new, (row_ind_new, col_ind_new)))
                 matrices.append(matrix)
             else:
                 raise NotImplementedError(
@@ -700,27 +700,52 @@ class FiniteElementAnalysis(FiniteElements):
         matrix_k, matrix_m = matrices
         print('matrices sparse: ', time.time() - start)
 
-        import scipy.sparse.linalg
-        start = time.time()
-        eigvals, eigvecs = scipy.sparse.linalg.eigsh(A=matrix_k, M=matrix_m,
-                                                    k=len(self.mesh.nodes)*self.dimension-2,
-                                                    # k = 30,
-                                                    which='LM')
-        print('scipy.sparse.linalg.eigs: ', time.time() - start)
+        # =============================================================================
+        # 1
+        # =============================================================================
 
-        start = time.time()
+        # import scipy.sparse.linalg
+        # start = time.time()
+        # eigvals, eigvecs = scipy.sparse.linalg.eigsh(A=matrix_k, M=matrix_m,
+        #                                             k=len(self.mesh.nodes)*self.dimension-2,
+        #                                             # k = 30,
+        #                                             which='LM')
+        # print('scipy.sparse.linalg.eigs: ', time.time() - start)
+
+        # =============================================================================
+        # 2
+        # =============================================================================
+
+        # start = time.time()
         # a=scipy.sparse.linalg.inv(scipy.sparse.linalg.inv(matrix_m).multiply(matrix_k))
+        # # a=scipy.sparse.linalg.inv(matrix_k.multiply(scipy.sparse.linalg.inv(matrix_m)))
 
-        a=scipy.sparse.linalg.inv(matrix_k.multiply(scipy.sparse.linalg.inv(matrix_m)))
+        # print('A=inv(inv(M)*K) : ', time.time() - start)
 
-        print('A=inv(inv(M)*K) : ', time.time() - start)
+        # start = time.time()
+        # eigvals, eigvecs = eigs(A=a,
+        #                           k=30, which='LM')
+        # print('scipy.sparse.linalg.eigs _ inv(inv(M)*K): ', time.time() - start)
+
+        # =============================================================================
+        # 3
+        # =============================================================================
+
+        start = time.time()
+        k = scipy.sparse.linalg.inv(matrix_k)
+        print('inv(k): ', time.time() - start)
+        # a = numpy.matmul(k, matrix_m)
+        a = matrix_m.multiply(k)
+        print('(A): ', time.time() - start)
 
         start = time.time()
         eigvals, eigvecs = eigs(A=a,
-                                 k=30, which='LM')
-        print('scipy.sparse.linalg.eigs _ inv(inv(M)*K): ', time.time() - start)
+                                k=30, which='LM')
+        print('scipy.sparse.linalg.eigs _ (inv(K)*M): ', time.time() - start)
 
-        return eigvals
+        eigvals = 1/eigvals
+
+        return eigvals, eigvecs
 
     def modal_analysis_2(self):
         matrices = []
@@ -848,7 +873,7 @@ class FiniteElementAnalysis(FiniteElements):
         #             row_ind_new.append(key[0])
         #             col_ind_new.append(key[1])
 
-        #         matrix = sparse.csr_matrix((data_new, (row_ind_new, col_ind_new)))
+        #         matrix = sparse.csc_matrix((data_new, (row_ind_new, col_ind_new)))
         #         matrices.append(matrix)
         #     else:
         #         raise NotImplementedError(
