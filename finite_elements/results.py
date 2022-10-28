@@ -373,13 +373,21 @@ class ElasticityResults(Result):
         self.plane_strain = plane_strain
         self.plane_stress = plane_stress
 
-        self.displacement_vectors_per_node = self._displacement_vectors_per_node()
-        self.displacements_per_element = self._displacements_per_element()
-        self.energy_per_element = self._energy_per_element()
-        self.energy = self._energy()
-        self.strain, self.stress = self._strain_stress_per_element()
-        self.deformed_nodes = self._deformed_nodes()
-        self.deformed_mesh = self._deformed_mesh()
+        # self.displacement_vectors_per_node = self._displacement_vectors_per_node()
+        # self.displacements_per_element = self._displacements_per_element()
+        # self.energy_per_element = self._energy_per_element()
+        # self.energy = self._energy()
+        # self.strain, self.stress = self._strain_stress_per_element()
+        # self.deformed_nodes = self._deformed_nodes()
+        # self.deformed_mesh = self._deformed_mesh()
+
+        self._displacement_vectors_per_node = None
+        self._displacements_per_element = None
+        self._energy_per_element = None
+        self._energy = None
+        self._strain, self._stress = None, None
+        self._deformed_nodes = None
+        self._deformed_mesh = None
 
         Result.__init__(self, mesh, result_vector)
 
@@ -494,6 +502,54 @@ class ElasticityResults(Result):
             for element in group.elements:
                 energy[element] = (element.energy(self.plane_strain, self.plane_stress))
         return energy
+
+    @property
+    def displacement_vectors_per_node(self):
+        if not self._displacement_vectors_per_node:
+            self._displacement_vectors_per_node = self._displacement_vectors_per_node()
+        return self._displacement_vectors_per_node
+
+    @property
+    def displacements_per_element(self):
+        if not self._displacements_per_element:
+            self._displacements_per_element = self._displacements_per_element()
+        return self._displacements_per_element
+
+    @property
+    def energy_per_element(self):
+        if not self._energy_per_element:
+            self._energy_per_element = self._energy_per_element()
+        return self._energy_per_element
+
+    @property
+    def energy(self):
+        if not self._energy:
+            self._energy = self._energy()
+        return self._energy
+
+    @property
+    def strain(self):
+        if not self._strain:
+            self._strain, self._stress = self._strain_stress_per_element()
+        return self._strain
+
+    @property
+    def stress(self):
+        if not self._stress:
+            self._strain, self._stress = self._strain_stress_per_element()
+        return self._stress
+
+    @property
+    def deformed_nodes(self):
+        if not self._deformed_nodes:
+            self._deformed_nodes = self._deformed_nodes()
+        return self._deformed_nodes
+
+    @property
+    def deformed_mesh(self):
+        if not self._deformed_mesh:
+            self._deformed_mesh = self._deformed_mesh()
+        return self._deformed_mesh
 
     def displacement_per_node_x(self):
 
