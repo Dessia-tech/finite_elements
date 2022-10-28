@@ -155,7 +155,7 @@ class FiniteElements(DessiaObject):
             node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
             self._boundary_conditions = node_boundary_conditions
 
-        # c_matrix data
+        # # c_matrix data
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
         row_ind, col_ind, data = [], [], []

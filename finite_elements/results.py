@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import numpy as npy
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
+
+# import volmdlr.volmdlr.core_compiled as vc
 from dessia_common import DessiaObject
 from typing import List  # Tuple, TypeVar
 from finite_elements.core import MU, blue_red
@@ -62,11 +64,11 @@ class MagneticResults(Result):
             vector_B = element_to_magnetic_field[element]
 
             element_center = element.center
-            e_r = vm.Vector2D(element_center.vector)
-            e_r.Normalize()
-            e_teta = vm.Vector2D((-e_r[1], e_r[0]))
-            B_r = vector_B.Dot(e_r)
-            B_teta = vector_B.Dot(e_teta)
+            e_r = vm.Vector2D(*element_center)
+            e_r.normalize()
+            e_teta = vm.Vector2D(-e_r[1], e_r[0])
+            B_r = vector_B.dot(e_r)
+            B_teta = vector_B.dot(e_teta)
 
             all_BrBtetha.append(B_r * B_teta)
         return all_BrBtetha
@@ -114,11 +116,11 @@ class MagneticResults(Result):
         element_to_magnetic_field = self.magnetic_field_per_element
         vector_B = element_to_magnetic_field[element]
         element_center = element.center
-        e_r = vm.Vector2D(element_center.vector)
-        e_r.Normalize()
-        e_teta = vm.Vector2D((-e_r[1], e_r[0]))
-        B_r = vector_B.Dot(e_r)
-        B_teta = vector_B.Dot(e_teta)
+        e_r = vm.Vector2D(*element_center)
+        e_r.normalize()
+        e_teta = vm.Vector2D(-e_r[1], e_r[0])
+        B_r = vector_B.dot(e_r)
+        B_teta = vector_B.dot(e_teta)
 
         sigma_rr = 1 / MU * B_r**2 - 1 / (2 * MU) * vector_B.Norm()**2
         sigma_rteta = 1 / MU * B_r * B_teta
@@ -146,6 +148,8 @@ class MagneticResults(Result):
         element_to_magnetic_field = self.magnetic_field_per_element
 
         for elements_group in self.mesh.elements_groups:
+            print('elm_group', elements_group.name)
+            print('air_gap_elem', air_gap_elements_group_name)
             if elements_group.name == air_gap_elements_group_name:
                 gap_elements_group = elements_group
                 break
@@ -161,12 +165,14 @@ class MagneticResults(Result):
             vector_B = element_to_magnetic_field[element]
 
             element_center = element.center
-            e_r = vm.Vector2D(element_center.vector)
-            e_r.Normalize()
-            e_teta = vm.Vector2D((-e_r[1], e_r[0]))
-            B_r = vector_B.Dot(e_r)
-            B_teta = vector_B.Dot(e_teta)
-            r_Br_Bteta = element_center.Norm() * B_r * B_teta
+            e_r = vm.Vector2D(*element_center)
+            # e_r = vm.Vector2D(element_center.vector)
+            e_r.normalize()
+            e_teta = vm.Vector2D(-e_r[1], e_r[0])
+            # e_teta = vm.Vector2D(-e_r[1], e_r[0])
+            B_r = vector_B.dot(e_r)
+            B_teta = vector_B.dot(e_teta)
+            r_Br_Bteta = element_center.norm() * B_r * B_teta
 #            r_Br_Bteta = r * B_r * B_teta
             dS = element.area
 
@@ -324,7 +330,7 @@ class MagneticResults(Result):
                    color=B_to_color[B.norm()], normalize=True)
 
         norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        sm = plt.cm.scalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10))
         cbar.set_label('Magnetic Field in Tesla')
@@ -350,7 +356,7 @@ class MagneticResults(Result):
         ax.set_title('Triangular grid')
 
         norm = mpl.colors.Normalize(vmin=z_min, vmax=z_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        sm = plt.cm.scalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(z_min, z_max, 10))
         cbar.set_label('Potential Vector')
