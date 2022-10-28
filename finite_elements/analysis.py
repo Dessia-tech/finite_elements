@@ -156,20 +156,21 @@ class FiniteElements(DessiaObject):
             self._boundary_conditions = node_boundary_conditions
 
         # # c_matrix data
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
         row_ind, col_ind, data = [], [], []
         for i, node_condition in enumerate(node_boundary_conditions):
             data.extend(node_condition.c_matrix())
-            new_pos = self.mesh.node_to_index[node_condition.application] * self.dimension + node_condition.dimension
-            pos = positions[(self.mesh.node_to_index[node_condition.application],
-                             node_condition.dimension)]
-            if new_pos != pos:
-                print('new', new_pos)
-                print('old', pos)
-                raise ValueError
-            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
-            col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
+            new_pos = self.mesh.node_to_index[node_condition.application] * \
+                      self.dimension + node_condition.dimension - 1
+            # pos = positions[(self.mesh.node_to_index[node_condition.application],
+            #                  node_condition.dimension)]
+            # if new_pos != pos:
+            #     print('new', new_pos)
+            #     print('old', pos)
+            #     raise ValueError
+            row_ind.extend((len(self.mesh.nodes) * self.dimension + i, new_pos))
+            col_ind.extend((new_pos, len(self.mesh.nodes) * self.dimension + i))
 
         return data, row_ind, col_ind
 
@@ -246,17 +247,17 @@ class FiniteElements(DessiaObject):
 
         # source_c_matrix data
         data, row_ind = [], []
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
         for i, load in enumerate(node_loads):
-            new_pos = self.mesh.node_to_index[load.node] * self.dimension + load.dimension
-            pos = positions[(self.mesh.node_to_index[load.node], load.dimension)]
-            if new_pos != pos:
-                print('new', new_pos)
-                print('old', pos)
-                raise ValueError
+            new_pos = self.mesh.node_to_index[load.node] * self.dimension + load.dimension - 1
+            # pos = positions[(self.mesh.node_to_index[load.node], load.dimension)]
+            # if new_pos != pos:
+            #     print('new', new_pos)
+            #     print('old', pos)
+            #     raise ValueError
             data.append(load.source_c_matrix())
-            row_ind.append(pos)
+            row_ind.append(new_pos)
 
         return data, row_ind
 
@@ -454,20 +455,20 @@ class FiniteElementAnalysis(FiniteElements):
 
         indexes = [self.mesh.node_to_index[point] for point in element.points]
 
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
 
         row_ind, col = [], []
         for index in indexes:
             for i in range(element.dimension):
                 new_pos = index * self.dimension + i
-                pos = positions[(index, i + 1)]
-                if pos != new_pos:
-                    print('new', new_pos)
-                    print('old', pos)
-                    raise ValueError
-                row_ind.extend(len(indexes) * element.dimension * [pos])
-                col.append(pos)
+                # pos = positions[(index, i + 1)]
+                # if pos != new_pos:
+                #     print('new', new_pos)
+                #     print('old', pos)
+                #     raise ValueError
+                row_ind.extend(len(indexes) * element.dimension * [new_pos])
+                col.append(new_pos)
 
         col_ind = []
         for index in indexes:

@@ -148,8 +148,6 @@ class MagneticResults(Result):
         element_to_magnetic_field = self.magnetic_field_per_element
 
         for elements_group in self.mesh.elements_groups:
-            print('elm_group', elements_group.name)
-            print('air_gap_elem', air_gap_elements_group_name)
             if elements_group.name == air_gap_elements_group_name:
                 gap_elements_group = elements_group
                 break
@@ -166,10 +164,8 @@ class MagneticResults(Result):
 
             element_center = element.center
             e_r = vm.Vector2D(*element_center)
-            # e_r = vm.Vector2D(element_center.vector)
             e_r.normalize()
             e_teta = vm.Vector2D(-e_r[1], e_r[0])
-            # e_teta = vm.Vector2D(-e_r[1], e_r[0])
             B_r = vector_B.dot(e_r)
             B_teta = vector_B.dot(e_teta)
             r_Br_Bteta = element_center.norm() * B_r * B_teta
@@ -330,7 +326,7 @@ class MagneticResults(Result):
                    color=B_to_color[B.norm()], normalize=True)
 
         norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
-        sm = plt.cm.scalarMappable(cmap=blue_red, norm=norm)
+        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10))
         cbar.set_label('Magnetic Field in Tesla')
@@ -356,7 +352,7 @@ class MagneticResults(Result):
         ax.set_title('Triangular grid')
 
         norm = mpl.colors.Normalize(vmin=z_min, vmax=z_max)
-        sm = plt.cm.scalarMappable(cmap=blue_red, norm=norm)
+        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(z_min, z_max, 10))
         cbar.set_label('Potential Vector')
