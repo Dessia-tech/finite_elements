@@ -155,14 +155,16 @@ class FiniteElements(DessiaObject):
             node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
             self._boundary_conditions = node_boundary_conditions
 
-        # c_matrix data
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # # c_matrix data
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
         row_ind, col_ind, data = [], [], []
         for i, node_condition in enumerate(node_boundary_conditions):
             data.extend(node_condition.c_matrix())
-            pos = positions[(self.mesh.node_to_index[node_condition.application],
-                             node_condition.dimension)]
+            pos = self.mesh.node_to_index[node_condition.application] * \
+                self.dimension + node_condition.dimension
+            # pos = positions[(self.mesh.node_to_index[node_condition.application],
+            #                  node_condition.dimension)]
             row_ind.extend((len(self.mesh.nodes) * self.dimension + i, pos))
             col_ind.extend((pos, len(self.mesh.nodes) * self.dimension + i))
 
@@ -241,11 +243,12 @@ class FiniteElements(DessiaObject):
 
         # source_c_matrix data
         data, row_ind = [], []
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
         for i, load in enumerate(node_loads):
             data.append(load.source_c_matrix())
-            row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
+            pos = self.mesh.node_to_index[load.node] * self.dimension + load.dimension
+            row_ind.append(pos)
 
         return data, row_ind
 
@@ -443,14 +446,18 @@ class FiniteElementAnalysis(FiniteElements):
 
         indexes = [self.mesh.node_to_index[point] for point in element.points]
 
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
 
         row_ind, col = [], []
         for index in indexes:
             for i in range(element.dimension):
-                row_ind.extend(len(indexes) * element.dimension * [positions[(index, i + 1)]])
-                col.append(positions[(index, i + 1)])
+                # pos = positions[(index, i + 1)]
+                # row_ind.extend(len(indexes) * element.dimension * [pos])
+                # col.append(pos)
+                position = index * self.dimension + i  # + 1
+                row_ind.extend(len(indexes) * element.dimension * [position])
+                col.append(position)
 
         col_ind = []
         for index in indexes:
