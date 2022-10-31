@@ -11,7 +11,7 @@ import numpy as npy
 # import matplotlib.tri as mtri
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
-# import math
+import math
 # from scipy import sparse
 # from scipy import linalg
 # import time 
@@ -404,6 +404,13 @@ class ElasticityResults(Result):
                 for index in indexes:
                     for i in range(self.dimension):
                         displacements.append(q[positions[(index, i+1)]])
+
+                for k, d in enumerate(displacements):
+                    if isinstance(d, npy.complex128) and math.isclose(d.imag, 0, rel_tol=1e-9):
+                        displacements[k] = d.real
+                    else:
+                        raise NotImplementedError(
+                            f"The displacement's imaginary part is significant. d = {d}")
 
                 displacements_per_element[element] = displacements
                 element.displacements = displacements
