@@ -409,8 +409,9 @@ class ElasticityResults(Result):
                     if isinstance(d, npy.complex128) and math.isclose(d.imag, 0, rel_tol=1e-9):
                         displacements[k] = d.real
                     else:
-                        raise NotImplementedError(
-                            f"The displacement's imaginary part is significant. d = {d}")
+                        displacements[k] = abs(d)
+                        # raise NotImplementedError(
+                        #     f"The displacement's imaginary part is significant. d = {d}")
 
                 displacements_per_element[element] = displacements
                 element.displacements = displacements
