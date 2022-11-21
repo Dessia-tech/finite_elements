@@ -409,7 +409,8 @@ class ElasticityResults(Result):
                     if isinstance(d, npy.complex128) and math.isclose(d.imag, 0, rel_tol=1e-9):
                         displacements[k] = d.real
                     else:
-                        displacements[k] = abs(d)
+                        # print('yes')
+                        displacements[k] = d.real #abs(d)
                         # raise NotImplementedError(
                         #     f"The displacement's imaginary part is significant. d = {d}")
 
@@ -453,7 +454,7 @@ class ElasticityResults(Result):
         if amplitude==1:
             deformed_nodes = self.deformed_nodes
         else:
-            deformed_nodes = self._deformed_nodes(amplitude=amplitude)
+            deformed_nodes = self._deformed_nodes_m(amplitude=amplitude)
 
         group_elasticity_elments = []
         for elements_group in self.mesh.elements_groups:
