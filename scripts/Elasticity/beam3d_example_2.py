@@ -51,8 +51,8 @@ elasticity_modulus, poisson_ratio, thickness, mass_density = 30*1e6, 0.25, 1, 2.
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 210*1e9, 0.25, 1, 7860 #acier
 
-files_path = ['../InputFiles/3D/poutre3d_0.5', '../InputFiles/3D/poutre3d_1',
-              '../InputFiles/3D/poutre3d_3']
+files_path = ['../InputFiles/3D/beam3d_0.5', '../InputFiles/3D/beam3d_1',
+              '../InputFiles/3D/beam3d_3']
 
 file_path = files_path[2]
 
