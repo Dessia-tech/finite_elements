@@ -6,22 +6,16 @@ Module containing objects related to finite elements analysis results
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-# from matplotlib.colors import LinearSegmentedColormap
+import math
 import numpy as npy
-# import matplotlib.tri as mtri
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
-import math
-# from scipy import sparse
-# from scipy import linalg
-# import time 
 from dessia_common import DessiaObject
-from typing import List #Tuple, TypeVar
+from typing import List  # Tuple, TypeVar
 from finite_elements.core import MU, blue_red
 import finite_elements.core
 from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
-import matplotlib.cm as cm
-import finite_elements.elements as elements
+from matplotlib import cm
 
 
 class Result(DessiaObject):
@@ -36,10 +30,11 @@ class Result(DessiaObject):
     _non_eq_attributes = ['name']
     _non_hash_attributes = ['name']
     _generic_eq = True
+
     def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float]):
         self.mesh = mesh
         self.result_vector = result_vector
-        
+
         DessiaObject.__init__(self, name='')
 
     @property
@@ -53,6 +48,7 @@ class MagneticResults(Result):
     _non_eq_attributes = ['name']
     _non_hash_attributes = ['name']
     _generic_eq = True
+
     def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float]):
         self.mesh = mesh
         self.result_vector = result_vector
@@ -65,14 +61,12 @@ class MagneticResults(Result):
         all_BrBtetha = []
         for element in gap_elements_group.elements:
             vector_B = element_to_magnetic_field[element]
-            
             element_center = element.center
             e_r = vm.Vector2D(element_center.vector)
             e_r.Normalize()
             e_teta = vm.Vector2D((-e_r[1], e_r[0]))
             B_r = vector_B.Dot(e_r)
             B_teta = vector_B.Dot(e_teta)
-            
             all_BrBtetha.append(B_r * B_teta)
         return all_BrBtetha
 
@@ -96,17 +90,25 @@ class MagneticResults(Result):
                 c2 = element_form_functions[1][2]
                 b3 = element_form_functions[2][1]
                 c3 = element_form_functions[2][2]
-                B_x = float(c1*self.result_vector[indexes[0]] + c2*self.result_vector[indexes[1]] + c3*self.result_vector[indexes[2]])
-                B_y = float(-b1*self.result_vector[indexes[0]] - b2*self.result_vector[indexes[1]] - b3*self.result_vector[indexes[2]])
+
+                B_x = float(c1 *
+                            self.result_vector[indexes[0]] +
+                            c2 *
+                            self.result_vector[indexes[1]] +
+                            c3 *
+                            self.result_vector[indexes[2]])
+                B_y = float(-b1 * self.result_vector[indexes[0]] - b2 *
+                            self.result_vector[indexes[1]] - b3 * self.result_vector[indexes[2]])
+
                 element_to_magnetic_field[element] = vm.Vector2D(B_x, B_y)
         return element_to_magnetic_field
 
     def maxwell_stress_tensor(self, element):
-        """ 
+        """
         Computes the Maxwell stress tensor for one element.
         Returns a list made of sigma_r_r, sigma_r_theta and sigma_theta_theta, \
         since sigma_r_theta = sigma_theta_r.
-        
+
         :param element: The element on which the tensor is computed.
         :type element: a TriangularElement object
         """
@@ -118,19 +120,19 @@ class MagneticResults(Result):
         e_teta = vm.Vector2D((-e_r[1], e_r[0]))
         B_r = vector_B.Dot(e_r)
         B_teta = vector_B.Dot(e_teta)
-        
-        sigma_rr = 1/MU * B_r**2 - 1/(2*MU) * vector_B.Norm()**2
-        sigma_rteta = 1/MU * B_r * B_teta
-        sigma_tetateta = 1/MU * B_teta**2 - 1/(2*MU) * vector_B.Norm()**2
+
+        sigma_rr = 1 / MU * B_r**2 - 1 / (2 * MU) * vector_B.Norm()**2
+        sigma_rteta = 1 / MU * B_r * B_teta
+        sigma_tetateta = 1 / MU * B_teta**2 - 1 / (2 * MU) * vector_B.Norm()**2
         sigma_rr_rteta_tetateta = [sigma_rr, sigma_rteta, sigma_tetateta]
         return sigma_rr_rteta_tetateta
 
-    def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor, nb_notches):
-        """ 
+    def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor):  # , nb_notches):
+        """
         Computes the resistant magnetic torque when the rotor is blocked and \
         the current inside the stator is evolving. Unit : N.m.
         Uses Arkkio's method, based on the Maxwell Stress Tensor.
-        
+
         :param air_gap_elements_group_name: The name given to the gap's ElementsGroup.
         :type air_gap_elements_group_name: str
         :param length_motor: The length of the Machine.
@@ -143,22 +145,20 @@ class MagneticResults(Result):
         :type nb_notches: int
         """
         element_to_magnetic_field = self.magnetic_field_per_element
-        
         for elements_group in self.mesh.elements_groups:
             if elements_group.name == air_gap_elements_group_name:
                 gap_elements_group = elements_group
                 break
-        
+
         somme = 0
         i = 0
-        
-#        r = (radius_stator - radius_rotor)/2 + radius_rotor
-        
-#        fig, ax = plt.subplots()
-        
+
+        # r = (radius_stator - radius_rotor)/2 + radius_rotor
+        # fig, ax = plt.subplots()
+
         for element in gap_elements_group.elements:
             vector_B = element_to_magnetic_field[element]
-            
+
             element_center = element.center
             e_r = vm.Vector2D(element_center.vector)
             e_r.Normalize()
@@ -166,20 +166,20 @@ class MagneticResults(Result):
             B_r = vector_B.Dot(e_r)
             B_teta = vector_B.Dot(e_teta)
             r_Br_Bteta = element_center.Norm() * B_r * B_teta
-#            r_Br_Bteta = r * B_r * B_teta
-            dS = element.area 
-            
-#            e_r.plot(ax=ax, origin=element_center, amplitude=0.005, color='b')
-#            e_teta.plot(ax=ax, origin=element_center, amplitude=0.005, color='g')
-#            vector_B.plot(ax=ax, origin=element_center, amplitude=0.005, color='r')
-            
+            # r_Br_Bteta = r * B_r * B_teta
+            dS = element.area
+
+            # e_r.plot(ax=ax, origin=element_center, amplitude=0.005, color='b')
+            # e_teta.plot(ax=ax, origin=element_center, amplitude=0.005, color='g')
+            # vector_B.plot(ax=ax, origin=element_center, amplitude=0.005, color='r')
+
             somme += r_Br_Bteta * dS
             i += 1
-        
-#        print('nb elements in airgap', i)
-        T = length_motor/(MU * (radius_stator - radius_rotor)) * somme
-        
-        return T 
+
+        # print('nb elements in airgap', i)
+        T = length_motor / (MU * (radius_stator - radius_rotor)) * somme
+
+        return T
 
     def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
         if ax is None:
@@ -199,9 +199,9 @@ class MagneticResults(Result):
         # color_map = ((0,0,1), (1,0,0))
         jet = plt.get_cmap('jet')
         # Bs = [B.Norm() for B in list(element_to_magnetic_field.values())]
-        
+
         BrBtetha_max, BrBtetha_min = max(all_BrBtetha), min(all_BrBtetha)
-        
+
         B_to_color = {}
         all_colors = []
         for B in all_BrBtetha:
@@ -209,55 +209,54 @@ class MagneticResults(Result):
                 x = 1
             else:
                 x = (B - BrBtetha_min) / (BrBtetha_max - BrBtetha_min)
-            # color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x, 
+            # color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x,
             #          color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
             #          color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
-            color = jet(int(x*256))[:3]
-            
+            color = jet(int(x * 256))[:3]
+
             B_to_color[B] = color
             all_colors.append(color)
         # print(B_to_color)
         for i, element in enumerate(gap_elements_group.elements):
             # element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].Norm()], fill=True)
             element.plot(ax=ax, color=all_colors[i], fill=True)
-            
-        
+
         norm = mpl.colors.Normalize(vmin=BrBtetha_min, vmax=BrBtetha_max)
-        sm = plt.cm.ScalarMappable(cmap=jet, norm=norm) 
-        
+        sm = plt.cm.ScalarMappable(cmap=jet, norm=norm)
+
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(BrBtetha_min, BrBtetha_max, 10))
         # cbar = fig.colorbar(sm, ticks=npy.linspace(-0.9, 0.8, 10))
         cbar.set_label('Br*Btetha')
-        
+
         return ax
 
     def plot_magnetic_field(self, ax=None, Bmax=None):
         """
         Plots the mesh with colored triangular elements representing the \
-        intensity of the induction field inside the Machine. 
+        intensity of the induction field inside the Machine.
         """
         if ax is None:
             fig, ax = plt.subplots()
         else:
             fig = plt.gcf()
         element_to_magnetic_field = self.magnetic_field_per_element
-        Bs =  self.magnetic_field_norm
-        
+        Bs = self.magnetic_field_norm
+
         B_max, B_min = finite_elements.core.get_bmin_bmax(Bs, Bmin=None, Bmax=Bmax)
         B_to_color = finite_elements.core.get_colors(Bs, B_max=B_max, B_min=B_min)
 
         for group in self.mesh.elements_groups:
             for element in group.elements:
                 element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].norm()], fill=True)
-        
+
         norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm) 
+        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10))
         cbar.set_label('Magnetic Field in Tesla')
-        
-        return ax 
+
+        return ax
 
     def plot_magnetic_field_contour(self, ax=None):
         if ax is None:
@@ -280,11 +279,12 @@ class MagneticResults(Result):
 
         tri = Triangulation(x, y)
 
-        #-----------------------------------------------------------------------------
+        # -----------------------------------------------------------------------------
         # Improving the triangulation before high-res plots: removing flat triangles
-        #-----------------------------------------------------------------------------
+        # -----------------------------------------------------------------------------
         # masking badly shaped triangles at the border of the triangular mesh.
-        min_circle_ratio = -1 
+        min_circle_ratio = -1
+
         mask = TriAnalyzer(tri).get_flat_tri_mask(min_circle_ratio)
         tri.set_mask(mask)
 
@@ -295,18 +295,19 @@ class MagneticResults(Result):
 
         levels = npy.arange(0., 1., 0.05)
         cmap = cm.get_cmap(name='Blues', lut=None)
-        ax.tricontour(tri_refi, z_test_refi, levels=levels, #cmap=cmap,
+
+        ax.tricontour(tri_refi, z_test_refi, levels=levels,  # cmap=cmap,
                       linewidths=[2.0, 0.5, 1.0, 0.5])
-#        ax.triplot(tri_refi, color='0.97')
-#        ax.triplot(tri, color='0.7')
-#        ax.tricontour(x, y, Z)
-        return ax 
+        # ax.triplot(tri_refi, color='0.97')
+        # ax.triplot(tri, color='0.7')
+        # ax.tricontour(x, y, Z)
+        return ax
 
     def plot_magnetic_field_vectors(self, ax=None, amplitude=0.005,
                                     Bmax=None, Bmin=None):
         """
         Plots the mesh with a field of vectors representing the induction field \
-        and its direction inside the Machine. 
+        and its direction inside the Machine.
         """
         if ax is None:
             fig, ax = plt.subplots()
@@ -334,11 +335,11 @@ class MagneticResults(Result):
     def plot_potential_vector(self, ax=None):
         """
         Plots the mesh with colored triangular elements representing the \
-        intensity of the magnetic potential inside the Machine. 
+        intensity of the magnetic potential inside the Machine.
         """
 
         triang = finite_elements.core.get_triangulation(self.mesh)
-        z = npy.asarray([p for p in self.result_vector[:len(self.mesh.nodes)]]) #p[0]
+        z = npy.asarray([p for p in self.result_vector[:len(self.mesh.nodes)]])  # p[0]
         z_min, z_max = min(z), max(z)
 
         if ax is None:
@@ -349,7 +350,7 @@ class MagneticResults(Result):
         ax.triplot(triang, 'k-')
         ax.set_title('Triangular grid')
 
-        norm = mpl.colors.Normalize(vmin=z_min,vmax=z_max)
+        norm = mpl.colors.Normalize(vmin=z_min, vmax=z_max)
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(z_min, z_max, 10))
@@ -364,6 +365,7 @@ class ElasticityResults(Result):
     _non_eq_attributes = ['name']
     _non_hash_attributes = ['name']
     _generic_eq = True
+
     def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float],
                  plane_strain: bool,
                  plane_stress: bool):
@@ -403,14 +405,14 @@ class ElasticityResults(Result):
                 indexes = [self.mesh.node_to_index[point] for point in element.points]
                 for index in indexes:
                     for i in range(self.dimension):
-                        displacements.append(q[positions[(index, i+1)]])
+                        displacements.append(q[positions[(index, i + 1)]])
 
                 for k, d in enumerate(displacements):
                     if isinstance(d, npy.complex128) and math.isclose(d.imag, 0, rel_tol=1e-9):
                         displacements[k] = d.real
                     else:
                         # print('yes')
-                        displacements[k] = d.real #abs(d)
+                        displacements[k] = d.real  # abs(d)
                         # raise NotImplementedError(
                         #     f"The displacement's imaginary part is significant. d = {d}")
 
@@ -429,7 +431,7 @@ class ElasticityResults(Result):
         for node in range(0, nodes_number):
             displacement = []
             for i in range(self.dimension):
-                displacement.append(q[positions[(node, i+1)]])
+                displacement.append(q[positions[(node, i + 1)]])
 
             displacement_field_vectors.append(
                 getattr(vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement))
@@ -444,14 +446,14 @@ class ElasticityResults(Result):
                 element_to_strain[element] = (npy.matmul(element.b_matrix, element.displacements))
                 element.strain = element_to_strain[element]
                 element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress),
-                                                                                     element.b_matrix),
-                                                                    element.displacements))
+                                                                    element.b_matrix),
+                                                         element.displacements))
                 element.stress = element_to_stress[element]
 
         return element_to_strain, element_to_stress
 
     def _deformed_mesh_m(self, amplitude=1):
-        if amplitude==1:
+        if amplitude == 1:
             deformed_nodes = self.deformed_nodes
         else:
             deformed_nodes = self._deformed_nodes_m(amplitude=amplitude)
@@ -473,7 +475,7 @@ class ElasticityResults(Result):
             group_elasticity_elments.append(vmmesh.ElementsGroup(elasticity_elments, ''))
 
         mesh = vmmesh.Mesh(group_elasticity_elments)
-        mesh.nodes = deformed_nodes #Keep self.mesh order
+        mesh.nodes = deformed_nodes  # Keep self.mesh order
         mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
 
         return mesh
@@ -482,8 +484,8 @@ class ElasticityResults(Result):
         displacement_field_vectors = self.displacement_vectors_per_node
         deformed_nodes = []
         for i, node in enumerate(self.mesh.nodes):
-            obj=getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
-            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i]*amplitude))
+            obj = getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
+            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i] * amplitude))
 
         return deformed_nodes
 
@@ -584,10 +586,10 @@ class ElasticityResults(Result):
 
         lines.append('VECTORS Displacement_Vectors float')
         for displacement in self.displacement_vectors_per_node:
-            line=''
+            line = ''
             for i in range(len([*displacement])):
                 line += str(displacement[i]) + ' '
-            if i==1:
+            if i == 1:
                 line += '0'
             lines.append(line)
             # lines.append(str(displacement.x)+' '+str(displacement.y)+' '+str(displacement.z))
@@ -671,7 +673,6 @@ class ElasticityResults2D(ElasticityResults):
 
         return axial_stress_y
 
-
     def plot_axial_strain_x(self, ax=None, fig=None):
 
         return self.plot_constraints(constraint_name='axial_strain_x', ax=ax, fig=fig)
@@ -735,7 +736,7 @@ class ElasticityResults2D(ElasticityResults):
         else:
             comment = '"Plane Strain"'
 
-        ax.set_title('Deformed Mesh '+ comment)
+        ax.set_title('Deformed Mesh ' + comment)
 
         return ax
 
@@ -755,7 +756,7 @@ class ElasticityResults2D(ElasticityResults):
         else:
             mesh_fe = self.deformed_mesh
 
-        triang = finite_elements.core.get_triangulation(mesh_fe) #self.mesh
+        triang = finite_elements.core.get_triangulation(mesh_fe)  # self.mesh
         x_min, x_max = min(x), max(x)
 
         if ax is None:
@@ -768,7 +769,8 @@ class ElasticityResults2D(ElasticityResults):
         ax.triplot(triang, 'k-')
         # ax.set_title('Triangular grid')
 
-        norm = mpl.colors.Normalize(vmin=x_min,vmax=x_max)
+        norm = mpl.colors.Normalize(vmin=x_min, vmax=x_max)
+
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(x_min, x_max, 10))
@@ -870,7 +872,7 @@ class ElasticityResults2D(ElasticityResults):
         plot_names = ['plot_axial_strain_x', 'plot_axial_strain_y', 'plot_shear_strain_xy']
         axs = []
         for i, name in enumerate(plot_names):
-            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i + 1), fig=fig))
 
         if self.plane_stress:
             comment = 'Strain "Plane Stress"'
@@ -888,7 +890,7 @@ class ElasticityResults2D(ElasticityResults):
         plot_names = ['plot_axial_stress_x', 'plot_axial_stress_y', 'plot_shear_stress_xy']
         axs = []
         for i, name in enumerate(plot_names):
-            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i+1), fig=fig))
+            axs.append(getattr(self, name)(ax=plt.subplot(row, 3, i + 1), fig=fig))
 
         if self.plane_stress:
             comment = 'Stress "Plane Stress"'

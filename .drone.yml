@@ -24,8 +24,9 @@ steps:
   - git fetch --tags
   - pip install Cython sphinx sphinx_rtd_theme coverage
   - python setup.py install
-  - cd ../scripts
-  - coverage run --source volmdlr -a ci_scripts.py
+  - cd scripts
+  - coverage run --source finite_elements -a ci_scripts.py
+
   - coverage json
   - coverage report
   - python coverage.py
@@ -54,7 +55,7 @@ steps:
     event: push
   settings:
     host: austerlitz.dessia.tech
-    target: /var/www/documentation/volmdlr/
+    target: /var/www/documentation/finite_elements/
     source: doc/build/html/*
     strip_components: 3
     username: drone

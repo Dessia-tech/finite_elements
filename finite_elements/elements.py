@@ -4,19 +4,8 @@
 Module containing objects related to different finite elements types
 """
 
-# import matplotlib as mpl
-# import matplotlib.pyplot as plt
-# from matplotlib.colors import LinearSegmentedColormap
-# import numpy as npy
-# import matplotlib.tri as mtri
-# import volmdlr as vm
 import volmdlr.mesh as vmmesh
-# import math
-# from scipy import sparse
-# from scipy import linalg
-# import time
 from dessia_common import DessiaObject
-# from typing import List #Tuple, TypeVar
 import numpy as npy
 import finite_elements.core
 
@@ -31,7 +20,7 @@ class Element2D(vmmesh.TriangularElement2D):
         x3 = self.mesh_element.points[2][0]
         y3 = self.mesh_element.points[2][1]
 
-        det_jacobien = abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))
+        det_jacobien = abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1))
 
         element_form_functions = self.mesh_element.form_functions
         a1 = element_form_functions[0][0]
@@ -44,9 +33,9 @@ class Element2D(vmmesh.TriangularElement2D):
         b3 = element_form_functions[2][1]
         c3 = element_form_functions[2][2]
 
-        double_integral_N1_dS = det_jacobien*(a1 + 0.5*b1*x2 + 0.5*c1*y2 + 0.5*b1*x3 + 0.5*c1*y3)
-        double_integral_N2_dS = det_jacobien*(a2 + 0.5*b2*x2 + 0.5*c2*y2 + 0.5*b2*x3 + 0.5*c2*y3)
-        double_integral_N3_dS = det_jacobien*(a3 + 0.5*b3*x2 + 0.5*c3*y2 + 0.5*b3*x3 + 0.5*c3*y3)
+        double_integral_N1_dS = det_jacobien * (a1 + 0.5 * b1 * x2 + 0.5 * c1 * y2 + 0.5 * b1 * x3 + 0.5 * c1 * y3)
+        double_integral_N2_dS = det_jacobien * (a2 + 0.5 * b2 * x2 + 0.5 * c2 * y2 + 0.5 * b2 * x3 + 0.5 * c2 * y3)
+        double_integral_N3_dS = det_jacobien * (a3 + 0.5 * b3 * x2 + 0.5 * c3 * y2 + 0.5 * b3 * x3 + 0.5 * c3 * y3)
 
         return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
 
@@ -59,8 +48,10 @@ class MagneticElement2D(Element2D):
     # _non_eq_attributes = ['name']
     # _non_hash_attributes = ['name']
     # _generic_eq = True
+
     def __init__(self, triangular_element: vmmesh.TriangularElement2D,
-                 mu_total: float, name : str = ''):
+                 mu_total: float, name: str = ''):
+
         self.triangular_element = triangular_element
         vmmesh.TriangularElement2D.__init__(self, points=triangular_element.points)
         self.mu_total = mu_total
@@ -86,15 +77,15 @@ class MagneticElement2D(Element2D):
         b3 = element_form_functions[2][1]
         c3 = element_form_functions[2][2]
 
-        data = (1/self.mu_total * (b1**2 + c1**2) * self.triangular_element.area,
-                1/self.mu_total * (b1*b2 + c1*c2) * self.triangular_element.area,
-                1/self.mu_total * (b1*b3 + c1*c3) * self.triangular_element.area,
-                1/self.mu_total * (b1*b2 + c1*c2) * self.triangular_element.area,
-                1/self.mu_total * (b2**2 + c2**2) * self.triangular_element.area,
-                1/self.mu_total * (b2*b3 + c2*c3) * self.triangular_element.area,
-                1/self.mu_total * (b1*b3 + c1*c3) * self.triangular_element.area,
-                1/self.mu_total * (b2*b3 + c2*c3) * self.triangular_element.area,
-                1/self.mu_total * (b3**2 + c3**2) * self.triangular_element.area)
+        data = (1 / self.mu_total * (b1**2 + c1**2) * self.triangular_element.area,
+                1 / self.mu_total * (b1 * b2 + c1 * c2) * self.triangular_element.area,
+                1 / self.mu_total * (b1 * b3 + c1 * c3) * self.triangular_element.area,
+                1 / self.mu_total * (b1 * b2 + c1 * c2) * self.triangular_element.area,
+                1 / self.mu_total * (b2**2 + c2**2) * self.triangular_element.area,
+                1 / self.mu_total * (b2 * b3 + c2 * c3) * self.triangular_element.area,
+                1 / self.mu_total * (b1 * b3 + c1 * c3) * self.triangular_element.area,
+                1 / self.mu_total * (b2 * b3 + c2 * c3) * self.triangular_element.area,
+                1 / self.mu_total * (b3**2 + c3**2) * self.triangular_element.area)
 
         return data
 
@@ -139,7 +130,7 @@ class MagneticElement2D(Element2D):
         x3 = self.triangular_element.points[2][0]
         y3 = self.triangular_element.points[2][1]
 
-        det_jacobien = abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))
+        det_jacobien = abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1))
 
         element_form_functions = self.triangular_element.form_functions
         a1 = element_form_functions[0][0]
@@ -152,9 +143,9 @@ class MagneticElement2D(Element2D):
         b3 = element_form_functions[2][1]
         c3 = element_form_functions[2][2]
 
-        double_integral_N1_dS = det_jacobien*(a1 + 0.5*b1*x2 + 0.5*c1*y2 + 0.5*b1*x3 + 0.5*c1*y3)
-        double_integral_N2_dS = det_jacobien*(a2 + 0.5*b2*x2 + 0.5*c2*y2 + 0.5*b2*x3 + 0.5*c2*y3)
-        double_integral_N3_dS = det_jacobien*(a3 + 0.5*b3*x2 + 0.5*c3*y2 + 0.5*b3*x3 + 0.5*c3*y3)
+        double_integral_N1_dS = det_jacobien * (a1 + 0.5 * b1 * x2 + 0.5 * c1 * y2 + 0.5 * b1 * x3 + 0.5 * c1 * y3)
+        double_integral_N2_dS = det_jacobien * (a2 + 0.5 * b2 * x2 + 0.5 * c2 * y2 + 0.5 * b2 * x3 + 0.5 * c2 * y3)
+        double_integral_N3_dS = det_jacobien * (a3 + 0.5 * b3 * x2 + 0.5 * c3 * y2 + 0.5 * b3 * x3 + 0.5 * c3 * y3)
 
         return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
 
@@ -195,10 +186,11 @@ class ElasticityElement(DessiaObject):
     def __init__(self, mesh_element,
                  elasticity_modulus, poisson_ratio,
                  mass_density,
-                 displacements = None,
-                 stress = None,
-                 strain = None,
-                 name : str = ''):
+                 displacements=None,
+                 stress=None,
+                 strain=None,
+                 name: str = ''):
+
         self.mesh_element = mesh_element
         self.elasticity_modulus = elasticity_modulus
         self.poisson_ratio = poisson_ratio
@@ -214,7 +206,7 @@ class ElasticityElement(DessiaObject):
 
         DessiaObject.__init__(self, name=name)
 
-    def d_matrix(self, plane_strain: bool, plane_stress:bool):
+    def d_matrix(self, plane_strain: bool, plane_stress: bool):
 
         if (plane_strain and plane_stress):
             raise ValueError('just one of plane_strain or plane_stress can be True')
@@ -225,20 +217,20 @@ class ElasticityElement(DessiaObject):
         elif plane_stress:
             return self.d_matrix_plane_stress
 
-    def energy(self, plane_strain: bool, plane_stress:bool):
+    def energy(self, plane_strain: bool, plane_stress: bool):
 
         shape = self.dimension * len(self.mesh_element.points)
         return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(self.displacements)),
-                                 self.elementary_matrix(plane_strain, plane_stress).reshape(shape,shape)),
+                                            self.elementary_matrix(plane_strain, plane_stress).reshape(shape, shape)),
                       npy.array(self.displacements)))
 
     @classmethod
     def with_material_object(cls, mesh_element,
                              material: finite_elements.core.Material,
-                             displacements = None,
-                             stress = None,
-                             strain = None,
-                             name : str = ''):
+                             displacements=None,
+                             stress=None,
+                             strain=None,
+                             name: str = ''):
 
         return cls(mesh_element=mesh_element,
                    elasticity_modulus=material.elasticity_modulus,
@@ -277,64 +269,65 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
     def __init__(self, mesh_element: vmmesh.TriangularElement2D,
                  elasticity_modulus, poisson_ratio, mass_density,
                  thickness: float = 1.0,
-                 displacements = None,
-                 stress = None,
-                 strain = None,
-                 name : str = ''):
+                 displacements=None,
+                 stress=None,
+                 strain=None,
+                 name: str = ''):
         self.thickness = thickness
 
         ElasticityElement.__init__(self, mesh_element,
-                                       elasticity_modulus, poisson_ratio, mass_density, name=name)
+                                   elasticity_modulus, poisson_ratio, mass_density, name=name)
+
         vmmesh.TriangularElement2D.__init__(self, points=mesh_element.points, name=name)
 
         # DessiaObject.__init__(self, name=name)
 
     def _b_matrix(self):
 
-        y = [(self.points[i].y-self.points[j].y) for (i,j) in [(1,2), (2,0), (0,1)]]
-        x = [(self.points[i].x-self.points[j].x) for (i,j) in [(2,1), (0,2), (1,0)]]
+        y = [(self.points[i].y - self.points[j].y) for (i, j) in [(1, 2), (2, 0), (0, 1)]]
+        x = [(self.points[i].x - self.points[j].x) for (i, j) in [(2, 1), (0, 2), (1, 0)]]
 
-        det_jacobian = (self.points[0].x-self.points[2].x)*(self.points[1].y-self.points[2].y) \
-            - (self.points[0].y-self.points[2].y)*(self.points[1].x-self.points[2].x)
+        det_jacobian = (self.points[0].x - self.points[2].x) * (self.points[1].y - self.points[2].y) \
+            - (self.points[0].y - self.points[2].y) * (self.points[1].x - self.points[2].x)
 
         data = [y[0], 0, y[1], 0, y[2], 0,
                 0, x[0], 0, x[1], 0, x[2],
                 x[0], y[0], x[1], y[1], x[2], y[2]]
 
-        b_matrix = (1/det_jacobian) * npy.array(data).reshape(3,6)
+        b_matrix = (1 / det_jacobian) * npy.array(data).reshape(3, 6)
 
         return b_matrix
 
     def _d_matrix_plane_strain(self):
 
-        a = (self.elasticity_modulus*self.poisson_ratio) \
-            /((1+self.poisson_ratio)*(1-2*self.poisson_ratio))
-        b = self.elasticity_modulus/(2*(1+self.poisson_ratio))
-        c = a+2*b
+        a = (self.elasticity_modulus * self.poisson_ratio) \
+            / ((1 + self.poisson_ratio) * (1 - 2 * self.poisson_ratio))
+        b = self.elasticity_modulus / (2 * (1 + self.poisson_ratio))
+        c = a + 2 * b
         data = [c, a, 0,
                 a, c, 0,
                 0, 0, b]
 
-        return npy.array(data).reshape(3,3)
+        return npy.array(data).reshape(3, 3)
 
     def _d_matrix_plane_stress(self):
 
-        a = (self.elasticity_modulus*self.poisson_ratio) \
-            /(1-self.poisson_ratio**2)
-        b = self.elasticity_modulus/(2*(1+self.poisson_ratio))
-        c = a+2*b
+        a = (self.elasticity_modulus * self.poisson_ratio) \
+            / (1 - self.poisson_ratio**2)
+        b = self.elasticity_modulus / (2 * (1 + self.poisson_ratio))
+        c = a + 2 * b
 
         data = [c, a, 0,
                 a, c, 0,
                 0, 0, b]
 
-        return npy.array(data).reshape(3,3)
+        return npy.array(data).reshape(3, 3)
 
     @property
     def dimension(self):
         return 2
 
-    def elementary_matrix(self, plane_strain: bool, plane_stress:bool):
+    def elementary_matrix(self, plane_strain: bool, plane_stress: bool):
 
         b_matrix = self.b_matrix
         d_matrix = self.d_matrix(plane_strain, plane_stress)
@@ -387,8 +380,8 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
 
         # det_jacobien = (abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1)))
 
-        mass_matrix =  ((self.mass_density * self.area \
-                        * self.thickness)/12) * npy.array(data).reshape(6, 6)
+        mass_matrix = ((self.mass_density * self.area
+                        * self.thickness) / 12) * npy.array(data).reshape(6, 6)
 
         # mass_matrix = 0.5* det_jacobien * ((self.mass_density * self.area \
         #                 * self.thickness)/12) * npy.array(data).reshape(6, 6)
@@ -430,7 +423,6 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
     #                     * self.thickness)/12) * (npy.matmul(npy.matmul(A.transpose(), M), A))
 
     #     return mass_matrix.flatten()
-
 
     # def elementary_mass_matrix(self):
 
@@ -517,10 +509,10 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
 
     def __init__(self, mesh_element: vmmesh.TetrahedralElement,
                  elasticity_modulus, poisson_ratio, mass_density,
-                 displacements = None,
-                 stress = None,
-                 strain = None,
-                 name : str = ''):
+                 displacements=None,
+                 stress=None,
+                 strain=None,
+                 name: str = ''):
 
         ElasticityElement.__init__(self, mesh_element,
                                    elasticity_modulus, poisson_ratio, mass_density, name=name)
@@ -552,12 +544,13 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
                 0, c1, b1, 0, c2, b2, 0, c3, b3, 0, c4, b4,
                 c1, 0, a1, c2, 0, a2, c3, 0, a3, c4, 0, a4]
 
-        b_matrix = (1/(6*self.mesh_element.volume)) * npy.array(data).reshape(6, 12)
+        b_matrix = (1 / (6 * self.mesh_element.volume)) * npy.array(data).reshape(6, 12)
 
         return b_matrix
 
     def _d_matrix_plane_strain(self):
         return self._d_matrix_()
+
     def _d_matrix_plane_stress(self):
         return self._d_matrix_()
 
@@ -565,7 +558,7 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
         elasticity_modulus = self.elasticity_modulus
         poisson_ratio = self.poisson_ratio
         coeff_a = 1 - poisson_ratio
-        coeff_b = (1 - 2 * poisson_ratio)/2
+        coeff_b = (1 - 2 * poisson_ratio) / 2
 
         data = [coeff_a, poisson_ratio, poisson_ratio, 0, 0, 0,
                 poisson_ratio, coeff_a, poisson_ratio, 0, 0, 0,
@@ -574,8 +567,8 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
                 0, 0, 0, 0, coeff_b, 0,
                 0, 0, 0, 0, 0, coeff_b]
 
-        coeff = (elasticity_modulus/((1 + poisson_ratio) * (1 - 2*poisson_ratio)))
-        d_matrix = coeff * npy.array(data).reshape(6,6)
+        coeff = (elasticity_modulus / ((1 + poisson_ratio) * (1 - 2 * poisson_ratio)))
+        d_matrix = coeff * npy.array(data).reshape(6, 6)
 
         return d_matrix
 
@@ -583,7 +576,7 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
     def dimension(self):
         return 3
 
-    def elementary_matrix(self, plane_strain: bool, plane_stress:bool):
+    def elementary_matrix(self, plane_strain: bool, plane_stress: bool):
 
         b_matrix = self.b_matrix
         d_matrix = self.d_matrix(plane_strain, plane_stress)

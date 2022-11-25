@@ -167,7 +167,17 @@ for node in mesh.nodes:
         node_loads.append(fe.loads.NodeLoad(node, 0, 1))
 element_load = [fe.loads.ElementsLoad(mesh.elements_groups[0].elements, intensity, 1),
                 fe.loads.ElementsLoad(mesh.elements_groups[1].elements, -intensity, 1)]
-analysis = fe.analysis.FiniteElementAnalysis(mesh, element_load, node_loads, [], [], [], [])
+
+analysis = fe.analysis.FiniteElementAnalysis(mesh = mesh,
+                                             element_loads = element_load,
+                                             edge_loads = [],
+                                             node_loads = node_loads,
+                                             magnet_loads = [],
+                                             continuity_conditions = [],
+                                             node_boundary_conditions = [],
+                                             edge_boundary_conditions = [],
+                                             element_boundary_conditions = [])
+
 result = analysis.solve()
 ax = mesh.elements_groups[0].plot()
 mesh.elements_groups[1].plot(ax=ax)

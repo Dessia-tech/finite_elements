@@ -6,67 +6,63 @@ Module containing objects related to finite elements analysis
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-# from matplotlib.colors import LinearSegmentedColormap
 import numpy as npy
-# import matplotlib.tri as mtri
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
-# import math
-import scipy
 from scipy import sparse
-from scipy.linalg import eigh
-from scipy.sparse.linalg import eigs, eigsh
-# from scipy.sparse import csc_matrix
-# from scipy import linalg
-# import time 
 from dessia_common import DessiaObject
-from typing import List #Tuple, TypeVar
+from typing import List
 import finite_elements.elements
 from finite_elements.loads import ElementsLoad, EdgeLoad, NodeLoad, MagnetLoad
 from finite_elements.conditions import ContinuityCondition
 from finite_elements.results import Result
 from finite_elements.core import blue_red
 
+
 def node_boundary_conditions_to_dict(node_boundary_conditions):
     node_boundary_conditions_dict = {}
     for node_bc in node_boundary_conditions:
         try:
             node_boundary_conditions_dict[(node_bc.application,
-                                           node_bc.dimension)] =+ node_bc.value
+                                           node_bc.dimension)] = + node_bc.value
         except KeyError:
             node_boundary_conditions_dict[(node_bc.application,
                                            node_bc.dimension)] = node_bc.value
     return node_boundary_conditions_dict
+
 
 def node_boundary_from_dict(node_boundary_conditions_dict):
     node_boundary_conditions = []
     for key, value in node_boundary_conditions_dict.items():
         node_boundary_conditions.append(
             finite_elements.conditions.NodeBoundaryCondition(
-                application = key[0],
-                value = value,
-                dimension = key[1]))
+                application=key[0],
+                value=value,
+                dimension=key[1]))
     return node_boundary_conditions
+
 
 def node_loads_to_dict(node_loads):
     node_loads_dict = {}
     for node_load in node_loads:
         try:
             node_loads_dict[(node_load.node,
-                             node_load.dimension)] =+ node_load.value
+                             node_load.dimension)] = + node_load.value
         except KeyError:
             node_loads_dict[(node_load.node,
                              node_load.dimension)] = node_load.value
     return node_loads_dict
 
+
 def node_loads_from_dict(node_loads_dict):
     node_loads = []
     for key, value in node_loads_dict.items():
         node_loads.append(NodeLoad(
-            node = key[0],
-            value = value,
-            dimension = key[1]))
+            node=key[0],
+            value=value,
+            dimension=key[1]))
     return node_loads
+
 
 class FiniteElements(DessiaObject):
     def __init__(self, mesh: vmmesh.Mesh,
@@ -83,7 +79,7 @@ class FiniteElements(DessiaObject):
         self.mesh = mesh
         self.element_loads = element_loads  # current density J
         self.edge_loads = edge_loads
-        self.node_loads = node_loads 
+        self.node_loads = node_loads
         self.magnet_loads = magnet_loads
         self.continuity_conditions = continuity_conditions
         self.node_boundary_conditions = node_boundary_conditions
@@ -106,14 +102,14 @@ class FiniteElements(DessiaObject):
             index1 = self.mesh.node_to_index[condition.node1]
             index2 = self.mesh.node_to_index[condition.node2]
 
-            row_ind.extend((len(self.mesh.nodes)+len(self.node_loads)+i,
+            row_ind.extend((len(self.mesh.nodes) + len(self.node_loads) + i,
                             index1,
-                            len(self.mesh.nodes)+len(self.node_loads)+i,
+                            len(self.mesh.nodes) + len(self.node_loads) + i,
                             index2))
             col_ind.extend((index1,
-                            len(self.mesh.nodes)+len(self.node_loads)+i,
+                            len(self.mesh.nodes) + len(self.node_loads) + i,
                             index2,
-                            len(self.mesh.nodes)+len(self.node_loads)+i))
+                            len(self.mesh.nodes) + len(self.node_loads) + i))
 
         return data, row_ind, col_ind
 
@@ -126,9 +122,10 @@ class FiniteElements(DessiaObject):
             for p, point in enumerate(element_condition.application.points):
                 element_to_node_boundary_conditions.append(
                     finite_elements.conditions.NodeBoundaryCondition(
-                        application = point,
-                        value = element_condition.value * matrix_factors[p],
-                        dimension = element_condition.dimension))
+                        application=point,
+                        value=element_condition.value * matrix_factors[p],
+                        dimension=element_condition.dimension))
+
         return element_to_node_boundary_conditions
 
     def boundary_conditions_edge_to_node(self):
@@ -138,9 +135,10 @@ class FiniteElements(DessiaObject):
                           edge_condition.application.end]:
                 edge_to_node_boundary_conditions.append(
                     finite_elements.conditions.NodeBoundaryCondition(
-                        application = point,
-                        value = edge_condition.value * 0.5,
-                        dimension = edge_condition.dimension))
+                        application=point,
+                        value=edge_condition.value * 0.5,
+                        dimension=edge_condition.dimension))
+
         return edge_to_node_boundary_conditions
 
     def c_matrix_boundary_conditions(self):
@@ -148,22 +146,23 @@ class FiniteElements(DessiaObject):
             node_boundary_conditions = self._boundary_conditions
         else:
             node_boundary_conditions = self.node_boundary_conditions[:]
-            #element to node
+            # element to node
             node_boundary_conditions.extend(self.boundary_conditions_element_to_node())
-            #edge to node
+            # edge to node
             node_boundary_conditions.extend(self.boundary_conditions_edge_to_node())
 
-            #node_bc to_dict
+            # node_bc to_dict
             node_boundary_conditions_dict = node_boundary_conditions_to_dict(node_boundary_conditions)
 
-            #node_bc dict from_dict
+            # node_bc dict from_dict
             node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
             self._boundary_conditions = node_boundary_conditions
 
-        #c_matrix data
+        # c_matrix data
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
-        row_ind, col_ind, data = [], [],[]
+        row_ind, col_ind, data = [], [], []
+
         for i, node_condition in enumerate(node_boundary_conditions):
             data.extend(node_condition.c_matrix())
             pos = positions[(self.mesh.node_to_index[node_condition.application],
@@ -190,7 +189,10 @@ class FiniteElements(DessiaObject):
                 if isinstance(element, finite_elements.elements.MagneticElement2D):
                     data.extend(element.elementary_matrix())
                 elif isinstance(element, finite_elements.elements.ElasticityElement):
-                    data.extend(element.elementary_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress))
+                    data.extend(
+                        element.elementary_matrix(
+                            plane_strain=self.plane_strain,
+                            plane_stress=self.plane_stress))
 
                 row_ind_n, col_ind_n = self.get_row_col_indices(element)
                 row_ind.extend(row_ind_n)
@@ -218,9 +220,9 @@ class FiniteElements(DessiaObject):
 
                 for p, point in enumerate(element.points):
                     element_to_node_loads.append(NodeLoad(
-                        node = point,
-                        value = loads_per_element[j] * matrix_factors[p],
-                        dimension = elements_load.dimension))
+                        node=point,
+                        value=loads_per_element[j] * matrix_factors[p],
+                        dimension=elements_load.dimension))
 
         return element_to_node_loads
 
@@ -230,9 +232,9 @@ class FiniteElements(DessiaObject):
             for point in [edge_load.edge.start,
                           edge_load.edge.end]:
                 edge_to_node_loads.append(NodeLoad(
-                        node = point,
-                        value = edge_load.value * 0.5,
-                        dimension = edge_load.dimension))
+                        node=point,
+                        value=edge_load.value * 0.5,
+                        dimension=edge_load.dimension))
         return edge_to_node_loads
 
     @property
@@ -246,21 +248,21 @@ class FiniteElements(DessiaObject):
 
     def source_c_matrix_loads(self):
         node_loads = self.node_loads[:]
-        #element to node
+        # element to node
         node_loads.extend(self.loads_element_to_node())
-        #edge to node
+        # edge to node
         node_loads.extend(self.loads_edge_to_node())
 
-        #node_bc to_dict
+        # node_bc to_dict
         node_loads_dict = node_loads_to_dict(node_loads)
 
-        #node_bc dict from_dict
+        # node_bc dict from_dict
         node_loads = node_loads_from_dict(node_loads_dict)
 
         if not self._node_loads:
             self._node_loads = node_loads
 
-        #source_c_matrix data
+        # source_c_matrix data
         data, row_ind = [], []
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
@@ -293,20 +295,20 @@ class FiniteElements(DessiaObject):
             node_boundary_conditions = self._boundary_conditions
         else:
             node_boundary_conditions = self.node_boundary_conditions[:]
-            #element to node
+            # element to node
             node_boundary_conditions.extend(self.boundary_conditions_element_to_node())
-            #edge to node
+            # edge to node
             node_boundary_conditions.extend(self.boundary_conditions_edge_to_node())
 
-            #node_bc to_dict
+            # node_bc to_dict
             node_boundary_conditions_dict = node_boundary_conditions_to_dict(node_boundary_conditions)
 
-            #node_bc dict from_dict
+            # node_bc dict from_dict
             node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
 
             self._boundary_conditions = node_boundary_conditions
 
-        #source_c_matrix data
+        # source_c_matrix data
         data, row_ind = [], []
 
         for i, node_condition in enumerate(node_boundary_conditions):
@@ -334,8 +336,8 @@ class FiniteElements(DessiaObject):
                 length = linear_element.length()
                 dl = vm.Vector2D([-linear_element.interior_normal[1],
                                   linear_element.interior_normal[0]])
-                data.append(magnet_load.magnetization_vector.Dot(dl) * length/2)
-                data.append(magnet_load.magnetization_vector.Dot(dl) * length/2)
+                data.append(magnet_load.magnetization_vector.Dot(dl) * length / 2)
+                data.append(magnet_load.magnetization_vector.Dot(dl) * length / 2)
                 row_ind.append(indexes[0])
                 row_ind.append(indexes[1])
 
@@ -365,7 +367,7 @@ class FiniteElementAnalysis(FiniteElements):
     #              element_boundary_conditions: List[finite_elements.conditions.ElementBoundaryCondition]):
     #     self.mesh = mesh
     #     self.element_loads = element_loads  # current density J
-    #     self.node_loads = node_loads 
+    #     self.node_loads = node_loads
     #     self.magnet_loads = magnet_loads
     #     self.continuity_conditions = continuity_conditions
     #     self.node_boundary_conditions = node_boundary_conditions
@@ -373,8 +375,8 @@ class FiniteElementAnalysis(FiniteElements):
 
     #     self.nb_loads = len(node_loads)
 
-    #     FiniteElements.__init__(self, mesh, element_loads, node_loads, 
-    #                             magnet_loads, continuity_conditions, 
+    #     FiniteElements.__init__(self, mesh, element_loads, node_loads,
+    #                             magnet_loads, continuity_conditions,
     #                             node_boundary_conditions, element_boundary_conditions)
 
     def create_matrix(self):
@@ -414,7 +416,7 @@ class FiniteElementAnalysis(FiniteElements):
                 raise NotImplementedError(
                     f'Class {self.__class__.__name__} does not implement {method_name}')
 
-        matrix = sparse.csc_matrix((data, (row_ind, col_ind)))
+        matrix = sparse.csr_matrix((data, (row_ind, col_ind)))
 
         return matrix
 
@@ -472,10 +474,10 @@ class FiniteElementAnalysis(FiniteElements):
         col = []
         for index in indexes:
             for i in range(element.dimension):
-                row_ind.extend(len(indexes)*element.dimension * [positions[(index, i+1)]])
-                col.append(positions[(index, i+1)])
+                row_ind.extend(len(indexes) * element.dimension * [positions[(index, i + 1)]])
+                col.append(positions[(index, i + 1)])
 
-        col_ind = col * (len(indexes)*element.dimension)
+        col_ind = col * (len(indexes) * element.dimension)
 
         # col_ind = list(set(row_ind)) * (len(indexes)*element.dimension)
 
@@ -494,8 +496,8 @@ class FiniteElementAnalysis(FiniteElements):
         matrices = []
         method_names = ['k_matrix', 'm_matrix']
         for method_name in method_names:
-            matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
-                                len(self.mesh.nodes)*self.dimension))
+            matrix = npy.zeros((len(self.mesh.nodes) * self.dimension,
+                                len(self.mesh.nodes) * self.dimension))
 
             if hasattr(self, method_name):
                 data, row_ind, col_ind = getattr(self, method_name)()
@@ -513,21 +515,21 @@ class FiniteElementAnalysis(FiniteElements):
 
         # Tri des vecteurs propres dans l'ordre des valeurs propres croissantes
         index = D.argsort()
-        V = V[ :, index[ ::-1 ] ]
+        V = V[:, index[::-1]]
 
         # Résolution du système V.T*M*V = V.T*Phi
-        Factor = npy.diag( V.T @ matrix_m @ V )
-        Phi = npy.linalg.lstsq( npy.sqrt( npy.diag( Factor ) ).T, V.T, rcond = -1 )[ 0 ] # pseudo inverse
+        Factor = npy.diag(V.T @ matrix_m @ V)
+        Phi = npy.linalg.lstsq(npy.sqrt(npy.diag(Factor)).T, V.T, rcond=-1)[0]  # pseudo inverse
 
         # Construction des matrices des vecteurs et valeurs propres
         Phi = Phi.T
-        Omega = npy.diag( npy.sqrt( Phi.T @ matrix_k @ Phi ) )
-        w = npy.diag( Omega[ :len(self.mesh.nodes)*self.dimension ] );
+        Omega = npy.diag(npy.sqrt(Phi.T @ matrix_k @ Phi))
+        w = npy.diag(Omega[:len(self.mesh.nodes) * self.dimension])
 
         return w, Phi
 
     def get_source_matrix_length(self):
-        return len(self.mesh.nodes)*self.dimension + len(self.continuity_conditions) \
+        return len(self.mesh.nodes) * self.dimension + len(self.continuity_conditions) \
             + len(self._boundary_conditions)
 
     def modal_analysis_numpy(self):
@@ -537,8 +539,8 @@ class FiniteElementAnalysis(FiniteElements):
 
         start = time.time()
         for method_name in method_names:
-            matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
-                                len(self.mesh.nodes)*self.dimension))
+            matrix = npy.zeros((len(self.mesh.nodes) * self.dimension,
+                                len(self.mesh.nodes) * self.dimension))
 
             if hasattr(self, method_name):
                 data, row_ind, col_ind = getattr(self, method_name)()
@@ -577,9 +579,10 @@ class FiniteElementAnalysis(FiniteElements):
 
         import numpy.linalg
         import scipy.linalg
-        
+
         start = time.time()
-        eigvals_1, eigvecs = scipy.linalg.eigh(matrix_k, matrix_m, eigvals = (1, 30), check_finite=False) #> Don't work with sparse matrix
+        eigvals_1, eigvecs = scipy.linalg.eigh(matrix_k, matrix_m, eigvals=(
+            1, 30), check_finite=False)  # > Don't work with sparse matrix
         print('scipy.linalg.eigh: K, M ', time.time() - start)
         print('___')
 
@@ -588,12 +591,10 @@ class FiniteElementAnalysis(FiniteElements):
         # a = numpy.matmul(m, matrix_k)
         # print('Inv(M) et A: ', time.time() - start)
 
-
         # start = time.time()
         # eigvals_2, eigvecs = scipy.linalg.eig(a, check_finite=False) #> Don't work with sparse matrix
         # print('scipy.linalg.eig Inv(M)*K: ', time.time() - start)
         # print('___')
-
 
         # start = time.time()
         # m = numpy.linalg.inv(matrix_m)
@@ -604,7 +605,6 @@ class FiniteElementAnalysis(FiniteElements):
         # eigvals_3, eigvecs = scipy.linalg.eig(k, m, check_finite=False) #> Don't work with sparse matrix
         # print('scipy.linalg.eig Inv(k) , Inv(M): ', time.time() - start)
         # print('___')
-
 
         # start = time.time()
         # m = numpy.linalg.inv(matrix_m)
@@ -673,7 +673,7 @@ class FiniteElementAnalysis(FiniteElements):
         # else:
         #     eigvecs_adapted = eigvecs.T
 
-        return eigvals_1, eigvecs #, eigvecs_adapted
+        return eigvals_1, eigvecs  # , eigvecs_adapted
 
     def modal_analysis_sparse(self):
         matrices = []
@@ -749,7 +749,7 @@ class FiniteElementAnalysis(FiniteElements):
                                 k=30, which='LM')
         print('scipy.sparse.linalg.eigs _ (inv(K)*M): ', time.time() - start)
 
-        eigvals = 1/eigvals
+        eigvals = 1 / eigvals
 
         return eigvals, eigvecs
 
@@ -760,8 +760,8 @@ class FiniteElementAnalysis(FiniteElements):
 
         start = time.time()
         for method_name in method_names:
-            matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
-                                len(self.mesh.nodes)*self.dimension))
+            matrix = npy.zeros((len(self.mesh.nodes) * self.dimension,
+                                len(self.mesh.nodes) * self.dimension))
 
             if hasattr(self, method_name):
                 start = time.time()
@@ -838,8 +838,7 @@ class FiniteElementAnalysis(FiniteElements):
                                 k=30, which='LM')
         print('scipy.sparse.linalg.eigs _ inv(inv(M)*K): ', time.time() - start)
 
-
-        return 1/eigvals, eigvecs
+        return 1 / eigvals, eigvecs
 
     def modal_analysis(self):
         matrices = []
@@ -847,8 +846,8 @@ class FiniteElementAnalysis(FiniteElements):
         import time
         start = time.time()
         for method_name in method_names:
-            matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
-                                len(self.mesh.nodes)*self.dimension))
+            matrix = npy.zeros((len(self.mesh.nodes) * self.dimension,
+                                len(self.mesh.nodes) * self.dimension))
 
             if hasattr(self, method_name):
                 data, row_ind, col_ind = getattr(self, method_name)()
@@ -912,9 +911,9 @@ class FiniteElementAnalysis(FiniteElements):
                 matrix_m = npy.delete(matrix_m, (position), axis=1)
 
         start = time.time()
-        eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
+        eigvals, eigvecs = eigh(matrix_k, matrix_m)  # > Don't work with sparse matrix
         print('eigh: ', time.time() - start)
-        
+
         # print('shape', matrix_m.shape[0])
         # print('numpy Inv_Identity')
         # # eigvals, eigvecs = eigh(matrix_k, matrix_m) #> Don't work with sparse matrix
@@ -927,7 +926,7 @@ class FiniteElementAnalysis(FiniteElements):
         # import numpy.linalg
         # eigvals, eigvecs = eigh(matrix_k*numpy.linalg.inv(matrix_m))
         # eigvals, eigvecs = eigh(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
-        
+
         # print('eigs')
         # start = time.time()
         # eigvals, eigvecs = eigs(A=matrix_k, M=matrix_m,
@@ -956,8 +955,8 @@ class FiniteElementAnalysis(FiniteElements):
         # eigvals, eigvecs = numpy.linalg.svd(numpy.matmul(matrix_k, numpy.linalg.inv(matrix_m)))
 
         if self.node_boundary_conditions:
-            eigvecs_adapted = npy.zeros((len(self.mesh.nodes)*self.dimension,
-                                         len(self.mesh.nodes)*self.dimension))
+            eigvecs_adapted = npy.zeros((len(self.mesh.nodes) * self.dimension,
+                                         len(self.mesh.nodes) * self.dimension))
             zeros_positions.sort()
 
             for i, eigvec in enumerate(eigvecs.T):
@@ -973,17 +972,16 @@ class FiniteElementAnalysis(FiniteElements):
         """
         Solve the matix equation : F = K.X, where X is the unknown vector. \
         Each value of the vector represent the amplitude of the vector potential \
-        of a node. 
+        of a node.
         Returns a Result object.
         """
-        # TEST RESULT : 
+        # TEST RESULT :
         # Between :
         # - npy.linalg.solve
         # - scipy.linalg.solve
         # - scipy.linalg.solve(assume_a='sym')
         # - scipy.sparse.linalg.spsolved
         # - scipy.pinvh than dot
-        
         # scipy.sparse.linalg.spsolved is the fastest !
         # print('avant')
 
@@ -1000,9 +998,9 @@ class FiniteElementAnalysis(FiniteElements):
         X = list(X)
         # print('apres')
         return Result(self.mesh, X)
-        
+
     def plot_elements_loads(self, ax=None):
-        """ 
+        """
         Plots the mesh. The triangular elements are filled red if they are a \
         source of magnetic potential thanks to their current density.
         """
@@ -1011,22 +1009,21 @@ class FiniteElementAnalysis(FiniteElements):
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
                 element.plot(ax=ax, color='w', fill=True)
-        
+
         for load in self.element_loads:
             for element in load.elements:
                 element.plot(ax=ax, color='r', fill=True)
         return ax
-    
+
     def plot_elements_permeability(self, ax=None):
-        """ 
-        Plots the mesh with colored triangular elements depending on the \ 
-        permeability of the material the element meshes. 
+        """
+        Plots the mesh with colored triangular elements depending on the \
+        permeability of the material the element meshes.
         """
         if ax is None:
             fig, ax = plt.subplots()
         else:
             fig = plt.gcf()
-        
         color_map = ((0, 0, 1), (1, 0, 0))
 
         permeabilities = self.elements_permeability()
@@ -1035,20 +1032,19 @@ class FiniteElementAnalysis(FiniteElements):
         colors = []
         for elements_group in self.mesh.elements_groups:
             x = (elements_group.elements[0].mu_total - mu_min) / (mu_max - mu_min)
-            color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x, 
-                      color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
-                      color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
+            color = (color_map[0][0] - (color_map[0][0] - color_map[1][0]) * x,
+                     color_map[0][1] - (color_map[0][1] - color_map[1][1]) * x,
+                     color_map[0][2] - (color_map[0][2] - color_map[1][2]) * x)
             colors.append(color)
-        
+
         norm = mpl.colors.Normalize(vmin=mu_min, vmax=mu_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)  #plt.get_cmap('jet_r')
+        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)  # plt.get_cmap('jet_r')
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(mu_min, mu_max, 10))
         cbar.set_label('permeability')
         for i, elements_group in enumerate(self.mesh.elements_groups):
             for element in elements_group.elements:
                 element.plot(ax=ax, color=colors[i], fill=True)
-                
         return ax
 
     def plot_continuity_condition(self, ax=None):
@@ -1061,25 +1057,25 @@ class FiniteElementAnalysis(FiniteElements):
         return ax
 
     def plot_magnet_loads(self, ax=None):
-        """ 
+        """
         Plots the mesh. The triangular elements are filled red if they are a \
         source of magnetic potential thanks to their magnetization. The contour \
-        of the magnetizating mesh is drawn in blue. 
+        of the magnetizating mesh is drawn in blue.
         """
         if ax is None:
             fig, ax = plt.subplots()
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
                 element.plot(ax=ax, color='w', fill=True)
-            
+
         for magnet_load in self.magnet_loads:
             for element in magnet_load.elements:
                 element.plot(ax=ax, color='r', fill=True)
-                
+
             contour_linear_elements = magnet_load.contour_linear_elements()
             for linear_element in contour_linear_elements:
                 linear_element.plot(ax=ax, color='b')
-        
+
         print(self.magnet_loads)
-        
+
         return ax

@@ -7,26 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v0.1.0] - unreleased
 
+### Refactorings
+
+* Divide electromag.py into different small thematic files
+  elements.py, conditions.py, loads.py, analysis.py, results.py, core.py
+* Generalize methods to be used in different fields (magnetic, elasticity, etc.)
+* Update classes and methods:
+   - elementary_source_matrix > element_to_node_factors
+   - ConstantLoad > ElementsLoad
+   - SingleNodeLoad > NodeLoad
+
 ### New Features
 
-* Define MagneticElement2D (which replaces MagneticElementsGroup)
-* MagneticElement2D: elementary_matrix, elementary_source_matrix (which rafactor create_matrix and create_source_matrix)
-* Global_matrix: global_matrix_positions (in both 2d and 3d)
+* Add new classes and methods:
+   - MagneticElement2D
+   - BoundaryCondition, NodeBoundaryCondition, EdgeBoundaryCondition, ElementBoundaryCondition
+   - ElementLoad, EdgeLoad
+   - FiniteElementAnalysis
+   - MagneticResults
+   - ElasticityElement: d_matrix, energy
+   - ElasticityTriangularElement2D: d_matrix(plane_strain, plane_stress), b_matrix, k_matrix, strain, stress
+   - ElasticityTetrahedralElement3D: d_matrix, b_matrix, k_matrix
+   - ElasticityResults: displacements, stress, strain, deformed mesh, energy, vtk file
+   - ElasticityResults2D: axial_strain/stress, shear_strain/stress, different plots
+   - ElasticityResults3D: axial_strain/stress, shear_strain/stress
+   - Material
+* Add new scripts with usecases and examples for tests (Magnetic, Elasticity2D)
+
+### Performance improvements
+
+*
+*
 
 ### Fixed
 
 *
 *
 
-### Performance improvements
-
-* Divide electromag.py into different small thematic files
-* Add new scripts for tests
-
-### Refactorings
-
-*
-*
-
 
 ## [v0.0.1] - 31/08/2020
+
