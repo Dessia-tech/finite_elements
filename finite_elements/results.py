@@ -476,7 +476,7 @@ class ElasticityResults(Result):
         if amplitude == 1:
             deformed_nodes = self.deformed_nodes
         else:
-            deformed_nodes = self._deformed_nodes(amplitude=amplitude)
+            deformed_nodes = self.deformed_nodes_m(amplitude=amplitude)
 
         group_elasticity_elments = []
         for elements_group in self.mesh.elements_groups:
@@ -524,6 +524,7 @@ class ElasticityResults(Result):
     @property
     def energy_per_element(self):
         if not self._energy_per_element:
+            _ = self.displacements_per_element_m()
             self._energy_per_element = self.energy_per_element_m()
         return self._energy_per_element
 
@@ -714,7 +715,7 @@ class ElasticityResults2D(ElasticityResults):
             fig, ax = plt.subplots()
             ax.set_aspect('equal')
         if amplitude != 1:
-            self._deformed_mesh(amplitude=amplitude).plot(ax=ax)
+            self.deformed_mesh_m(amplitude=amplitude).plot(ax=ax)
         else:
             self.deformed_mesh.plot(ax=ax)
         # self.mesh.plot(ax)
@@ -742,7 +743,7 @@ class ElasticityResults2D(ElasticityResults):
                 f'Class {self.__class__.__name__} does not implement {displacement_name}')
 
         if amplitude != 1:
-            mesh_fe = self._deformed_mesh(amplitude=amplitude)
+            mesh_fe = self.deformed_mesh_m(amplitude=amplitude)
         else:
             mesh_fe = self.deformed_mesh
 
@@ -813,7 +814,7 @@ class ElasticityResults2D(ElasticityResults):
         result_values = [value for value in self.energy_per_element.values()]
 
         if amplitude != 1:
-            deformed_mesh = self._deformed_mesh(amplitude=amplitude)
+            deformed_mesh = self.deformed_mesh_m(amplitude=amplitude)
         else:
             deformed_mesh = self.deformed_mesh
 
