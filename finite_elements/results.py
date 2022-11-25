@@ -393,6 +393,63 @@ class ElasticityResults(Result):
         Result.__init__(self, mesh, result_vector)
 
     @property
+    def deformed_mesh(self):
+        if not self._deformed_mesh:
+            self._deformed_mesh = self.deformed_mesh_m()
+        return self._deformed_mesh
+
+    def deformed_mesh_m(self, amplitude=1):
+        if amplitude == 1:
+            deformed_nodes = self.deformed_nodes
+        else:
+            deformed_nodes = self.deformed_nodes_m(amplitude=amplitude)
+
+        group_elasticity_elments = []
+        for elements_group in self.mesh.elements_groups:
+            elasticity_elments = []
+            for element in elements_group.elements:
+
+                indexes = [self.mesh.node_to_index[point] for point in element.points]
+
+                points = [deformed_nodes[index] for index in indexes]
+
+                mesh_element = element.mesh_element.__class__(points)
+
+                elasticity_elments.append(element.__class__.from_element(mesh_element,
+                                                                         element))
+
+            group_elasticity_elments.append(vmmesh.ElementsGroup(elasticity_elments, ''))
+
+        mesh = vmmesh.Mesh(group_elasticity_elments)
+        mesh.nodes = deformed_nodes  # Keep self.mesh order
+        mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
+
+        return mesh
+
+    @property
+    def deformed_nodes(self):
+        if not self._deformed_nodes:
+            self._deformed_nodes = self.deformed_nodes_m()
+        return self._deformed_nodes
+
+    def deformed_nodes_m(self, amplitude=1):
+        displacement_field_vectors = self.displacement_vectors_per_node
+        deformed_nodes = []
+        for i, node in enumerate(self.mesh.nodes):
+            obj = getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
+            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i] * amplitude))
+
+        return deformed_nodes
+
+    def displacement_per_node_x(self):
+
+        return [displacement[0] for displacement in self.displacement_vectors_per_node]
+
+    def displacement_per_node_y(self):
+
+        return [displacement[1] for displacement in self.displacement_vectors_per_node]
+
+    @property
     def displacement_vectors_per_node(self):
         if not self._displacement_vectors_per_node:
             self._displacement_vectors_per_node = self.displacement_vectors_per_node_m()
@@ -442,6 +499,45 @@ class ElasticityResults(Result):
         return displacements_per_element
 
     @property
+    def energy(self):
+        if not self._energy:
+            self._energy = self.energy_m()
+        return self._energy
+
+    def energy_m(self):
+        # # shape = len(self.mesh.nodes) * self.dimension
+        # # K = self.create_matrix() (!)
+        # # displacements = self.result_vector[0:shape]
+
+        # # return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(displacements)),
+        # #                          K),
+        # #               npy.array(displacements)))
+
+        # energy = 0
+        # for group in self.mesh.elements_groups:
+        #     for element in group.elements:
+        #         energy += element.energy(self.plane_strain, self.plane_stress)
+
+        # return energy
+
+        return sum([value for value in self.energy_per_element.values()])
+
+    @property
+    def energy_per_element(self):
+        if not self._energy_per_element:
+            _ = self.displacements_per_element_m()
+            self._energy_per_element = self.energy_per_element_m()
+        return self._energy_per_element
+
+
+    def energy_per_element_m(self):
+        energy = {}
+        for group in self.mesh.elements_groups:
+            for element in group.elements:
+                energy[element] = (element.energy(self.plane_strain, self.plane_stress))
+        return energy
+
+    @property
     def strain(self):
         if not self._strain:
             self._strain, self._stress = self.strain_stress_per_element_m()
@@ -465,101 +561,6 @@ class ElasticityResults(Result):
                 element.stress = element_to_stress[element]
 
         return element_to_strain, element_to_stress
-
-    @property
-    def deformed_mesh(self):
-        if not self._deformed_mesh:
-            self._deformed_mesh = self.deformed_mesh_m()
-        return self._deformed_mesh
-
-    def deformed_mesh_m(self, amplitude=1):
-        if amplitude == 1:
-            deformed_nodes = self.deformed_nodes
-        else:
-            deformed_nodes = self.deformed_nodes_m(amplitude=amplitude)
-
-        group_elasticity_elments = []
-        for elements_group in self.mesh.elements_groups:
-            elasticity_elments = []
-            for element in elements_group.elements:
-
-                indexes = [self.mesh.node_to_index[point] for point in element.points]
-
-                points = [deformed_nodes[index] for index in indexes]
-
-                mesh_element = element.mesh_element.__class__(points)
-
-                elasticity_elments.append(element.__class__.from_element(mesh_element,
-                                                                         element))
-
-            group_elasticity_elments.append(vmmesh.ElementsGroup(elasticity_elments, ''))
-
-        mesh = vmmesh.Mesh(group_elasticity_elments)
-        mesh.nodes = deformed_nodes  # Keep self.mesh order
-        mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
-
-        return mesh
-
-    @property
-    def deformed_nodes(self):
-        if not self._deformed_nodes:
-            self._deformed_nodes = self.deformed_nodes_m()
-        return self._deformed_nodes
-
-    def deformed_nodes_m(self, amplitude=1):
-        displacement_field_vectors = self.displacement_vectors_per_node
-        deformed_nodes = []
-        for i, node in enumerate(self.mesh.nodes):
-            obj = getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
-            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i] * amplitude))
-
-        return deformed_nodes
-
-    @property
-    def energy(self):
-        if not self._energy:
-            self._energy = self.energy_m()
-        return self._energy
-
-    @property
-    def energy_per_element(self):
-        if not self._energy_per_element:
-            _ = self.displacements_per_element_m()
-            self._energy_per_element = self.energy_per_element_m()
-        return self._energy_per_element
-
-    def energy_m(self):
-        # # shape = len(self.mesh.nodes) * self.dimension
-        # # K = self.create_matrix() (!)
-        # # displacements = self.result_vector[0:shape]
-
-        # # return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(displacements)),
-        # #                          K),
-        # #               npy.array(displacements)))
-
-        # energy = 0
-        # for group in self.mesh.elements_groups:
-        #     for element in group.elements:
-        #         energy += element.energy(self.plane_strain, self.plane_stress)
-
-        # return energy
-
-        return sum([value for value in self.energy_per_element.values()])
-
-    def energy_per_element_m(self):
-        energy = {}
-        for group in self.mesh.elements_groups:
-            for element in group.elements:
-                energy[element] = (element.energy(self.plane_strain, self.plane_stress))
-        return energy
-
-    def displacement_per_node_x(self):
-
-        return [displacement[0] for displacement in self.displacement_vectors_per_node]
-
-    def displacement_per_node_y(self):
-
-        return [displacement[1] for displacement in self.displacement_vectors_per_node]
 
     def update_vtk_with_results(self, input_file_name, output_file_name):
         with open(input_file_name) as f_in:
