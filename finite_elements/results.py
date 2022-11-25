@@ -529,7 +529,6 @@ class ElasticityResults(Result):
             self._energy_per_element = self.energy_per_element_m()
         return self._energy_per_element
 
-
     def energy_per_element_m(self):
         energy = {}
         for group in self.mesh.elements_groups:
