@@ -28,7 +28,6 @@ print(os.listdir(vm_path))
 
 options = parse_options([vm_path], **my_redefined_options)
 print('options', options)
-
 errors = list(check_paths('finite_elements', options=options))
 
 assert len(errors)

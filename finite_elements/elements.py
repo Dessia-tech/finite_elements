@@ -51,7 +51,6 @@ class MagneticElement2D(Element2D):
 
     def __init__(self, triangular_element: vmmesh.TriangularElement2D,
                  mu_total: float, name: str = ''):
-
         self.triangular_element = triangular_element
         vmmesh.TriangularElement2D.__init__(self, points=triangular_element.points)
         self.mu_total = mu_total
@@ -190,7 +189,6 @@ class ElasticityElement(DessiaObject):
                  stress=None,
                  strain=None,
                  name: str = ''):
-
         self.mesh_element = mesh_element
         self.elasticity_modulus = elasticity_modulus
         self.poisson_ratio = poisson_ratio
@@ -222,7 +220,7 @@ class ElasticityElement(DessiaObject):
         shape = self.dimension * len(self.mesh_element.points)
         return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(self.displacements)),
                                             self.elementary_matrix(plane_strain, plane_stress).reshape(shape, shape)),
-                      npy.array(self.displacements)))
+                                 npy.array(self.displacements)))
 
     @classmethod
     def with_material_object(cls, mesh_element,
@@ -277,7 +275,6 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
 
         ElasticityElement.__init__(self, mesh_element,
                                    elasticity_modulus, poisson_ratio, mass_density, name=name)
-
         vmmesh.TriangularElement2D.__init__(self, points=mesh_element.points, name=name)
 
         # DessiaObject.__init__(self, name=name)

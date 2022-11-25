@@ -61,12 +61,14 @@ class MagneticResults(Result):
         all_BrBtetha = []
         for element in gap_elements_group.elements:
             vector_B = element_to_magnetic_field[element]
+
             element_center = element.center
             e_r = vm.Vector2D(element_center.vector)
             e_r.Normalize()
             e_teta = vm.Vector2D((-e_r[1], e_r[0]))
             B_r = vector_B.Dot(e_r)
             B_teta = vector_B.Dot(e_teta)
+
             all_BrBtetha.append(B_r * B_teta)
         return all_BrBtetha
 
@@ -90,7 +92,6 @@ class MagneticResults(Result):
                 c2 = element_form_functions[1][2]
                 b3 = element_form_functions[2][1]
                 c3 = element_form_functions[2][2]
-
                 B_x = float(c1 *
                             self.result_vector[indexes[0]] +
                             c2 *
@@ -99,7 +100,6 @@ class MagneticResults(Result):
                             self.result_vector[indexes[2]])
                 B_y = float(-b1 * self.result_vector[indexes[0]] - b2 *
                             self.result_vector[indexes[1]] - b3 * self.result_vector[indexes[2]])
-
                 element_to_magnetic_field[element] = vm.Vector2D(B_x, B_y)
         return element_to_magnetic_field
 
@@ -145,6 +145,7 @@ class MagneticResults(Result):
         :type nb_notches: int
         """
         element_to_magnetic_field = self.magnetic_field_per_element
+
         for elements_group in self.mesh.elements_groups:
             if elements_group.name == air_gap_elements_group_name:
                 gap_elements_group = elements_group
@@ -153,8 +154,8 @@ class MagneticResults(Result):
         somme = 0
         i = 0
 
-        # r = (radius_stator - radius_rotor)/2 + radius_rotor
-        # fig, ax = plt.subplots()
+#        r = (radius_stator - radius_rotor)/2 + radius_rotor
+#        fig, ax = plt.subplots()
 
         for element in gap_elements_group.elements:
             vector_B = element_to_magnetic_field[element]

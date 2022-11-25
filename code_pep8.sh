@@ -4,7 +4,6 @@
 PEP8_CMD_TO_RUN='python3 -m autopep8 -i finite_elements/*.py'
 
 DETECTED_CHANGES=$(python3 -m autopep8 -d finite_elements/*.py)
-
 if [[ -n "$DETECTED_CHANGES" ]]
   then
   echo -e "\npep8 non conforming changes detected, please run :\n"

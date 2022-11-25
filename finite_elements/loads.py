@@ -137,6 +137,5 @@ class MagnetLoad(DessiaObject):
             if count == 1 \
                 and (linear_element.points[0] not in self.non_contour_nodes
                      or linear_element.points[1] not in self.non_contour_nodes):
-
                 contour_linear_elements.append(linear_element)
         return contour_linear_elements
