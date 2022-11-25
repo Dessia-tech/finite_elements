@@ -286,7 +286,6 @@ class MagneticResults(Result):
         # -----------------------------------------------------------------------------
         # masking badly shaped triangles at the border of the triangular mesh.
         min_circle_ratio = -1
-
         mask = TriAnalyzer(tri).get_flat_tri_mask(min_circle_ratio)
         tri.set_mask(mask)
 
@@ -297,7 +296,6 @@ class MagneticResults(Result):
 
         levels = npy.arange(0., 1., 0.05)
         cmap = cm.get_cmap(name='Blues', lut=None)
-
         ax.tricontour(tri_refi, z_test_refi, levels=levels,  # cmap=cmap,
                       linewidths=[2.0, 0.5, 1.0, 0.5])
 #        ax.triplot(tri_refi, color='0.97')
