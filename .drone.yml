@@ -54,7 +54,7 @@ steps:
     event: push
   settings:
     host: austerlitz.dessia.tech
-    target: /var/www/documentation/volmdlr/
+    target: /var/www/documentation/finite_elements/
     source: doc/build/html/*
     strip_components: 3
     username: drone

@@ -14,7 +14,7 @@ from typing import List  # Tuple, TypeVar
 from finite_elements.core import MU, blue_red
 import finite_elements.core
 from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
-import matplotlib.cm as cm
+from matplotlib import cm
 
 
 class Result(DessiaObject):
@@ -126,7 +126,7 @@ class MagneticResults(Result):
         sigma_rr_rteta_tetateta = [sigma_rr, sigma_rteta, sigma_tetateta]
         return sigma_rr_rteta_tetateta
 
-    def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor, nb_notches):
+    def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor):  # , nb_notches):
         """
         Computes the resistant magnetic torque when the rotor is blocked and \
         the current inside the stator is evolving. Unit : N.m.

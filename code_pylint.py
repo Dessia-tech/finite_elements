@@ -1,30 +1,30 @@
 from pylint.lint import Run
 
-MIN_NOTE = 6
+MIN_NOTE = 4.95
 
 MAX_ERROR_BY_TYPE = {
-                     'invalid-name': 1195,
+                     'invalid-name': 142,
                      'no-else-return': 169,
-                     'consider-using-f-string': 167,
-                     'no-member': 138,
+                     'consider-using-f-string': 2,
+                     'no-member': 16,
                      'inconsistent-return-statements': 108,
-                     'unused-variable': 86,
+                     'unused-variable': 11,
                      'arguments-differ': 85,
-                     'too-many-locals': 82,
-                     'unused-argument': 70,
-                     'too-many-arguments': 66,
+                     'too-many-locals': 10,
+                     'unused-argument': 2,
+                     'too-many-arguments': 5,
                      'consider-using-enumerate': 30,
                      'too-many-branches': 29,
                      'too-many-statements': 27,
-                     'super-init-not-called': 26,
+                     'super-init-not-called': 3,
                      'no-name-in-module': 24,
                      'abstract-method': 18,
-                     'duplicate-code': 18,
+                     'duplicate-code': 2,
                      'no-self-use': 16,
                      'arguments-renamed': 11,
                      'non-parent-init-called': 13,
                      'too-many-public-methods': 15,
-                     'too-many-instance-attributes': 11,
+                     'too-many-instance-attributes': 3,
                      'undefined-loop-variable': 10,
                      'unused-import': 9,
                      'unspecified-encoding': 9,
@@ -34,7 +34,7 @@ MAX_ERROR_BY_TYPE = {
                      'consider-merging-isinstance': 6,
                      'cyclic-import': 6,
                      'consider-iterating-dictionary': 4,
-                     'raise-missing-from': 4,
+                     'raise-missing-from': 1,
                      'no-else-continue': 4,
                      'undefined-variable': 3,
                      'simplifiable-if-expression': 3,
@@ -50,7 +50,7 @@ MAX_ERROR_BY_TYPE = {
                      'chained-comparison': 2,
                      'unbalanced-tuple-unpacking': 2,
                      'bad-staticmethod-argument': 1,
-                     'consider-using-generator': 1,
+                     'consider-using-generator': 2,
                      'use-maxsplit-arg': 1,
                      'wildcard-import': 1,
                      'cell-var-from-loop': 1,
@@ -62,9 +62,9 @@ MAX_ERROR_BY_TYPE = {
                      'bare-except': 0,
                      'function-redefined': 0,
                      'superfluous-parens': 0,
-                     'unnecessary-comprehension': 0,
+                     'unnecessary-comprehension': 4,
                      'unused-wildcard-import': 0,
-                     'wrong-import-order': 0,
+                     'wrong-import-order': 4,
                      'ungrouped-imports': 0,
                      'assignment-from-none': 0,
                      'non-iterator-returned': 0,
@@ -91,7 +91,7 @@ f = open(os.devnull, 'w')
 old_stdout = sys.stdout
 sys.stdout = f
 
-results = Run(['volmdlr', '--output-format=json', '--reports=no'], do_exit=False)
+results = Run(['finite_elements', '--output-format=json', '--reports=no'], do_exit=False)
 # `exit` is deprecated, use `do_exit` instead
 sys.stdout = old_stdout
 
@@ -130,4 +130,4 @@ if uncontrolled_errors:
     print('Uncontrolled errors', uncontrolled_errors)
 
 if error_detected:
-    raise RuntimeError('Too many errors\nRun pylint dessia_common to get the errors')
+    raise RuntimeError('Too many errors\nRun pylint finite_elements to get the errors')
