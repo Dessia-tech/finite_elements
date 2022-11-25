@@ -358,8 +358,8 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
 
         # det_jacobien = (abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1)))
 
-        mass_matrix =  ((self.mass_density * self.area \
-                        * self.thickness)/12) * npy.array(data).reshape(6, 6)
+        mass_matrix = ((self.mass_density * self.area
+                        * self.thickness) / 12) * npy.array(data).reshape(6, 6)
 
         # mass_matrix = 0.5* det_jacobien * ((self.mass_density * self.area \
         #                 * self.thickness)/12) * npy.array(data).reshape(6, 6)
@@ -401,7 +401,6 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
     #                     * self.thickness)/12) * (npy.matmul(npy.matmul(A.transpose(), M), A))
 
     #     return mass_matrix.flatten()
-
 
     # def elementary_mass_matrix(self):
 
