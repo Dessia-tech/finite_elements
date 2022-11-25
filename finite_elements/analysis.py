@@ -125,7 +125,6 @@ class FiniteElements(DessiaObject):
                         application=point,
                         value=element_condition.value * matrix_factors[p],
                         dimension=element_condition.dimension))
-
         return element_to_node_boundary_conditions
 
     def boundary_conditions_edge_to_node(self):
@@ -138,7 +137,6 @@ class FiniteElements(DessiaObject):
                         application=point,
                         value=edge_condition.value * 0.5,
                         dimension=edge_condition.dimension))
-
         return edge_to_node_boundary_conditions
 
     def c_matrix_boundary_conditions(self):
@@ -162,7 +160,6 @@ class FiniteElements(DessiaObject):
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
         row_ind, col_ind, data = [], [], []
-
         for i, node_condition in enumerate(node_boundary_conditions):
             data.extend(node_condition.c_matrix())
             pos = positions[(self.mesh.node_to_index[node_condition.application],
@@ -982,6 +979,7 @@ class FiniteElementAnalysis(FiniteElements):
         # - scipy.linalg.solve(assume_a='sym')
         # - scipy.sparse.linalg.spsolved
         # - scipy.pinvh than dot
+
         # scipy.sparse.linalg.spsolved is the fastest !
         # print('avant')
 
@@ -1024,6 +1022,7 @@ class FiniteElementAnalysis(FiniteElements):
             fig, ax = plt.subplots()
         else:
             fig = plt.gcf()
+
         color_map = ((0, 0, 1), (1, 0, 0))
 
         permeabilities = self.elements_permeability()
@@ -1045,6 +1044,7 @@ class FiniteElementAnalysis(FiniteElements):
         for i, elements_group in enumerate(self.mesh.elements_groups):
             for element in elements_group.elements:
                 element.plot(ax=ax, color=colors[i], fill=True)
+
         return ax
 
     def plot_continuity_condition(self, ax=None):

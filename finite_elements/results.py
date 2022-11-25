@@ -155,6 +155,7 @@ class MagneticResults(Result):
         i = 0
 
 #        r = (radius_stator - radius_rotor)/2 + radius_rotor
+
 #        fig, ax = plt.subplots()
 
         for element in gap_elements_group.elements:
@@ -167,17 +168,17 @@ class MagneticResults(Result):
             B_r = vector_B.Dot(e_r)
             B_teta = vector_B.Dot(e_teta)
             r_Br_Bteta = element_center.Norm() * B_r * B_teta
-            # r_Br_Bteta = r * B_r * B_teta
+#            r_Br_Bteta = r * B_r * B_teta
             dS = element.area
 
-            # e_r.plot(ax=ax, origin=element_center, amplitude=0.005, color='b')
-            # e_teta.plot(ax=ax, origin=element_center, amplitude=0.005, color='g')
-            # vector_B.plot(ax=ax, origin=element_center, amplitude=0.005, color='r')
+#            e_r.plot(ax=ax, origin=element_center, amplitude=0.005, color='b')
+#            e_teta.plot(ax=ax, origin=element_center, amplitude=0.005, color='g')
+#            vector_B.plot(ax=ax, origin=element_center, amplitude=0.005, color='r')
 
             somme += r_Br_Bteta * dS
             i += 1
 
-        # print('nb elements in airgap', i)
+#        print('nb elements in airgap', i)
         T = length_motor / (MU * (radius_stator - radius_rotor)) * somme
 
         return T
@@ -299,9 +300,9 @@ class MagneticResults(Result):
 
         ax.tricontour(tri_refi, z_test_refi, levels=levels,  # cmap=cmap,
                       linewidths=[2.0, 0.5, 1.0, 0.5])
-        # ax.triplot(tri_refi, color='0.97')
-        # ax.triplot(tri, color='0.7')
-        # ax.tricontour(x, y, Z)
+#        ax.triplot(tri_refi, color='0.97')
+#        ax.triplot(tri, color='0.7')
+#        ax.tricontour(x, y, Z)
         return ax
 
     def plot_magnetic_field_vectors(self, ax=None, amplitude=0.005,
@@ -771,7 +772,6 @@ class ElasticityResults2D(ElasticityResults):
         # ax.set_title('Triangular grid')
 
         norm = mpl.colors.Normalize(vmin=x_min, vmax=x_max)
-
         sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
         sm.set_array([])
         cbar = fig.colorbar(sm, ticks=npy.linspace(x_min, x_max, 10))
