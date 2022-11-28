@@ -462,10 +462,10 @@ class ElasticityResults(Result):
         displacement_field_vectors = {}
         q = self.result_vector
 
-        for node in range(0, nodes_number):
+        for n, node in enumerate(self.mesh.nodes):
             displacement = []
             for i in range(self.dimension):
-                displacement.append(q[positions[(node, i + 1)]])
+                displacement.append(q[positions[(n, i + 1)]])
 
             displacement_field_vectors[node] = getattr(
                 vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement)
@@ -561,6 +561,45 @@ class ElasticityResults(Result):
 
         return element_to_strain, element_to_stress
 
+    def generate_vtk_file(self, file_name):
+        self.mesh._gmsh.to_vtk(file_name)
+        with open(file_name) as f_in:
+            with open(file_name+'_results', "w") as f_out:
+                for line in f_in:
+                    f_out.write(line)
+        f_out.close()
+        f_in.close()
+
+        nodes_correction = self.mesh._nodes_correction
+        displacements = []
+        for node in self.mesh._gmsh.nodes[0]['all_nodes']:
+            try:
+                displacements.append(self.displacement_vectors_per_node[node])
+            except KeyError:
+                displacements.append(self.displacement_vectors_per_node[nodes_correction[node]])
+
+        lines = ['POINT_DATA ' + str(len(self.mesh._gmsh.nodes[0]['all_nodes']))]
+        lines.append('SCALARS ' + 'Displacement_Magnitude float 1')
+        lines.append('LOOKUP_TABLE default')
+
+        for displacement in displacements:
+            lines.append(str(displacement.norm()))
+
+        lines.append('VECTORS Displacement_Vectors float')
+        if displacement.__class__.__name__[-2] == '2':
+            for displacement in displacements:
+                lines.append(str([*displacement])[1:-1].replace(',','')+ ' 0')
+        else:
+            for displacement in displacements:
+                lines.append(str([*displacement])[1:-1].replace(',',''))
+
+        with open(file_name+'_results', "a+") as f_out:
+            for line in lines:
+                f_out.write(line)
+                f_out.write('\n')
+        f_out.close()
+
+    '''
     def update_vtk_with_results(self, input_file_name, output_file_name):
         with open(input_file_name) as f_in:
             with open(output_file_name, "w") as f_out:
@@ -604,7 +643,7 @@ class ElasticityResults(Result):
                 f_out.write(line)
                 f_out.write('\n')
         f_out.close()
-
+        '''
 
 class ElasticityResults2D(ElasticityResults):
     # _standalone_in_db = True
