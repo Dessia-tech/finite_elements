@@ -564,7 +564,7 @@ class ElasticityResults(Result):
     def generate_vtk_file(self, file_name):
         self.mesh._gmsh.to_vtk(file_name)
         with open(file_name) as f_in:
-            with open(file_name+'_results', "w") as f_out:
+            with open(file_name + '_results', "w") as f_out:
                 for line in f_in:
                     f_out.write(line)
         f_out.close()
@@ -588,12 +588,12 @@ class ElasticityResults(Result):
         lines.append('VECTORS Displacement_Vectors float')
         if displacement.__class__.__name__[-2] == '2':
             for displacement in displacements:
-                lines.append(str([*displacement])[1:-1].replace(',','')+ ' 0')
+                lines.append(str([*displacement])[1:-1].replace(',', '') + ' 0')
         else:
             for displacement in displacements:
-                lines.append(str([*displacement])[1:-1].replace(',',''))
+                lines.append(str([*displacement])[1:-1].replace(',', ''))
 
-        with open(file_name+'_results', "a+") as f_out:
+        with open(file_name + '_results', "a+") as f_out:
             for line in lines:
                 f_out.write(line)
                 f_out.write('\n')
@@ -644,6 +644,7 @@ class ElasticityResults(Result):
                 f_out.write('\n')
         f_out.close()
         '''
+
 
 class ElasticityResults2D(ElasticityResults):
     # _standalone_in_db = True
