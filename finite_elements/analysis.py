@@ -157,8 +157,9 @@ class FiniteElements(DessiaObject):
             self._boundary_conditions = node_boundary_conditions
 
         # c_matrix data
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
+        positions = self.positions
         row_ind, col_ind, data = [], [], []
         for i, node_condition in enumerate(node_boundary_conditions):
             data.extend(node_condition.c_matrix())
@@ -260,8 +261,9 @@ class FiniteElements(DessiaObject):
 
         # source_c_matrix data
         data, row_ind = [], []
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
+        positions = self.positions
         for i, load in enumerate(node_loads):
             data.append(load.source_c_matrix())
             row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
@@ -315,8 +317,9 @@ class FiniteElements(DessiaObject):
 
     # def source_c_matrix_node_loads(self):
     #     data, row_ind = [], []
-    #     positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-    #                                                              nodes_number=len(self.mesh.nodes))
+    # #   positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+    # #                                                            nodes_number=len(self.mesh.nodes))
+    #     positions = self.positions
     #     for i, load in enumerate(self.node_loads):
     #         data.append(load.source_c_matrix())
     #         row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
