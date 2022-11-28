@@ -162,7 +162,7 @@ class FiniteElements(DessiaObject):
         for i, node_condition in enumerate(node_boundary_conditions):
             data.extend(node_condition.c_matrix())
             new_pos = self.mesh.node_to_index[node_condition.application] * \
-                      self.dimension + node_condition.dimension - 1
+                self.dimension + node_condition.dimension - 1
             # pos = positions[(self.mesh.node_to_index[node_condition.application],
             #                  node_condition.dimension)]
             # if new_pos != pos:
