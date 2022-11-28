@@ -459,7 +459,7 @@ class ElasticityResults(Result):
         nodes_number = len(self.mesh.nodes)
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=nodes_number)
-        displacement_field_vectors = []
+        displacement_field_vectors = {}
         q = self.result_vector
 
         for node in range(0, nodes_number):
@@ -467,8 +467,8 @@ class ElasticityResults(Result):
             for i in range(self.dimension):
                 displacement.append(q[positions[(node, i + 1)]])
 
-            displacement_field_vectors.append(
-                getattr(vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement))
+            displacement_field_vectors[node] = getattr(
+                vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement)
             # displacement_field_vectors.append(vm.Vector2D(*displacement))
 
         return displacement_field_vectors
