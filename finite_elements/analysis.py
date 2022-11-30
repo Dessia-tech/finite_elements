@@ -214,6 +214,15 @@ class FiniteElements(DessiaObject):
 
         return self.matrix_sparse(method_name='k_matrix_data')
 
+    def m_matrix(self, method_name):
+        if method_name == 'dense':
+            return self.m_matrix_dense()
+        elif method_name == 'sparse':
+            return self.m_matrix_sparse()
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name} m matrix')
+
     def m_matrix_data(self):
         row_ind, col_ind, data = [], [], []
         for elements_group in self.mesh.elements_groups:
