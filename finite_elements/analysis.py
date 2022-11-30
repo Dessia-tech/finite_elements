@@ -197,6 +197,10 @@ class FiniteElements(DessiaObject):
                 col_ind.extend(col_ind_n)
         return data, row_ind, col_ind
 
+    def k_matrix_dense(self):
+
+        return self.matrix_dense(method_name='k_matrix_data')
+
     def m_matrix_data(self):
         row_ind, col_ind, data = [], [], []
         for elements_group in self.mesh.elements_groups:
@@ -206,6 +210,22 @@ class FiniteElements(DessiaObject):
                 row_ind.extend(row_ind_n)
                 col_ind.extend(col_ind_n)
         return data, row_ind, col_ind
+
+    def m_matrix_dense(self):
+
+        return self.matrix_dense(method_name='m_matrix_data')
+
+    def matrix_dense(self, method_name):
+        matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
+                            len(self.mesh.nodes)*self.dimension))
+        if hasattr(self, method_name):
+            data, row_ind, col_ind = getattr(self, method_name)()
+            for i, d in enumerate(data):
+                matrix[row_ind[i], col_ind[i]] += d
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+        return matrix
 
     def loads_element_to_node(self):
         element_to_node_loads = []
