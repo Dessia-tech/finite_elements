@@ -201,6 +201,10 @@ class FiniteElements(DessiaObject):
 
         return self.matrix_dense(method_name='k_matrix_data')
 
+    def k_matrix_sparse(self):
+
+        return self.matrix_sparse(method_name='k_matrix_data')
+
     def m_matrix_data(self):
         row_ind, col_ind, data = [], [], []
         for elements_group in self.mesh.elements_groups:
@@ -215,6 +219,10 @@ class FiniteElements(DessiaObject):
 
         return self.matrix_dense(method_name='m_matrix_data')
 
+    def m_matrix_sparse(self):
+
+        return self.matrix_sparse(method_name='m_matrix_data')
+
     def matrix_dense(self, method_name):
         matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
                             len(self.mesh.nodes)*self.dimension))
@@ -222,6 +230,26 @@ class FiniteElements(DessiaObject):
             data, row_ind, col_ind = getattr(self, method_name)()
             for i, d in enumerate(data):
                 matrix[row_ind[i], col_ind[i]] += d
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+        return matrix
+
+    def matrix_sparse(self, method_name):
+        if hasattr(self, method_name):
+            data, row_ind, col_ind = getattr(self, method_name)()
+            dict_data = {}
+            for i, d in enumerate(data):
+                try:
+                    dict_data[(row_ind[i], col_ind[i])] += d
+                except KeyError:
+                    dict_data[(row_ind[i], col_ind[i])] = d
+            data_new, row_ind_new, col_ind_new = [], [], []
+            for key, value in dict_data.items():
+                data_new.append(value)
+                row_ind_new.append(key[0])
+                col_ind_new.append(key[1])
+            matrix = sparse.csc_matrix((data_new, (row_ind_new, col_ind_new)))
         else:
             raise NotImplementedError(
                 f'Class {self.__class__.__name__} does not implement {method_name}')
