@@ -180,6 +180,15 @@ class FiniteElements(DessiaObject):
 
         return permeabilities
 
+    def k_matrix(self, method_name):
+        if method_name == 'dense':
+            return self.k_matrix_dense()
+        elif method_name == 'sparse':
+            return self.k_matrix_sparse()
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name} k matrix')
+
     def k_matrix_data(self):
         row_ind, col_ind, data = [], [], []
         for elements_group in self.mesh.elements_groups:
