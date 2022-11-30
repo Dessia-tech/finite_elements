@@ -180,7 +180,7 @@ class FiniteElements(DessiaObject):
 
         return permeabilities
 
-    def k_matrix(self):
+    def k_matrix_data(self):
         row_ind, col_ind, data = [], [], []
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
@@ -197,7 +197,7 @@ class FiniteElements(DessiaObject):
                 col_ind.extend(col_ind_n)
         return data, row_ind, col_ind
 
-    def m_matrix(self):
+    def m_matrix_data(self):
         row_ind, col_ind, data = [], [], []
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
