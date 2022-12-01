@@ -15,7 +15,12 @@ scripts = [
 
     # Elasticity3D
     'Elasticity/beam3d_example_1.py',
-    'Elasticity/beam3d_example_2.py'
+    'Elasticity/beam3d_example_2.py',
+
+    # ModalAnalysis
+    'ModalAnalysis/beam2d_1.py',
+    'ModalAnalysis/beam2d_2.py',
+    'ModalAnalysis/beam3d_1.py'
     ]
 
 # Testing if all scripts exists before launching them
