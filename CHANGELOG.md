@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - MagneticElement2D
    - BoundaryCondition, NodeBoundaryCondition, EdgeBoundaryCondition, ElementBoundaryCondition
    - ElementLoad, EdgeLoad
-   - FiniteElementAnalysis
+   - FiniteElementAnalysis: modal_analysis
    - MagneticResults
    - ElasticityElement: d_matrix, energy
    - ElasticityTriangularElement2D: d_matrix(plane_strain, plane_stress), b_matrix, k_matrix, strain, stress, m_matrix

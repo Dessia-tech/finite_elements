@@ -566,7 +566,9 @@ class FiniteElementAnalysis(FiniteElements):
             # dim=4850, k=30: eigsh: 3.973 | eigh => 13.139
             # dim=14949, k=30: eigsh: 2.449 | eigh => 293.837
 
+            # =============================================================================
             # ### dense
+            # =============================================================================
             # dimension = len(self.mesh.nodes)*self.dimension
             # t = time.time()
             # m_matrix_dense = self.m_matrix_dense()
@@ -582,7 +584,9 @@ class FiniteElementAnalysis(FiniteElements):
             # print('eigh => ', time.time()-t)
             # print('************************')
 
-            ### sparse
+            # =============================================================================
+            # ### sparse
+            # =============================================================================
             # REMARKS
             # self.m_matrix_sparse() is faster than csc_matrix(self.m_matrix_dense())
 
