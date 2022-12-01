@@ -559,7 +559,7 @@ class FiniteElementAnalysis(FiniteElements):
         return len(self.mesh.nodes) * self.dimension + len(self.continuity_conditions) \
             + len(self._boundary_conditions)
 
-    def model_analysis(self, order, k):
+    def modal_analysis(self, order, k):
         if order == 'largest':
             # REMARKS
             # eigh & eigsh had been compared => eigsh is the best
