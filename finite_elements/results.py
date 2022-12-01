@@ -15,7 +15,7 @@ from finite_elements.core import MU, blue_red
 import finite_elements.core
 from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
 from matplotlib import cm
-
+import math
 
 class Result(DessiaObject):
     """
@@ -491,7 +491,13 @@ class ElasticityResults(Result):
                 indexes = [self.mesh.node_to_index[point] for point in element.points]
                 for index in indexes:
                     for i in range(self.dimension):
-                        displacements.append(q[positions[(index, i + 1)]])
+                        d = q[positions[(index, i + 1)]]
+                        if isinstance(d, npy.complex128) and math.isclose(d.imag, 0, rel_tol=1e-9):
+                            displacements.append(d.real)
+                        else:
+                            displacements.append(d.real) # OR abs(d) (?)
+                            # raise NotImplementedError(
+                            #     f"The displacement's imaginary part is significant. d = {d}")
 
                 displacements_per_element[element] = displacements
                 element.displacements = displacements
