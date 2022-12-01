@@ -497,17 +497,26 @@ class ElasticityResults(Result):
         self.plane_strain = plane_strain
         self.plane_stress = plane_stress
 
-        self.displacement_vectors_per_node = self._displacement_vectors_per_node()
-        self.displacements_per_element = self._displacements_per_element()
-        self.energy_per_element = self._energy_per_element()
-        self.energy = self._energy()
-        self.strain, self.stress = self._strain_stress_per_element()
-        self.deformed_nodes = self._deformed_nodes()
-        self.deformed_mesh = self._deformed_mesh()
+        # self.displacement_vectors_per_node = self._displacement_vectors_per_node()
+        # self.displacements_per_element = self._displacements_per_element()
+        # self.energy_per_element = self._energy_per_element()
+        # self.energy = self._energy()
+        # self.strain, self.stress = self._strain_stress_per_element()
+        # self.deformed_nodes = self._deformed_nodes()
+        # self.deformed_mesh = self._deformed_mesh()
+
+        self._displacement_vectors_per_node = None
+        self._displacements_per_element = None
+        self._energy_per_element = None
+        self._energy = None
+        self._strain, self._stress = None, None
+        self._deformed_nodes = None
+        self._deformed_mesh = None
 
         Result.__init__(self, mesh, result_vector)
 
-    def _displacements_per_element(self):
+    @property
+    def deformed_mesh(self):
         """
         Defines
 
@@ -515,77 +524,16 @@ class ElasticityResults(Result):
         :rtype: TYPE
         """
 
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
-        q_vector = self.result_vector
+        if not self._deformed_mesh:
+            self._deformed_mesh = self.deformed_mesh_m()
+        return self._deformed_mesh
 
-        displacements_per_element = {}
-        for elements_group in self.mesh.elements_groups:
-            for element in elements_group.elements:
-                displacements = []
-                indexes = [self.mesh.node_to_index[point] for point in element.points]
-                for index in indexes:
-                    for i in range(self.dimension):
-                        displacements.append(q_vector[positions[(index, i + 1)]])
-
-                displacements_per_element[element] = displacements
-                element.displacements = displacements
-
-        return displacements_per_element
-
-    def _displacement_vectors_per_node(self):
-        """
-        Defines
-
-        :return: DESCRIPTION
-        :rtype: TYPE
-        """
-
-        nodes_number = len(self.mesh.nodes)
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=nodes_number)
-        displacement_field_vectors = []
-        q_vector = self.result_vector
-
-        for node in range(0, nodes_number):
-            displacement = []
-            for i in range(self.dimension):
-                displacement.append(q_vector[positions[(node, i + 1)]])
-
-            displacement_field_vectors.append(
-                getattr(vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement))
-            # displacement_field_vectors.append(vm.Vector2D(*displacement))
-
-        return displacement_field_vectors
-
-    def _strain_stress_per_element(self):
-        """
-        Defines
-
-        :return: DESCRIPTION
-        :rtype: TYPE
-        """
-
-        element_to_strain, element_to_stress = {}, {}
-        for elements_group in self.mesh.elements_groups:
-            for element in elements_group.elements:
-                element_to_strain[element] = (npy.matmul(element.b_matrix, element.displacements))
-                element.strain = element_to_strain[element]
-                element_to_stress[element] = (npy.matmul(
-                    npy.matmul(element.d_matrix(plane_strain=self.plane_strain,
-                                                plane_stress=self.plane_stress), element.b_matrix),
-                    element.displacements))
-                element.stress = element_to_stress[element]
-
-        return element_to_strain, element_to_stress
-
-    def _deformed_mesh(self, amplitude=1):
+    def deformed_mesh_m(self, amplitude=1):
         """
         Defines
 
         :param amplitude: DESCRIPTION, defaults to 1
         :type amplitude: TYPE, optional
-
         :return: DESCRIPTION
         :rtype: TYPE
         """
@@ -593,7 +541,7 @@ class ElasticityResults(Result):
         if amplitude == 1:
             deformed_nodes = self.deformed_nodes
         else:
-            deformed_nodes = self._deformed_nodes(amplitude=amplitude)
+            deformed_nodes = self.deformed_nodes_m(amplitude=amplitude)
 
         group_elasticity_elments = []
         for elements_group in self.mesh.elements_groups:
@@ -617,13 +565,25 @@ class ElasticityResults(Result):
 
         return mesh
 
-    def _deformed_nodes(self, amplitude=1):
+    @property
+    def deformed_nodes(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        if not self._deformed_nodes:
+            self._deformed_nodes = self.deformed_nodes_m()
+        return self._deformed_nodes
+
+    def deformed_nodes_m(self, amplitude=1):
         """
         Defines
 
         :param amplitude: DESCRIPTION, defaults to 1
         :type amplitude: TYPE, optional
-
         :return: DESCRIPTION
         :rtype: TYPE
         """
@@ -637,7 +597,117 @@ class ElasticityResults(Result):
 
         return deformed_nodes
 
-    def _energy(self):
+    def displacement_per_node_x(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        return [displacement[0] for displacement in self.displacement_vectors_per_node]
+
+    def displacement_per_node_y(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        return [displacement[1] for displacement in self.displacement_vectors_per_node]
+
+    @property
+    def displacement_vectors_per_node(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        if not self._displacement_vectors_per_node:
+            self._displacement_vectors_per_node = self.displacement_vectors_per_node_m()
+        return self._displacement_vectors_per_node
+
+    def displacement_vectors_per_node_m(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        nodes_number = len(self.mesh.nodes)
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=nodes_number)
+        displacement_field_vectors = []
+        q = self.result_vector
+
+        for node in range(0, nodes_number):
+            displacement = []
+            for i in range(self.dimension):
+                displacement.append(q[positions[(node, i + 1)]])
+
+            displacement_field_vectors.append(
+                getattr(vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement))
+            # displacement_field_vectors.append(vm.Vector2D(*displacement))
+
+        return displacement_field_vectors
+
+    @property
+    def displacements_per_element(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        if not self._displacements_per_element:
+            self._displacements_per_element = self.displacements_per_element_m()
+        return self._displacements_per_element
+
+    def displacements_per_element_m(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                 nodes_number=len(self.mesh.nodes))
+        q = self.result_vector
+
+        displacements_per_element = {}
+        for elements_group in self.mesh.elements_groups:
+            for element in elements_group.elements:
+                displacements = []
+                indexes = [self.mesh.node_to_index[point] for point in element.points]
+                for index in indexes:
+                    for i in range(self.dimension):
+                        displacements.append(q[positions[(index, i + 1)]])
+
+                displacements_per_element[element] = displacements
+                element.displacements = displacements
+
+        return displacements_per_element
+
+    @property
+    def energy(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        if not self._energy:
+            self._energy = self.energy_m()
+        return self._energy
+
+    def energy_m(self):
         """
         Defines
 
@@ -663,7 +733,21 @@ class ElasticityResults(Result):
         # return sum([value for value in self.energy_per_element.values()]) #unnecessary-comprehension
         return sum(list(self.energy_per_element.values()))
 
-    def _energy_per_element(self):
+    @property
+    def energy_per_element(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        if not self._energy_per_element:
+            _ = self.displacements_per_element_m()
+            self._energy_per_element = self.energy_per_element_m()
+        return self._energy_per_element
+
+    def energy_per_element_m(self):
         """
         Defines
 
@@ -677,7 +761,8 @@ class ElasticityResults(Result):
                 energy[element] = (element.energy(self.plane_strain, self.plane_stress))
         return energy
 
-    def displacement_per_node_x(self):
+    @property
+    def strain(self):
         """
         Defines
 
@@ -685,9 +770,12 @@ class ElasticityResults(Result):
         :rtype: TYPE
         """
 
-        return [displacement[0] for displacement in self.displacement_vectors_per_node]
+        if not self._strain:
+            self._strain, self._stress = self.strain_stress_per_element_m()
+        return self._strain
 
-    def displacement_per_node_y(self):
+    @property
+    def stress(self):
         """
         Defines
 
@@ -695,7 +783,29 @@ class ElasticityResults(Result):
         :rtype: TYPE
         """
 
-        return [displacement[1] for displacement in self.displacement_vectors_per_node]
+        if not self._stress:
+            self._strain, self._stress = self.strain_stress_per_element_m()
+        return self._stress
+
+    def strain_stress_per_element_m(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        element_to_strain, element_to_stress = {}, {}
+        for elements_group in self.mesh.elements_groups:
+            for element in elements_group.elements:
+                element_to_strain[element] = (npy.matmul(element.b_matrix, element.displacements))
+                element.strain = element_to_strain[element]
+                element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress),
+                                                                    element.b_matrix),
+                                                         element.displacements))
+                element.stress = element_to_stress[element]
+
+        return element_to_strain, element_to_stress
 
     def update_vtk_with_results(self, input_file_name, output_file_name):
         """
@@ -947,7 +1057,7 @@ class ElasticityResults2D(ElasticityResults):
             _, ax = plt.subplots()
             ax.set_aspect('equal')
         if amplitude != 1:
-            self._deformed_mesh(amplitude=amplitude).plot(ax=ax)
+            self.deformed_mesh_m(amplitude=amplitude).plot(ax=ax)
         else:
             self.deformed_mesh.plot(ax=ax)
         # self.mesh.plot(ax)
@@ -991,7 +1101,7 @@ class ElasticityResults2D(ElasticityResults):
                 f'Class {self.__class__.__name__} does not implement {displacement_name}')
 
         if amplitude != 1:
-            mesh_fe = self._deformed_mesh(amplitude=amplitude)
+            mesh_fe = self.deformed_mesh_m(amplitude=amplitude)
         else:
             mesh_fe = self.deformed_mesh
 
@@ -1124,7 +1234,7 @@ class ElasticityResults2D(ElasticityResults):
         result_values = list(self.energy_per_element.values())
 
         if amplitude != 1:
-            deformed_mesh = self._deformed_mesh(amplitude=amplitude)
+            deformed_mesh = self.deformed_mesh_m(amplitude=amplitude)
         else:
             deformed_mesh = self.deformed_mesh
 
