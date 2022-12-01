@@ -561,10 +561,13 @@ class ElasticityResults(Result):
 
         return element_to_strain, element_to_stress
 
-    def generate_vtk_file(self, file_name):
-        self.mesh._gmsh.to_vtk(file_name)
-        with open(file_name) as f_in:
-            with open(file_name + '_results', "w") as f_out:
+    def generate_vtk_file(self, file_name_output):
+        self.mesh._gmsh.to_vtk('initial_mesh.vtk')
+        if file_name_output[-3::] != 'vtk':
+            file_name_output += '.vtk'
+
+        with open('initial_mesh.vtk') as f_in:
+            with open(file_name_output, "w") as f_out:
                 for line in f_in:
                     f_out.write(line)
         f_out.close()
@@ -572,13 +575,13 @@ class ElasticityResults(Result):
 
         nodes_correction = self.mesh._nodes_correction
         displacements = []
-        for node in self.mesh._gmsh.nodes[0]['all_nodes']:
+        for node in self.mesh._gmsh.nodes['all_nodes']:
             try:
                 displacements.append(self.displacement_vectors_per_node[node])
             except KeyError:
                 displacements.append(self.displacement_vectors_per_node[nodes_correction[node]])
 
-        lines = ['POINT_DATA ' + str(len(self.mesh._gmsh.nodes[0]['all_nodes']))]
+        lines = ['POINT_DATA ' + str(len(self.mesh._gmsh.nodes['all_nodes']))]
         lines.append('SCALARS ' + 'Displacement_Magnitude float 1')
         lines.append('LOOKUP_TABLE default')
 
