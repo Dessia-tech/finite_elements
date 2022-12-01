@@ -247,8 +247,8 @@ class FiniteElements(DessiaObject):
         return self.matrix_sparse(method_name='m_matrix_data')
 
     def matrix_dense(self, method_name):
-        matrix = npy.zeros((len(self.mesh.nodes)*self.dimension,
-                            len(self.mesh.nodes)*self.dimension))
+        matrix = npy.zeros((len(self.mesh.nodes) * self.dimension,
+                            len(self.mesh.nodes) * self.dimension))
         if hasattr(self, method_name):
             data, row_ind, col_ind = getattr(self, method_name)()
             for i, d in enumerate(data):
@@ -597,10 +597,10 @@ class FiniteElementAnalysis(FiniteElements):
             # print('k, m matrices => ', time.time()-t)
 
             # t = time.time()
-            eigvals, eigvecs = scipy.sparse.linalg.eigsh(A = k_matrix_sparse,
-                                                         M = m_matrix_sparse,
-                                                         which = 'LM',
-                                                         k = k)
+            eigvals, eigvecs = scipy.sparse.linalg.eigsh(A=k_matrix_sparse,
+                                                         M=m_matrix_sparse,
+                                                         which='LM',
+                                                         k=k)
             # print('eigsh => ', time.time()-t)
             # print('************************')
 
@@ -610,9 +610,9 @@ class FiniteElementAnalysis(FiniteElements):
             m_matrix_sparse = self.m_matrix_sparse()
             k_matrix_sparse = csc_matrix(scipy.linalg.inv(self.k_matrix_dense()))
             eigvals, eigvecs = scipy.sparse.linalg.eigs(k_matrix_sparse @ m_matrix_sparse,
-                                                        which = 'LM',
-                                                        k = k)
-            return 1/eigvals, eigvecs.T
+                                                        which='LM',
+                                                        k=k)
+            return 1 / eigvals, eigvecs.T
 
     def solve(self):
         """
