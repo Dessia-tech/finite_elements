@@ -574,7 +574,7 @@ class FiniteElementAnalysis(FiniteElements):
             # print('dense')
             # print('k, m matrices => ', time.time()-t)
             # t = time.time()
-            # eigvals, eigvec = scipy.linalg.eigh(k_matrix_dense,
+            # eigvals, eigvecs = scipy.linalg.eigh(k_matrix_dense,
             #                                     m_matrix_dense,
             #                                     check_finite = False,
             #                                     eigvals = (dimension - k,
@@ -593,22 +593,22 @@ class FiniteElementAnalysis(FiniteElements):
             # print('k, m matrices => ', time.time()-t)
 
             # t = time.time()
-            eigvals, eigvec = scipy.sparse.linalg.eigsh(A = k_matrix_sparse,
-                                                        M = m_matrix_sparse,
-                                                        which = 'LM',
-                                                        k = k)
+            eigvals, eigvecs = scipy.sparse.linalg.eigsh(A = k_matrix_sparse,
+                                                         M = m_matrix_sparse,
+                                                         which = 'LM',
+                                                         k = k)
             # print('eigsh => ', time.time()-t)
             # print('************************')
 
-            return eigvals, eigvec
+            return eigvals, eigvecs.T
 
         elif order == 'smallest':
             m_matrix_sparse = self.m_matrix_sparse()
             k_matrix_sparse = csc_matrix(scipy.linalg.inv(self.k_matrix_dense()))
-            eigvals, eigvec = scipy.sparse.linalg.eigs(k_matrix_sparse @ m_matrix_sparse,
-                                                       which = 'LM',
-                                                       k = k)
-            return 1/eigvals, eigvec
+            eigvals, eigvecs = scipy.sparse.linalg.eigs(k_matrix_sparse @ m_matrix_sparse,
+                                                        which = 'LM',
+                                                        k = k)
+            return 1/eigvals, eigvecs.T
 
     def solve(self):
         """
