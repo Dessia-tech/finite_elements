@@ -596,7 +596,7 @@ class ElasticityResults(Result):
             for displacement in displacements:
                 lines.append(str([*displacement])[1:-1].replace(',', ''))
 
-        with open(file_name + '_results', "a+") as f_out:
+        with open(file_name_output, "a+") as f_out:
             for line in lines:
                 f_out.write(line)
                 f_out.write('\n')
