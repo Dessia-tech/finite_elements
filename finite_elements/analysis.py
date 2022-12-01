@@ -9,7 +9,12 @@ import matplotlib.pyplot as plt
 import numpy as npy
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
+# import time
+import scipy
 from scipy import sparse
+import scipy.sparse.linalg
+from scipy.sparse import csc_matrix
+
 from dessia_common import DessiaObject
 from typing import List
 import finite_elements.elements
@@ -553,6 +558,57 @@ class FiniteElementAnalysis(FiniteElements):
     def get_source_matrix_length(self):
         return len(self.mesh.nodes) * self.dimension + len(self.continuity_conditions) \
             + len(self._boundary_conditions)
+
+    def model_analysis(self, order, k):
+        if order == 'largest':
+            # REMARKS
+            # eigh & eigsh had been compared => eigsh is the best
+            # dim=4850, k=30: eigsh: 3.973 | eigh => 13.139
+            # dim=14949, k=30: eigsh: 2.449 | eigh => 293.837
+
+            # ### dense
+            # dimension = len(self.mesh.nodes)*self.dimension
+            # t = time.time()
+            # m_matrix_dense = self.m_matrix_dense()
+            # k_matrix_dense = self.k_matrix_dense()
+            # print('dense')
+            # print('k, m matrices => ', time.time()-t)
+            # t = time.time()
+            # eigvals, eigvec = scipy.linalg.eigh(k_matrix_dense,
+            #                                     m_matrix_dense,
+            #                                     check_finite = False,
+            #                                     eigvals = (dimension - k,
+            #                                                dimension - 1))
+            # print('eigh => ', time.time()-t)
+            # print('************************')
+
+            ### sparse
+            # REMARKS
+            # self.m_matrix_sparse() is faster than csc_matrix(self.m_matrix_dense())
+
+            # t = time.time()
+            m_matrix_sparse = self.m_matrix_sparse()
+            k_matrix_sparse = self.k_matrix_sparse()
+            # print('sparse')
+            # print('k, m matrices => ', time.time()-t)
+
+            # t = time.time()
+            eigvals, eigvec = scipy.sparse.linalg.eigsh(A = k_matrix_sparse,
+                                                        M = m_matrix_sparse,
+                                                        which = 'LM',
+                                                        k = k)
+            # print('eigsh => ', time.time()-t)
+            # print('************************')
+
+            return eigvals, eigvec
+
+        elif order == 'smallest':
+            m_matrix_sparse = self.m_matrix_sparse()
+            k_matrix_sparse = csc_matrix(scipy.linalg.inv(self.k_matrix_dense()))
+            eigvals, eigvec = scipy.sparse.linalg.eigs(k_matrix_sparse @ m_matrix_sparse,
+                                                       which = 'LM',
+                                                       k = k)
+            return 1/eigvals, eigvec
 
     def solve(self):
         """
