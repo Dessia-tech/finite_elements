@@ -5,7 +5,7 @@ Module containing objects related to different finite elements types
 """
 
 import volmdlr.mesh as vmmesh
-from dessia_common import DessiaObject
+from dessia_common.core import DessiaObject
 import numpy as npy
 import finite_elements.core
 

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as npy
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
-from dessia_common import DessiaObject
+from dessia_common.core import DessiaObject
 from typing import List  # Tuple, TypeVar
 from finite_elements.core import MU, blue_red
 import finite_elements.core

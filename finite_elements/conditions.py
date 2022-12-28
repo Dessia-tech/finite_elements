@@ -5,7 +5,7 @@ Module containing objects related to different conditions types
 """
 
 import volmdlr as vm
-from dessia_common import DessiaObject
+from dessia_common.core import DessiaObject
 
 
 class BoundaryCondition(DessiaObject):

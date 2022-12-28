@@ -15,7 +15,7 @@ from scipy import sparse
 import scipy.sparse.linalg
 from scipy.sparse import csc_matrix
 
-from dessia_common import DessiaObject
+from dessia_common.core import DessiaObject
 from typing import List
 import finite_elements.elements
 from finite_elements.loads import ElementsLoad, EdgeLoad, NodeLoad, MagnetLoad
