@@ -9,12 +9,13 @@ import matplotlib.pyplot as plt
 import numpy as npy
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
-from dessia_common import DessiaObject
+from dessia_common.core import DessiaObject
 from typing import List  # Tuple, TypeVar
 from finite_elements.core import MU, blue_red
 import finite_elements.core
 from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
 from matplotlib import cm
+import math
 
 
 class Result(DessiaObject):
@@ -491,7 +492,8 @@ class ElasticityResults(Result):
                 indexes = [self.mesh.node_to_index[point] for point in element.points]
                 for index in indexes:
                     for i in range(self.dimension):
-                        displacements.append(q[positions[(index, i + 1)]])
+                        d = q[positions[(index, i + 1)]]
+                        displacements.append(d.real)  # TODO: consier complex number with d.imag != 0
 
                 displacements_per_element[element] = displacements
                 element.displacements = displacements
