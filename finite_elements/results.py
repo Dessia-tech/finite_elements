@@ -17,6 +17,7 @@ from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
 from matplotlib import cm
 import math
 
+
 class Result(DessiaObject):
     """
     :param mesh: The mesh on which the result has been solved.
@@ -492,7 +493,7 @@ class ElasticityResults(Result):
                 for index in indexes:
                     for i in range(self.dimension):
                         d = q[positions[(index, i + 1)]]
-                        displacements.append(d.real) # TODO: consier complex number with d.imag != 0
+                        displacements.append(d.real)  # TODO: consier complex number with d.imag != 0
 
                 displacements_per_element[element] = displacements
                 element.displacements = displacements
