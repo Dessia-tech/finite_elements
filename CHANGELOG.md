@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - ElasticityResults3D: axial_strain/stress, shear_strain/stress
    - Material
 * Add new scripts with usecases and examples for tests (Magnetic, Elasticity2D)
+* Generate .vtk file with displacements results
+
 
 ### Performance improvements
 

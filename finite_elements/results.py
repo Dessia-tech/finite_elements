@@ -459,16 +459,16 @@ class ElasticityResults(Result):
         nodes_number = len(self.mesh.nodes)
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=nodes_number)
-        displacement_field_vectors = []
+        displacement_field_vectors = {}
         q = self.result_vector
 
-        for node in range(0, nodes_number):
+        for n, node in enumerate(self.mesh.nodes):
             displacement = []
             for i in range(self.dimension):
-                displacement.append(q[positions[(node, i + 1)]])
+                displacement.append(q[positions[(n, i + 1)]])
 
-            displacement_field_vectors.append(
-                getattr(vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement))
+            displacement_field_vectors[node] = getattr(
+                vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement)
             # displacement_field_vectors.append(vm.Vector2D(*displacement))
 
         return displacement_field_vectors
@@ -561,6 +561,48 @@ class ElasticityResults(Result):
 
         return element_to_strain, element_to_stress
 
+    def generate_vtk_file(self, file_name_output):
+        self.mesh._gmsh.to_vtk('initial_mesh.vtk')
+        if file_name_output[-3::] != 'vtk':
+            file_name_output += '.vtk'
+
+        with open('initial_mesh.vtk') as f_in:
+            with open(file_name_output, "w") as f_out:
+                for line in f_in:
+                    f_out.write(line)
+        f_out.close()
+        f_in.close()
+
+        nodes_correction = self.mesh._nodes_correction
+        displacements = []
+        for node in self.mesh._gmsh.nodes['all_nodes']:
+            try:
+                displacements.append(self.displacement_vectors_per_node[node])
+            except KeyError:
+                displacements.append(self.displacement_vectors_per_node[nodes_correction[node]])
+
+        lines = ['POINT_DATA ' + str(len(self.mesh._gmsh.nodes['all_nodes']))]
+        lines.append('SCALARS ' + 'Displacement_Magnitude float 1')
+        lines.append('LOOKUP_TABLE default')
+
+        for displacement in displacements:
+            lines.append(str(displacement.norm()))
+
+        lines.append('VECTORS Displacement_Vectors float')
+        if displacement.__class__.__name__[-2] == '2':
+            for displacement in displacements:
+                lines.append(str([*displacement])[1:-1].replace(',', '') + ' 0')
+        else:
+            for displacement in displacements:
+                lines.append(str([*displacement])[1:-1].replace(',', ''))
+
+        with open(file_name_output, "a+") as f_out:
+            for line in lines:
+                f_out.write(line)
+                f_out.write('\n')
+        f_out.close()
+
+    '''
     def update_vtk_with_results(self, input_file_name, output_file_name):
         with open(input_file_name) as f_in:
             with open(output_file_name, "w") as f_out:
@@ -604,6 +646,7 @@ class ElasticityResults(Result):
                 f_out.write(line)
                 f_out.write('\n')
         f_out.close()
+        '''
 
 
 class ElasticityResults2D(ElasticityResults):
