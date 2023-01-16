@@ -63,11 +63,11 @@ class MagneticResults(Result):
             vector_B = element_to_magnetic_field[element]
 
             element_center = element.center
-            e_r = vm.Vector2D(element_center.vector)
-            e_r.Normalize()
-            e_teta = vm.Vector2D((-e_r[1], e_r[0]))
-            B_r = vector_B.Dot(e_r)
-            B_teta = vector_B.Dot(e_teta)
+            e_r = vm.Vector2D(*element_center)
+            e_r.normalize()
+            e_teta = vm.Vector2D(-e_r[1], e_r[0])
+            B_r = vector_B.dot(e_r)
+            B_teta = vector_B.dot(e_teta)
 
             all_BrBtetha.append(B_r * B_teta)
         return all_BrBtetha
@@ -115,11 +115,11 @@ class MagneticResults(Result):
         element_to_magnetic_field = self.magnetic_field_per_element
         vector_B = element_to_magnetic_field[element]
         element_center = element.center
-        e_r = vm.Vector2D(element_center.vector)
-        e_r.Normalize()
-        e_teta = vm.Vector2D((-e_r[1], e_r[0]))
-        B_r = vector_B.Dot(e_r)
-        B_teta = vector_B.Dot(e_teta)
+        e_r = vm.Vector2D(*element_center)
+        e_r.normalize()
+        e_teta = vm.Vector2D(-e_r[1], e_r[0])
+        B_r = vector_B.dot(e_r)
+        B_teta = vector_B.dot(e_teta)
 
         sigma_rr = 1 / MU * B_r**2 - 1 / (2 * MU) * vector_B.Norm()**2
         sigma_rteta = 1 / MU * B_r * B_teta
@@ -162,12 +162,12 @@ class MagneticResults(Result):
             vector_B = element_to_magnetic_field[element]
 
             element_center = element.center
-            e_r = vm.Vector2D(element_center.vector)
-            e_r.Normalize()
-            e_teta = vm.Vector2D((-e_r[1], e_r[0]))
-            B_r = vector_B.Dot(e_r)
-            B_teta = vector_B.Dot(e_teta)
-            r_Br_Bteta = element_center.Norm() * B_r * B_teta
+            e_r = vm.Vector2D(*element_center)
+            e_r.normalize()
+            e_teta = vm.Vector2D(-e_r[1], e_r[0])
+            B_r = vector_B.dot(e_r)
+            B_teta = vector_B.dot(e_teta)
+            r_Br_Bteta = element_center.norm() * B_r * B_teta
 #            r_Br_Bteta = r * B_r * B_teta
             dS = element.area
 
