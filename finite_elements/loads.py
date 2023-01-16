@@ -7,7 +7,7 @@ Module containing objects related to different loads types
 from typing import List
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
-from dessia_common import DessiaObject
+from dessia_common.core import DessiaObject
 
 
 class ElementsLoad(DessiaObject):

@@ -32,9 +32,9 @@ def find_points_with_y(nodes, y):
 
 # %% Data
 
-files_path = ['../InputFiles/2D/poutre_2d_0.8', '../InputFiles/2D/poutre_2d_0.5',
-              '../InputFiles/2D/poutre_2d_0.3', '../InputFiles/2D/poutre_2d_0.18',
-              '../InputFiles/2D/poutre_2d_0.1']
+files_path = ['../InputFiles/2D/beam_2d_0.8', '../InputFiles/2D/beam_2d_0.5',
+              '../InputFiles/2D/beam_2d_0.3', '../InputFiles/2D/beam_2d_0.18',
+              '../InputFiles/2D/beam_2d_0.1']
 
 elasticity_results_displacements = {}
 y_displacements = []

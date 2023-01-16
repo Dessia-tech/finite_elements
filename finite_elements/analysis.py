@@ -9,8 +9,13 @@ import matplotlib.pyplot as plt
 import numpy as npy
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
+# import time
+import scipy
 from scipy import sparse
-from dessia_common import DessiaObject
+import scipy.sparse.linalg
+from scipy.sparse import csc_matrix
+
+from dessia_common.core import DessiaObject
 from typing import List
 import finite_elements.elements
 from finite_elements.loads import ElementsLoad, EdgeLoad, NodeLoad, MagnetLoad
@@ -90,6 +95,7 @@ class FiniteElements(DessiaObject):
 
         self._boundary_conditions = None
         self._node_loads = None
+        self._positions = None
 
         DessiaObject.__init__(self, name='')
 
@@ -156,8 +162,9 @@ class FiniteElements(DessiaObject):
             self._boundary_conditions = node_boundary_conditions
 
         # c_matrix data
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
+        positions = self.positions
         row_ind, col_ind, data = [], [], []
         for i, node_condition in enumerate(node_boundary_conditions):
             data.extend(node_condition.c_matrix())
@@ -178,7 +185,16 @@ class FiniteElements(DessiaObject):
 
         return permeabilities
 
-    def k_matrix(self):
+    def k_matrix(self, method_name):
+        if method_name == 'dense':
+            return self.k_matrix_dense()
+        elif method_name == 'sparse':
+            return self.k_matrix_sparse()
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name} k matrix')
+
+    def k_matrix_data(self):
         row_ind, col_ind, data = [], [], []
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
@@ -194,6 +210,73 @@ class FiniteElements(DessiaObject):
                 row_ind.extend(row_ind_n)
                 col_ind.extend(col_ind_n)
         return data, row_ind, col_ind
+
+    def k_matrix_dense(self):
+
+        return self.matrix_dense(method_name='k_matrix_data')
+
+    def k_matrix_sparse(self):
+
+        return self.matrix_sparse(method_name='k_matrix_data')
+
+    def m_matrix(self, method_name):
+        if method_name == 'dense':
+            return self.m_matrix_dense()
+        elif method_name == 'sparse':
+            return self.m_matrix_sparse()
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name} m matrix')
+
+    def m_matrix_data(self):
+        row_ind, col_ind, data = [], [], []
+        for elements_group in self.mesh.elements_groups:
+            for element in elements_group.elements:
+                data.extend(element.elementary_mass_matrix())
+                row_ind_n, col_ind_n = self.get_row_col_indices(element)
+                row_ind.extend(row_ind_n)
+                col_ind.extend(col_ind_n)
+        return data, row_ind, col_ind
+
+    def m_matrix_dense(self):
+
+        return self.matrix_dense(method_name='m_matrix_data')
+
+    def m_matrix_sparse(self):
+
+        return self.matrix_sparse(method_name='m_matrix_data')
+
+    def matrix_dense(self, method_name):
+        matrix = npy.zeros((len(self.mesh.nodes) * self.dimension,
+                            len(self.mesh.nodes) * self.dimension))
+        if hasattr(self, method_name):
+            data, row_ind, col_ind = getattr(self, method_name)()
+            for i, d in enumerate(data):
+                matrix[row_ind[i], col_ind[i]] += d
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+        return matrix
+
+    def matrix_sparse(self, method_name):
+        if hasattr(self, method_name):
+            data, row_ind, col_ind = getattr(self, method_name)()
+            dict_data = {}
+            for i, d in enumerate(data):
+                try:
+                    dict_data[(row_ind[i], col_ind[i])] += d
+                except KeyError:
+                    dict_data[(row_ind[i], col_ind[i])] = d
+            data_new, row_ind_new, col_ind_new = [], [], []
+            for key, value in dict_data.items():
+                data_new.append(value)
+                row_ind_new.append(key[0])
+                col_ind_new.append(key[1])
+            matrix = sparse.csc_matrix((data_new, (row_ind_new, col_ind_new)))
+        else:
+            raise NotImplementedError(
+                f'Class {self.__class__.__name__} does not implement {method_name}')
+        return matrix
 
     def loads_element_to_node(self):
         element_to_node_loads = []
@@ -223,6 +306,14 @@ class FiniteElements(DessiaObject):
                         dimension=edge_load.dimension))
         return edge_to_node_loads
 
+    @property
+    def positions(self):
+        if not self._positions:
+            self._positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+                                                                           nodes_number=len(self.mesh.nodes))
+
+        return self._positions
+
     def source_c_matrix_loads(self):
         node_loads = self.node_loads[:]
         # element to node
@@ -241,8 +332,9 @@ class FiniteElements(DessiaObject):
 
         # source_c_matrix data
         data, row_ind = [], []
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                          nodes_number=len(self.mesh.nodes))
+        positions = self.positions
         for i, load in enumerate(node_loads):
             data.append(load.source_c_matrix())
             row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
@@ -296,8 +388,9 @@ class FiniteElements(DessiaObject):
 
     # def source_c_matrix_node_loads(self):
     #     data, row_ind = [], []
-    #     positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-    #                                                              nodes_number=len(self.mesh.nodes))
+    # #   positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+    # #                                                            nodes_number=len(self.mesh.nodes))
+    #     positions = self.positions
     #     for i, load in enumerate(self.node_loads):
     #         data.append(load.source_c_matrix())
     #         row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
@@ -443,8 +536,9 @@ class FiniteElementAnalysis(FiniteElements):
 
         indexes = [self.mesh.node_to_index[point] for point in element.points]
 
-        positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
-                                                                 nodes_number=len(self.mesh.nodes))
+        # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
+        #                                                           nodes_number=len(self.mesh.nodes))
+        positions = self.positions
 
         row_ind, col = [], []
         for index in indexes:
@@ -452,16 +546,73 @@ class FiniteElementAnalysis(FiniteElements):
                 row_ind.extend(len(indexes) * element.dimension * [positions[(index, i + 1)]])
                 col.append(positions[(index, i + 1)])
 
-        col_ind = []
-        for index in indexes:
-            for i in range(element.dimension):
-                col_ind.extend(col)
+        # col_ind = []
+        # for index in indexes:
+        #     for i in range(element.dimension):
+        #         col_ind.extend(col)
+
+        col_ind = col * (len(indexes) * element.dimension)
 
         return row_ind, col_ind
 
     def get_source_matrix_length(self):
         return len(self.mesh.nodes) * self.dimension + len(self.continuity_conditions) \
             + len(self._boundary_conditions)
+
+    def modal_analysis(self, order, k):
+        if order == 'largest':
+            # REMARKS
+            # eigh & eigsh had been compared => eigsh is the best
+            # dim=4850, k=30: eigsh: 3.973 | eigh => 13.139
+            # dim=14949, k=30: eigsh: 2.449 | eigh => 293.837
+
+            # =============================================================================
+            # ### dense
+            # =============================================================================
+            # dimension = len(self.mesh.nodes)*self.dimension
+            # t = time.time()
+            # m_matrix_dense = self.m_matrix_dense()
+            # k_matrix_dense = self.k_matrix_dense()
+            # print('dense')
+            # print('k, m matrices => ', time.time()-t)
+            # t = time.time()
+            # eigvals, eigvecs = scipy.linalg.eigh(k_matrix_dense,
+            #                                     m_matrix_dense,
+            #                                     check_finite = False,
+            #                                     eigvals = (dimension - k,
+            #                                                dimension - 1))
+            # print('eigh => ', time.time()-t)
+            # print('************************')
+
+            # =============================================================================
+            # ### sparse
+            # =============================================================================
+            # REMARKS
+            # self.m_matrix_sparse() is faster than csc_matrix(self.m_matrix_dense())
+
+            # t = time.time()
+            m_matrix_sparse = self.m_matrix_sparse()
+            k_matrix_sparse = self.k_matrix_sparse()
+            # print('sparse')
+            # print('k, m matrices => ', time.time()-t)
+
+            # t = time.time()
+            eigvals, eigvecs = scipy.sparse.linalg.eigsh(A=k_matrix_sparse,
+                                                         M=m_matrix_sparse,
+                                                         which='LM',
+                                                         k=k)
+            # print('eigsh => ', time.time()-t)
+            # print('************************')
+
+            return eigvals, eigvecs.T
+
+        elif order == 'smallest':
+            m_matrix_sparse = self.m_matrix_sparse()
+            k_matrix_sparse = csc_matrix(scipy.linalg.inv(self.k_matrix_dense()))
+            eigvals, eigvecs = scipy.sparse.linalg.eigs(k_matrix_sparse @ m_matrix_sparse,
+                                                        which='LM',
+                                                        k=k)
+            return 1 / eigvals, eigvecs.T
 
     def solve(self):
         """
