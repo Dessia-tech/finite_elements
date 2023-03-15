@@ -5,6 +5,7 @@ Module containing objects related to finite elements analysis results
 """
 
 from typing import List  # Tuple, TypeVar
+# import math
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
@@ -12,7 +13,7 @@ from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
 import numpy as npy
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
-from dessia_common import DessiaObject
+from dessia_common.core import DessiaObject
 from finite_elements.core import MU, blue_red
 import finite_elements.core
 
@@ -93,11 +94,11 @@ class MagneticResults(Result):
             vector_b = element_to_magnetic_field[element]
 
             element_center = element.center
-            e_r = vm.Vector2D(element_center.vector)
-            e_r.Normalize()
-            e_teta = vm.Vector2D((-e_r[1], e_r[0]))
-            b_r = vector_b.Dot(e_r)
-            b_teta = vector_b.Dot(e_teta)
+            e_r = vm.Vector2D(*element_center)
+            e_r.normalize()
+            e_teta = vm.Vector2D(-e_r[1], e_r[0])
+            B_r = vector_B.dot(e_r)
+            B_teta = vector_B.dot(e_teta)
 
             all_br_btetha.append(b_r * b_teta)
         return all_br_btetha
@@ -164,11 +165,12 @@ class MagneticResults(Result):
         element_to_magnetic_field = self.magnetic_field_per_element
         vector_b = element_to_magnetic_field[element]
         element_center = element.center
-        e_r = vm.Vector2D(element_center.vector)
-        e_r.Normalize()
-        e_teta = vm.Vector2D((-e_r[1], e_r[0]))
-        b_r = vector_b.Dot(e_r)
-        b_teta = vector_b.Dot(e_teta)
+
+        e_r = vm.Vector2D(*element_center)
+        e_r.normalize()
+        e_teta = vm.Vector2D(-e_r[1], e_r[0])
+        b_r = vector_b.dot(e_r)
+        b_teta = vector_b.dot(e_teta)
 
         sigma_rr = 1 / MU * b_r**2 - 1 / (2 * MU) * vector_b.Norm()**2
         sigma_rteta = 1 / MU * b_r * b_teta
@@ -216,13 +218,14 @@ class MagneticResults(Result):
             vector_b = element_to_magnetic_field[element]
 
             element_center = element.center
-            e_r = vm.Vector2D(element_center.vector)
-            e_r.Normalize()
-            e_teta = vm.Vector2D((-e_r[1], e_r[0]))
-            b_r = vector_b.Dot(e_r)
-            b_teta = vector_b.Dot(e_teta)
-            r_br_bteta = element_center.Norm() * b_r * b_teta
-            # r_br_bteta = r * b_r * b_teta
+
+            e_r = vm.Vector2D(*element_center)
+            e_r.normalize()
+            e_teta = vm.Vector2D(-e_r[1], e_r[0])
+            b_r = vector_b.dot(e_r)
+            b_teta = vector_b.dot(e_teta)
+            r_br_bteta = element_center.norm() * b_r * b_teta
+#            r_br_bteta = r * b_r * b_teta
             ds_param = element.area
 
             # e_r.plot(ax=ax, origin=element_center, amplitude=0.005, color='b')
@@ -641,16 +644,16 @@ class ElasticityResults(Result):
         nodes_number = len(self.mesh.nodes)
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=nodes_number)
-        displacement_field_vectors = []
+        displacement_field_vectors = {}
         q = self.result_vector
 
-        for node in range(0, nodes_number):
+        for n, node in enumerate(self.mesh.nodes):
             displacement = []
             for i in range(self.dimension):
-                displacement.append(q[positions[(node, i + 1)]])
+                displacement.append(q[positions[(n, i + 1)]])
 
-            displacement_field_vectors.append(
-                getattr(vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement))
+            displacement_field_vectors[node] = getattr(
+                vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement)
             # displacement_field_vectors.append(vm.Vector2D(*displacement))
 
         return displacement_field_vectors
@@ -687,7 +690,8 @@ class ElasticityResults(Result):
                 indexes = [self.mesh.node_to_index[point] for point in element.points]
                 for index in indexes:
                     for i in range(self.dimension):
-                        displacements.append(q[positions[(index, i + 1)]])
+                        d = q[positions[(index, i + 1)]]
+                        displacements.append(d.real)  # TODO: consier complex number with d.imag != 0
 
                 displacements_per_element[element] = displacements
                 element.displacements = displacements
@@ -807,6 +811,48 @@ class ElasticityResults(Result):
 
         return element_to_strain, element_to_stress
 
+    def generate_vtk_file(self, file_name_output):
+        self.mesh._gmsh.to_vtk('initial_mesh.vtk')
+        if file_name_output[-3::] != 'vtk':
+            file_name_output += '.vtk'
+
+        with open('initial_mesh.vtk') as f_in:
+            with open(file_name_output, "w") as f_out:
+                for line in f_in:
+                    f_out.write(line)
+        f_out.close()
+        f_in.close()
+
+        nodes_correction = self.mesh._nodes_correction
+        displacements = []
+        for node in self.mesh._gmsh.nodes['all_nodes']:
+            try:
+                displacements.append(self.displacement_vectors_per_node[node])
+            except KeyError:
+                displacements.append(self.displacement_vectors_per_node[nodes_correction[node]])
+
+        lines = ['POINT_DATA ' + str(len(self.mesh._gmsh.nodes['all_nodes']))]
+        lines.append('SCALARS ' + 'Displacement_Magnitude float 1')
+        lines.append('LOOKUP_TABLE default')
+
+        for displacement in displacements:
+            lines.append(str(displacement.norm()))
+
+        lines.append('VECTORS Displacement_Vectors float')
+        if displacement.__class__.__name__[-2] == '2':
+            for displacement in displacements:
+                lines.append(str([*displacement])[1:-1].replace(',', '') + ' 0')
+        else:
+            for displacement in displacements:
+                lines.append(str([*displacement])[1:-1].replace(',', ''))
+
+        with open(file_name_output, "a+") as f_out:
+            for line in lines:
+                f_out.write(line)
+                f_out.write('\n')
+        f_out.close()
+
+    '''
     def update_vtk_with_results(self, input_file_name, output_file_name):
         """
         Defines
@@ -862,6 +908,7 @@ class ElasticityResults(Result):
                 f_out.write(line)
                 f_out.write('\n')
         f_out.close()
+        '''
 
 
 class ElasticityResults2D(ElasticityResults):

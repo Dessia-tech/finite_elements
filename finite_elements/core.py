@@ -15,7 +15,7 @@ import matplotlib.tri as mtri
 # from scipy import sparse
 # from scipy import linalg
 # import time
-from dessia_common import DessiaObject
+from dessia_common.core import DessiaObject
 # from typing import TypeVar, List, Tuple
 
 

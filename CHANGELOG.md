@@ -23,16 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - MagneticElement2D
    - BoundaryCondition, NodeBoundaryCondition, EdgeBoundaryCondition, ElementBoundaryCondition
    - ElementLoad, EdgeLoad
-   - FiniteElementAnalysis
+   - FiniteElementAnalysis: modal_analysis
    - MagneticResults
    - ElasticityElement: d_matrix, energy
-   - ElasticityTriangularElement2D: d_matrix(plane_strain, plane_stress), b_matrix, k_matrix, strain, stress
-   - ElasticityTetrahedralElement3D: d_matrix, b_matrix, k_matrix
+   - ElasticityTriangularElement2D: d_matrix(plane_strain, plane_stress), b_matrix, k_matrix, strain, stress, m_matrix
+   - ElasticityTetrahedralElement3D: d_matrix, b_matrix, k_matrix, m_matrix
    - ElasticityResults: displacements, stress, strain, deformed mesh, energy, vtk file
    - ElasticityResults2D: axial_strain/stress, shear_strain/stress, different plots
    - ElasticityResults3D: axial_strain/stress, shear_strain/stress
    - Material
 * Add new scripts with usecases and examples for tests (Magnetic, Elasticity2D)
+* Generate .vtk file with displacements results
+
 
 ### Performance improvements
 
