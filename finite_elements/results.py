@@ -97,8 +97,8 @@ class MagneticResults(Result):
             e_r = vm.Vector2D(*element_center)
             e_r.normalize()
             e_teta = vm.Vector2D(-e_r[1], e_r[0])
-            B_r = vector_B.dot(e_r)
-            B_teta = vector_B.dot(e_teta)
+            b_r = vector_b.dot(e_r)
+            b_teta = vector_b.dot(e_teta)
 
             all_br_btetha.append(b_r * b_teta)
         return all_br_btetha
@@ -762,7 +762,7 @@ class ElasticityResults(Result):
         energy = {}
         for group in self.mesh.elements_groups:
             for element in group.elements:
-                energy[element] = (element.energy(self.plane_strain, self.plane_stress))
+                energy[element] = element.energy(self.plane_strain, self.plane_stress)
         return energy
 
     @property
@@ -802,7 +802,7 @@ class ElasticityResults(Result):
         element_to_strain, element_to_stress = {}, {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
-                element_to_strain[element] = (npy.matmul(element.b_matrix, element.displacements))
+                element_to_strain[element] = npy.matmul(element.b_matrix, element.displacements)
                 element.strain = element_to_strain[element]
                 element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress),
                                                                     element.b_matrix),
