@@ -6,7 +6,7 @@ Created on Mon Jul 18 2022
 @author: s.bendjebla
 """
 
-import volmdlr.gmsh
+import volmdlr.gmsh_vm
 import volmdlr.mesh as vmmesh
 import finite_elements as fe
 import finite_elements.elements
@@ -49,7 +49,7 @@ for file_path in files_path:
 
     # %% Mesh2D
 
-    gmsh = volmdlr.gmsh.Gmsh.from_file(file_path+'.msh')
+    gmsh = volmdlr.gmsh_vm.GmshParser.from_file(file_path+'.msh')
 
     mesh = gmsh.define_triangular_element_mesh()
 
@@ -69,7 +69,7 @@ for file_path in files_path:
         group_elements.append(vmmesh.ElementsGroup(solid_elments2d, ''))
 
     mesh = vmmesh.Mesh(group_elements)
-    mesh.nodes = gmsh.nodes[0]['all_nodes'] #Keep Gmsh order
+    mesh.nodes = gmsh.nodes['all_nodes'] #Keep Gmsh order
     mesh.node_to_index = {mesh.nodes[i]: i for i in range(len(mesh.nodes))}
 
     # %% Loads/Conditions
