@@ -97,8 +97,8 @@ class MagneticResults(Result):
             e_r = vm.Vector2D(*element_center)
             e_r.normalize()
             e_teta = vm.Vector2D(-e_r[1], e_r[0])
-            B_r = vector_B.dot(e_r)
-            B_teta = vector_B.dot(e_teta)
+            b_r = vector_b.dot(e_r)
+            b_teta = vector_b.dot(e_teta)
 
             all_br_btetha.append(b_r * b_teta)
         return all_br_btetha
