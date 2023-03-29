@@ -316,11 +316,10 @@ class FiniteElements(DessiaObject):
     def k_matrix(self, method_name):
         if method_name == 'dense':
             return self.k_matrix_dense()
-        elif method_name == 'sparse':
+        if method_name == 'sparse':
             return self.k_matrix_sparse()
-        else:
-            raise NotImplementedError(
-                f'Class {self.__class__.__name__} does not implement {method_name} k matrix')
+        raise NotImplementedError(
+            f'Class {self.__class__.__name__} does not implement {method_name} k matrix')
 
     def k_matrix_data(self):
         row_ind, col_ind, data = [], [], []
@@ -350,11 +349,10 @@ class FiniteElements(DessiaObject):
     def m_matrix(self, method_name):
         if method_name == 'dense':
             return self.m_matrix_dense()
-        elif method_name == 'sparse':
+        if method_name == 'sparse':
             return self.m_matrix_sparse()
-        else:
-            raise NotImplementedError(
-                f'Class {self.__class__.__name__} does not implement {method_name} m matrix')
+        raise NotImplementedError(
+            f'Class {self.__class__.__name__} does not implement {method_name} m matrix')
 
     def m_matrix_data(self):
         row_ind, col_ind, data = [], [], []
@@ -379,8 +377,8 @@ class FiniteElements(DessiaObject):
                             len(self.mesh.nodes) * self.dimension))
         if hasattr(self, method_name):
             data, row_ind, col_ind = getattr(self, method_name)()
-            for i, d in enumerate(data):
-                matrix[row_ind[i], col_ind[i]] += d
+            for i, data_i in enumerate(data):
+                matrix[row_ind[i], col_ind[i]] += data_i
         else:
             raise NotImplementedError(
                 f'Class {self.__class__.__name__} does not implement {method_name}')
@@ -390,11 +388,11 @@ class FiniteElements(DessiaObject):
         if hasattr(self, method_name):
             data, row_ind, col_ind = getattr(self, method_name)()
             dict_data = {}
-            for i, d in enumerate(data):
+            for i, data_i in enumerate(data):
                 try:
-                    dict_data[(row_ind[i], col_ind[i])] += d
+                    dict_data[(row_ind[i], col_ind[i])] += data_i
                 except KeyError:
-                    dict_data[(row_ind[i], col_ind[i])] = d
+                    dict_data[(row_ind[i], col_ind[i])] = data_i
             data_new, row_ind_new, col_ind_new = [], [], []
             for key, value in dict_data.items():
                 data_new.append(value)
@@ -484,7 +482,7 @@ class FiniteElements(DessiaObject):
         # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
         #                                                          nodes_number=len(self.mesh.nodes))
         positions = self.positions
-        for i, load in enumerate(node_loads):
+        for _, load in enumerate(node_loads):
             data.append(load.source_c_matrix())
             row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
 
@@ -787,13 +785,15 @@ class FiniteElementAnalysis(FiniteElements):
 
             return eigvals, eigvecs.T
 
-        elif order == 'smallest':
+        if order == 'smallest':
             m_matrix_sparse = self.m_matrix_sparse()
             k_matrix_sparse = csc_matrix(scipy.linalg.inv(self.k_matrix_dense()))
             eigvals, eigvecs = scipy.sparse.linalg.eigs(k_matrix_sparse @ m_matrix_sparse,
                                                         which='LM',
                                                         k=k)
             return 1 / eigvals, eigvecs.T
+
+        raise ValueError("Order parameter should be either 'largest' or 'smallest'")
 
     def solve(self):
         """
