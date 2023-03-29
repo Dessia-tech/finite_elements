@@ -646,7 +646,7 @@ class FiniteElementAnalysis(FiniteElements):
         # row_ind.extend(c_matrix_boundary_conditions[1])
         # col_ind.extend(c_matrix_boundary_conditions[2])
 
-        method_names = ['k_matrix', 'c_matrix_continuity_conditions',
+        method_names = ['k_matrix_data', 'c_matrix_continuity_conditions',
                         'c_matrix_boundary_conditions']
 
         for method_name in method_names:
