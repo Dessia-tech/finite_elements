@@ -596,7 +596,7 @@ class ElasticityResults(Result):
         for i, node in enumerate(self.mesh.nodes):
             obj = getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
             deformed_nodes.append(
-                getattr(obj, 'from_point')(node + displacement_field_vectors[i] * amplitude))
+                getattr(obj, 'from_point')(node + displacement_field_vectors[node] * amplitude))
 
         return deformed_nodes
 
@@ -798,6 +798,8 @@ class ElasticityResults(Result):
         :return: DESCRIPTION
         :rtype: TYPE
         """
+
+        _ = self.displacements_per_element
 
         element_to_strain, element_to_stress = {}, {}
         for elements_group in self.mesh.elements_groups:
@@ -1249,7 +1251,7 @@ class ElasticityResults2D(ElasticityResults):
         ax.set_aspect('equal')
         self.mesh.plot(ax)
         displacement_field_vectors = self.displacement_vectors_per_node
-        for i, vector in enumerate(displacement_field_vectors):
+        for i, (key, vector) in enumerate(displacement_field_vectors.items()):
             vector.plot(amplitude=amplitude, origin=self.mesh.nodes[i], ax=ax, normalize=True)
 
         ax.set_xlabel('x')
