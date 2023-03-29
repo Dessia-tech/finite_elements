@@ -6,7 +6,7 @@ Created on Fri Jul 29 2022
 @author: s.bendjebla
 """
 
-import volmdlr.gmsh
+import volmdlr.gmsh_vm
 import volmdlr.mesh as vmmesh
 import finite_elements as fe
 import finite_elements.elements
@@ -56,7 +56,7 @@ files_path = ['../InputFiles/3D/beam3d_0.5', '../InputFiles/3D/beam3d_1',
 
 file_path = files_path[2]
 
-gmsh = volmdlr.gmsh.Gmsh.from_file(file_path+'.msh')
+gmsh = volmdlr.gmsh_vm.GmshParser.from_file(file_path+'.msh')
 
 mesh = gmsh.define_tetrahedron_element_mesh()
 
@@ -77,8 +77,9 @@ for group in mesh.elements_groups:
     group_elements.append(vmmesh.ElementsGroup(solid_elments2d, ''))
 
 mesh_fe = vmmesh.Mesh(group_elements)
-mesh_fe.nodes = gmsh.nodes[0]['all_nodes'] #Keep Gmsh order
+mesh_fe.nodes = gmsh.nodes['all_nodes'] #Keep Gmsh order
 mesh_fe.node_to_index = {mesh_fe.nodes[i]: i for i in range(len(mesh_fe.nodes))}
+mesh_fe._gmsh = mesh._gmsh
 
 # %% Loads/Conditions
 
@@ -130,26 +131,27 @@ elasticity_result = fe.results.ElasticityResults3D(results.mesh, results.result_
 
 # %% VTK files generation
 
-elasticity_result.update_vtk_with_results(
-            input_file_name = file_path+'.vtk',
-            output_file_name = file_path+'_displacements'+'.vtk')
-
-# # %% Anaytic Result
-
-# b = 2
-# thickness = 2
-# I = ((b**3)*thickness)/12 #I = (b*(thickness**3) + thickness*(b**3))/12
-# z_displacement = (load*10**3)/(3*elasticity_modulus*I)
+# elasticity_result.generate_vtk_file(file_path+'_displacements'+'.vtk')
 
 
-# # %% Comparaison
+# %% Anaytic Result
+"""
+b = 2
+thickness = 2
+I = ((b**3)*thickness)/12 #I = (b*(thickness**3) + thickness*(b**3))/12
+z_displacement = (load*10**3)/(3*elasticity_modulus*I)
+"""
 
-# application_indices = find_points_with_xz(nodes=mesh_fe.nodes, x=10, z=2)
+# %% Comparaison
+"""
+application_indices = find_points_with_xz(nodes=mesh_fe.nodes, x=10, z=2)
 
-# z_displacements = []
-# for index in application_indices:
-#     z_displacements.append(elasticity_result.displacement_vectors_per_node[index].z)
+z_displacements = []
+for index in application_indices:
+    z_displacements.append(elasticity_result.displacement_vectors_per_node[mesh_fe.nodes[index]].z)
 
-
-# print('Analytic:', z_displacement)
-# print('Solver:', z_displacements)
+print('Analytic:', z_displacement)
+print('Solver:')
+for displacement in z_displacements:
+    print('       ', displacement)
+"""

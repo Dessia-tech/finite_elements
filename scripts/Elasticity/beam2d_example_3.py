@@ -117,7 +117,7 @@ for file_path in files_path:
     elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_vector, analysis.plane_strain, analysis.plane_stress)
 
     elasticity_results_displacements[file_path[17::]] = {'nodes':len(mesh.nodes),
-                                                         'displacement_vector':elasticity_result.displacement_vectors_per_node[application_index],
+                                                         'displacement_vector':elasticity_result.displacement_vectors_per_node[mesh.nodes[application_index]],
                                                          'time':end-start}
     # y_displacements.append(elasticity_result.displacement_vectors_per_node[application_index].y)
 

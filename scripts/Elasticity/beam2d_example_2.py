@@ -121,5 +121,5 @@ elasticity_result.plot_displacement_vectors_per_node(amplitude=0.2)
 
 elasticity_result.plot_displacement_per_node_xy(amplitude=10)
 
-# elasticity_result.plot_strain()
-# elasticity_result.plot_stress()
+elasticity_result.plot_strain()
+elasticity_result.plot_stress()

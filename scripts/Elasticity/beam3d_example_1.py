@@ -19,7 +19,6 @@ import finite_elements.conditions
 # elasticity_modulus, poisson_ratio, thickness, mass_density = 70*1e6, 0.33, 1, 2700 #aluminium
 elasticity_modulus, poisson_ratio, mass_density = 210*1e9, 0.25, 7860 #acier
 
-
 points = [vm.Point3D(2,3,4), vm.Point3D(6,3,2), vm.Point3D(2,5,1), vm.Point3D(4,3,6)]
 
 solid_elments3d = [fe.elements.ElasticityTetrahedralElement3D(
