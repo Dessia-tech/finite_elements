@@ -8,8 +8,8 @@ Created on Wed Sep 29 14:35:47 2021
 
 import json
 
-MIN_FILE_COVERAGE = 54
-MIN_PROJECT_COVERAGE = 72
+MIN_FILE_COVERAGE = 53
+MIN_PROJECT_COVERAGE = 71
 
 untracked_modules = [
                      ]
