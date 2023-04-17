@@ -331,7 +331,8 @@ class MagneticResults(Result):
 
         for group in self.mesh.elements_groups:
             for element in group.elements:
-                element.plot(ax=ax, color=b_to_color[element_to_magnetic_field[element].norm()],
+                element.plot(ax=ax,
+                             edge_style=vm.core.EdgeStyle(color=b_to_color[element_to_magnetic_field[element].norm()]),
                              fill=True)
 
         norm = mpl.colors.Normalize(vmin=b_min, vmax=b_max)
@@ -1073,9 +1074,8 @@ class ElasticityResults2D(ElasticityResults):
         for g_index, group in enumerate(deformed_mesh.elements_groups):
             for e_index, element in enumerate(group.elements):
                 element.plot(ax=ax,
-                             color=b_to_color[result[
-                                 self.mesh.elements_groups[g_index].elements[e_index]]],
-                             fill=True)
+                             edge_style=vm.core.EdgeStyle(color=b_to_color[result[
+                                 self.mesh.elements_groups[g_index].elements[e_index]]]),                             fill=True)
 
         norm = mpl.colors.Normalize(vmin=b_min, vmax=b_max)
         scalar_mappable = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
@@ -1297,9 +1297,11 @@ class ElasticityResults2D(ElasticityResults):
                                                      param_bmin=b_min)
         for g_index, group in enumerate(deformed_mesh.elements_groups):
             for e_index, element in enumerate(group.elements):
+                print('color:', b_to_color[result[
+                    self.mesh.elements_groups[g_index].elements[e_index]]])
                 element.plot(ax=ax,
-                             color=b_to_color[result[
-                                 self.mesh.elements_groups[g_index].elements[e_index]]],
+                             edge_style=vm.core.EdgeStyle(color=b_to_color[result[
+                                 self.mesh.elements_groups[g_index].elements[e_index]]]),
                              fill=True)
 
         norm = mpl.colors.Normalize(vmin=b_min, vmax=b_max)
