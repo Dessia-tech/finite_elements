@@ -845,11 +845,17 @@ class FiniteElementAnalysis(FiniteElements):
             _, ax = plt.subplots()
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
-                element.plot(ax=ax, edge_style=vm.core.EdgeStyle(color='w'), fill=True)
+                element.plot(ax=ax,
+                             edge_style=vm.core.EdgeStyle(color='w'),
+                             fill_color='w',
+                             fill=True)
 
         for load in self.element_loads:
             for element in load.elements:
-                element.plot(ax=ax, edge_style=vm.core.EdgeStyle(color='r'), fill=True)
+                element.plot(ax=ax,
+                             edge_style=vm.core.EdgeStyle(color='r'),
+                             fill_color='r',
+                             fill=True)
         return ax
 
     def plot_elements_permeability(self, ax=None):
@@ -889,7 +895,10 @@ class FiniteElementAnalysis(FiniteElements):
         cbar.set_label('permeability')
         for i, elements_group in enumerate(self.mesh.elements_groups):
             for element in elements_group.elements:
-                element.plot(ax=ax, edge_style=vm.core.EdgeStyle(color=colors[i]), fill=True)
+                element.plot(ax=ax,
+                             edge_style=vm.core.EdgeStyle(color=colors[i]),
+                             fill_color=colors[i],
+                             fill=True)
 
         return ax
 
