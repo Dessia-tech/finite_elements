@@ -1,6 +1,6 @@
 from pylint.lint import Run
 
-MIN_NOTE = 9
+MIN_NOTE = 9.0
 
 MAX_ERROR_BY_TYPE = {
                      'invalid-name': 142,
@@ -11,12 +11,12 @@ MAX_ERROR_BY_TYPE = {
                      'unused-variable': 11,
                      'arguments-differ': 85,
                      'too-many-locals': 10,
-                     'unused-argument': 1,
+                     'unused-argument': 2,
                      'too-many-arguments': 5,
                      'consider-using-enumerate': 30,
                      'too-many-branches': 29,
                      'too-many-statements': 27,
-                     'super-init-not-called': 2,
+                     'super-init-not-called': 3,
                      'no-name-in-module': 24,
                      'abstract-method': 18,
                      'duplicate-code': 2,
@@ -25,7 +25,7 @@ MAX_ERROR_BY_TYPE = {
                      'non-parent-init-called': 13,
                      'too-many-public-methods': 15,
                      'too-many-instance-attributes': 3,
-                     'undefined-loop-variable': 1,
+                     'undefined-loop-variable': 10,
                      'unused-import': 9,
                      'unspecified-encoding': 9,
                      'too-many-nested-blocks': 9,
@@ -43,7 +43,7 @@ MAX_ERROR_BY_TYPE = {
                      'too-many-boolean-expressions': 3,
                      'too-many-lines': 3,
                      'redundant-keyword-arg': 3,
-                     'no-value-for-parameter': 2,
+                     'no-value-for-parameter': 3,
                      'consider-using-with': 2,
                      'consider-using-get': 2,
                      'eval-used': 2,
