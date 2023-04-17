@@ -17,7 +17,8 @@ from dessia_common.core import DessiaObject
 from finite_elements.core import MU, blue_red
 import finite_elements.core
 
-rgb2hex = lambda r,g,b: f"#{r:02x}{g:02x}{b:02x}"
+rgb2hex = lambda r, g, b: f"#{r:02x}{g:02x}{b:02x}"
+
 
 class Result(DessiaObject):
     """
