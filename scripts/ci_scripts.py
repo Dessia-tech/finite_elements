@@ -3,7 +3,7 @@ import time
 
 scripts = [
     # Magnetic
-    'Magnetic/current_loop.py',
+    # 'Magnetic/current_loop.py',
     'Magnetic/finite_element_beam.py',
     # 'Magnetic/magnet_in_void.py',
 

@@ -6,7 +6,7 @@ Created on Thu Dec 1 2022
 @author: s.bendjebla
 """
 
-import volmdlr.gmsh
+import volmdlr.gmsh_vm
 import volmdlr.mesh as vmmesh
 import finite_elements as fe
 import finite_elements.elements
@@ -36,7 +36,7 @@ files_path = ['../InputFiles/2D/beam_2d_0.8', '../InputFiles/2D/beam_2d_0.5',
 
 file_path = files_path[0]
 
-gmsh = volmdlr.gmsh.Gmsh.from_file(file_path+'.msh')
+gmsh = volmdlr.gmsh_vm.GmshParser.from_file(file_path+'.msh')
 
 mesh = gmsh.define_triangular_element_mesh()
 
@@ -93,6 +93,11 @@ for eigvec in eigvecs[0:10]:
 for elasticity_result in elasticity_results:
     # elasticity_result.plot_deformed_mesh(amplitude=1)
     elasticity_result.plot_displacement_per_node_xy(amplitude=1.5)
+
+# %%%% VTK files generation
+
+# for i, elasticity_result in enumerate(elasticity_results):
+#     elasticity_result.generate_vtk_file(file_path+'_mode_n°_'+str(i)+'.vtk')
 
 # %%% With Conditions
 
@@ -151,10 +156,7 @@ for elasticity_result in elasticity_results:
 # #     # elasticity_result.plot_deformed_mesh(amplitude=1)
 # #     elasticity_result.plot_displacement_per_node_xy(amplitude=1)
 
+# %%%% VTK files generation
 
-# # %% VTK files generation
-
-# # for i, elasticity_result in enumerate(elasticity_results):
-# #     elasticity_result.update_vtk_with_results(
-# #         input_file_name = file_path+'.vtk',
-# #         output_file_name = file_path+'_mode_n°_'+str(i)+'.vtk')
+# for i, elasticity_result in enumerate(elasticity_results):
+#     elasticity_result.generate_vtk_file(file_path+'_mode_n°_'+str(i)+'.vtk')

@@ -111,5 +111,7 @@ setup(name='finite_elements',
       packages=['finite_elements'],
       package_dir={},
       include_package_data = True,
-      install_requires=['packaging', 'dessia_common>=0.3.7', 'volmdlr', 'numpy', 'matplotlib'],
+      install_requires=['packaging', 'dessia_common>=0.3.7',
+                        'volmdlr @ git+ssh://git@github.com/Dessia-tech/volmdlr@aeca218c',
+                        'numpy', 'matplotlib'],
       classifiers=['Topic :: Scientific/Engineering','Development Status :: 3 - Alpha'])

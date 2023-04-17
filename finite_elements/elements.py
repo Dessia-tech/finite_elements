@@ -264,12 +264,13 @@ class ElasticityElement(DessiaObject):
 
         if (plane_strain and plane_stress):
             raise ValueError('just one of plane_strain or plane_stress can be True')
-        elif (not plane_strain and not plane_stress):
+        if (not plane_strain and not plane_stress):
             raise ValueError('one of plane_strain or plane_stress must be True')
-        elif plane_strain:
+        if plane_strain:
             return self.d_matrix_plane_strain
-        elif plane_stress:
+        if plane_stress:
             return self.d_matrix_plane_stress
+        raise ValueError('plane_strain or plane_stress are not well defined')
 
     def energy(self, plane_strain: bool, plane_stress: bool):
         """

@@ -593,10 +593,10 @@ class ElasticityResults(Result):
 
         displacement_field_vectors = self.displacement_vectors_per_node
         deformed_nodes = []
-        for i, node in enumerate(self.mesh.nodes):
+        for _, node in enumerate(self.mesh.nodes):
             obj = getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
             deformed_nodes.append(
-                getattr(obj, 'from_point')(node + displacement_field_vectors[i] * amplitude))
+                getattr(obj, 'from_point')(node + displacement_field_vectors[node] * amplitude))
 
         return deformed_nodes
 
@@ -645,12 +645,12 @@ class ElasticityResults(Result):
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=nodes_number)
         displacement_field_vectors = {}
-        q = self.result_vector
+        q_vector = self.result_vector
 
         for n, node in enumerate(self.mesh.nodes):
             displacement = []
             for i in range(self.dimension):
-                displacement.append(q[positions[(n, i + 1)]])
+                displacement.append(q_vector[positions[(n, i + 1)]])
 
             displacement_field_vectors[node] = getattr(
                 vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement)
@@ -681,7 +681,7 @@ class ElasticityResults(Result):
 
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
-        q = self.result_vector
+        q_vector = self.result_vector
 
         displacements_per_element = {}
         for elements_group in self.mesh.elements_groups:
@@ -690,8 +690,8 @@ class ElasticityResults(Result):
                 indexes = [self.mesh.node_to_index[point] for point in element.points]
                 for index in indexes:
                     for i in range(self.dimension):
-                        d = q[positions[(index, i + 1)]]
-                        displacements.append(d.real)  # TODO: consier complex number with d.imag != 0
+                        disp = q_vector[positions[(index, i + 1)]]
+                        displacements.append(disp.real)  # TODO: consier complex number with d.imag != 0
 
                 displacements_per_element[element] = displacements
                 element.displacements = displacements
@@ -799,14 +799,17 @@ class ElasticityResults(Result):
         :rtype: TYPE
         """
 
+        _ = self.displacements_per_element
+
         element_to_strain, element_to_stress = {}, {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
                 element_to_strain[element] = npy.matmul(element.b_matrix, element.displacements)
                 element.strain = element_to_strain[element]
-                element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress),
-                                                                    element.b_matrix),
-                                                         element.displacements))
+                element_to_stress[element] = (npy.matmul(npy.matmul(
+                    element.d_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress),
+                    element.b_matrix),
+                    element.displacements))
                 element.stress = element_to_stress[element]
 
         return element_to_strain, element_to_stress
@@ -816,8 +819,8 @@ class ElasticityResults(Result):
         if file_name_output[-3::] != 'vtk':
             file_name_output += '.vtk'
 
-        with open('initial_mesh.vtk') as f_in:
-            with open(file_name_output, "w") as f_out:
+        with open('initial_mesh.vtk', encoding="utf-8") as f_in:
+            with open(file_name_output, "w", encoding="utf-8") as f_out:
                 for line in f_in:
                     f_out.write(line)
         f_out.close()
@@ -846,69 +849,67 @@ class ElasticityResults(Result):
             for displacement in displacements:
                 lines.append(str([*displacement])[1:-1].replace(',', ''))
 
-        with open(file_name_output, "a+") as f_out:
+        with open(file_name_output, "a+", encoding="utf-8") as f_out:
             for line in lines:
                 f_out.write(line)
                 f_out.write('\n')
         f_out.close()
 
-    '''
-    def update_vtk_with_results(self, input_file_name, output_file_name):
-        """
-        Defines
+    # def update_vtk_with_results(self, input_file_name, output_file_name):
+    #     """
+    #     Defines
 
-        :param input_file_name: DESCRIPTION
-        :type input_file_name: TYPE
-        :param output_file_name: DESCRIPTION
-        :type output_file_name: TYPE
+    #     :param input_file_name: DESCRIPTION
+    #     :type input_file_name: TYPE
+    #     :param output_file_name: DESCRIPTION
+    #     :type output_file_name: TYPE
 
-        :return: DESCRIPTION
-        :rtype: TYPE
-        """
+    #     :return: DESCRIPTION
+    #     :rtype: TYPE
+    #     """
 
-        with open(input_file_name) as f_in:
-            with open(output_file_name, "w") as f_out:
-                for line in f_in:
-                    f_out.write(line)
-        f_out.close()
-        f_in.close()
+    #     with open(input_file_name) as f_in:
+    #         with open(output_file_name, "w") as f_out:
+    #             for line in f_in:
+    #                 f_out.write(line)
+    #     f_out.close()
+    #     f_in.close()
 
-        lines = ['POINT_DATA ' + str(len(self.mesh.nodes))]
-        lines.append('SCALARS ' + 'Displacement_Magnitude float 1')
-        lines.append('LOOKUP_TABLE default')
-        for displacement in self.displacement_vectors_per_node:
-            lines.append(str(displacement.norm()))
+    #     lines = ['POINT_DATA ' + str(len(self.mesh.nodes))]
+    #     lines.append('SCALARS ' + 'Displacement_Magnitude float 1')
+    #     lines.append('LOOKUP_TABLE default')
+    #     for displacement in self.displacement_vectors_per_node:
+    #         lines.append(str(displacement.norm()))
 
-        lines.append('VECTORS Displacement_Vectors float')
-        for displacement in self.displacement_vectors_per_node:
-            line = ''
-            for i in range(len([*displacement])):
-                line += str(displacement[i]) + ' '
-            if i == 1:
-                line += '0'
-            lines.append(line)
-            # lines.append(str(displacement.x)+' '+str(displacement.y)+' '+str(displacement.z))
+    #     lines.append('VECTORS Displacement_Vectors float')
+    #     for displacement in self.displacement_vectors_per_node:
+    #         line = ''
+    #         for i in range(len([*displacement])):
+    #             line += str(displacement[i]) + ' '
+    #         if i == 1:
+    #             line += '0'
+    #         lines.append(line)
+    #         # lines.append(str(displacement.x)+' '+str(displacement.y)+' '+str(displacement.z))
 
-        # lines.append('CELL_DATA ' + str(104))
-        # lines.append('SCALARS cell_scalars int 1')
-        # lines.append('LOOKUP_TABLE default')
-        # for i in range(104):
-        #     lines.append(str(i))
-        # lines.append('SCALARS axial_strain_x float 1')
-        # lines.append('LOOKUP_TABLE default')
+    #     # lines.append('CELL_DATA ' + str(104))
+    #     # lines.append('SCALARS cell_scalars int 1')
+    #     # lines.append('LOOKUP_TABLE default')
+    #     # for i in range(104):
+    #     #     lines.append(str(i))
+    #     # lines.append('SCALARS axial_strain_x float 1')
+    #     # lines.append('LOOKUP_TABLE default')
 
-        # axial_strain_x = self.axial_strain_x()
-        # for _, value in axial_strain_x.items():
-        #     lines.append(str(value))
+    #     # axial_strain_x = self.axial_strain_x()
+    #     # for _, value in axial_strain_x.items():
+    #     #     lines.append(str(value))
 
-        with open(output_file_name, "a+") as f_out:
-            # f_out.seek(0)
-            # f.write('\n')
-            for line in lines:
-                f_out.write(line)
-                f_out.write('\n')
-        f_out.close()
-        '''
+    #     with open(output_file_name, "a+") as f_out:
+    #         # f_out.seek(0)
+    #         # f.write('\n')
+    #         for line in lines:
+    #             f_out.write(line)
+    #             f_out.write('\n')
+    #     f_out.close()
 
 
 class ElasticityResults2D(ElasticityResults):
@@ -1249,7 +1250,7 @@ class ElasticityResults2D(ElasticityResults):
         ax.set_aspect('equal')
         self.mesh.plot(ax)
         displacement_field_vectors = self.displacement_vectors_per_node
-        for i, vector in enumerate(displacement_field_vectors):
+        for i, (_, vector) in enumerate(displacement_field_vectors.items()):
             vector.plot(amplitude=amplitude, origin=self.mesh.nodes[i], ax=ax, normalize=True)
 
         ax.set_xlabel('x')

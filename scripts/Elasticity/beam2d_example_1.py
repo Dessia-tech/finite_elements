@@ -73,11 +73,11 @@ elasticity_result = fe.results.ElasticityResults2D(results.mesh, results.result_
 
 # %% Plots
 
-elasticity_result.plot_deformed_mesh(amplitude=10)
+elasticity_result.plot_deformed_mesh(amplitude=2e3)
 elasticity_result.plot_displacement_vectors_per_node(amplitude=0.1)
 
-elasticity_result.plot_displacement_per_node_xy(amplitude=10)
-elasticity_result.plot_energy(amplitude=10)
+elasticity_result.plot_displacement_per_node_xy(amplitude=2e3)
+elasticity_result.plot_energy(amplitude=2e3)
 
 # elasticity_result.plot_strain()
 # elasticity_result.plot_stress()
