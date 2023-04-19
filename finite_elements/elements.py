@@ -11,38 +11,60 @@ import finite_elements.core
 
 
 class Element2D(vmmesh.TriangularElement2D):
+    """
+    This class
+    """
 
     def element_to_node_factors(self):
-        x1 = self.mesh_element.points[0][0]
-        y1 = self.mesh_element.points[0][1]
-        x2 = self.mesh_element.points[1][0]
-        y2 = self.mesh_element.points[1][1]
-        x3 = self.mesh_element.points[2][0]
-        y3 = self.mesh_element.points[2][1]
+        """
+        Defines
 
-        det_jacobien = abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1))
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        x_1 = self.mesh_element.points[0][0]
+        y_1 = self.mesh_element.points[0][1]
+        x_2 = self.mesh_element.points[1][0]
+        y_2 = self.mesh_element.points[1][1]
+        x_3 = self.mesh_element.points[2][0]
+        y_3 = self.mesh_element.points[2][1]
+
+        det_jacobien = abs((x_2 - x_1) * (y_3 - y_1) - (x_3 - x_1) * (y_2 - y_1))
 
         element_form_functions = self.mesh_element.form_functions
-        a1 = element_form_functions[0][0]
-        b1 = element_form_functions[0][1]
-        c1 = element_form_functions[0][2]
-        a2 = element_form_functions[1][0]
-        b2 = element_form_functions[1][1]
-        c2 = element_form_functions[1][2]
-        a3 = element_form_functions[2][0]
-        b3 = element_form_functions[2][1]
-        c3 = element_form_functions[2][2]
+        a_1 = element_form_functions[0][0]
+        b_1 = element_form_functions[0][1]
+        c_1 = element_form_functions[0][2]
+        a_2 = element_form_functions[1][0]
+        b_2 = element_form_functions[1][1]
+        c_2 = element_form_functions[1][2]
+        a_3 = element_form_functions[2][0]
+        b_3 = element_form_functions[2][1]
+        c_3 = element_form_functions[2][2]
 
-        double_integral_N1_dS = det_jacobien * (a1 + 0.5 * b1 * x2 + 0.5 * c1 * y2 + 0.5 * b1 * x3 + 0.5 * c1 * y3)
-        double_integral_N2_dS = det_jacobien * (a2 + 0.5 * b2 * x2 + 0.5 * c2 * y2 + 0.5 * b2 * x3 + 0.5 * c2 * y3)
-        double_integral_N3_dS = det_jacobien * (a3 + 0.5 * b3 * x2 + 0.5 * c3 * y2 + 0.5 * b3 * x3 + 0.5 * c3 * y3)
+        double_integral_n1_ds = det_jacobien * (a_1 + 0.5 * b_1 * x_2 + 0.5 * c_1 * y_2 +
+                                                0.5 * b_1 * x_3 + 0.5 * c_1 * y_3)
+        double_integral_n2_ds = det_jacobien * (a_2 + 0.5 * b_2 * x_2 + 0.5 * c_2 * y_2 +
+                                                0.5 * b_2 * x_3 + 0.5 * c_2 * y_3)
+        double_integral_n3_ds = det_jacobien * (a_3 + 0.5 * b_3 * x_2 + 0.5 * c_3 * y_2 +
+                                                0.5 * b_3 * x_3 + 0.5 * c_3 * y_3)
 
-        return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
+        return (double_integral_n1_ds, double_integral_n2_ds, double_integral_n3_ds)
 
 
 class MagneticElement2D(Element2D):
     """
+    This class
+
+    :param triangular_element: DESCRIPTION
+    :type triangular_element: vmmesh.TriangularElement2D
+    :param mu_total: DESCRIPTION
+    :type mu_total: float
+    :param name: DESCRIPTION, defaults to ''
+    :type name: str, optional
     """
+
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -59,6 +81,13 @@ class MagneticElement2D(Element2D):
 
     @property
     def dimension(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return 1
 
     def elementary_matrix(self):
@@ -69,22 +98,22 @@ class MagneticElement2D(Element2D):
         """
 
         element_form_functions = self.triangular_element.form_functions
-        b1 = element_form_functions[0][1]
-        c1 = element_form_functions[0][2]
-        b2 = element_form_functions[1][1]
-        c2 = element_form_functions[1][2]
-        b3 = element_form_functions[2][1]
-        c3 = element_form_functions[2][2]
+        b_1 = element_form_functions[0][1]
+        c_1 = element_form_functions[0][2]
+        b_2 = element_form_functions[1][1]
+        c_2 = element_form_functions[1][2]
+        b_3 = element_form_functions[2][1]
+        c_3 = element_form_functions[2][2]
 
-        data = (1 / self.mu_total * (b1**2 + c1**2) * self.triangular_element.area,
-                1 / self.mu_total * (b1 * b2 + c1 * c2) * self.triangular_element.area,
-                1 / self.mu_total * (b1 * b3 + c1 * c3) * self.triangular_element.area,
-                1 / self.mu_total * (b1 * b2 + c1 * c2) * self.triangular_element.area,
-                1 / self.mu_total * (b2**2 + c2**2) * self.triangular_element.area,
-                1 / self.mu_total * (b2 * b3 + c2 * c3) * self.triangular_element.area,
-                1 / self.mu_total * (b1 * b3 + c1 * c3) * self.triangular_element.area,
-                1 / self.mu_total * (b2 * b3 + c2 * c3) * self.triangular_element.area,
-                1 / self.mu_total * (b3**2 + c3**2) * self.triangular_element.area)
+        data = (1 / self.mu_total * (b_1**2 + c_1**2) * self.triangular_element.area,
+                1 / self.mu_total * (b_1 * b_2 + c_1 * c_2) * self.triangular_element.area,
+                1 / self.mu_total * (b_1 * b_3 + c_1 * c_3) * self.triangular_element.area,
+                1 / self.mu_total * (b_1 * b_2 + c_1 * c_2) * self.triangular_element.area,
+                1 / self.mu_total * (b_2**2 + c_2**2) * self.triangular_element.area,
+                1 / self.mu_total * (b_2 * b_3 + c_2 * c_3) * self.triangular_element.area,
+                1 / self.mu_total * (b_1 * b_3 + c_1 * c_3) * self.triangular_element.area,
+                1 / self.mu_total * (b_2 * b_3 + c_2 * c_3) * self.triangular_element.area,
+                1 / self.mu_total * (b_3**2 + c_3**2) * self.triangular_element.area)
 
         return data
 
@@ -92,64 +121,98 @@ class MagneticElement2D(Element2D):
     #     """
     #     Create the elementary source matrix of the MagneticElement2D
 
-    #     :return: (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
+    #     :return: (double_integral_n1_ds, double_integral_n2_ds, double_integral_n3_ds)
     #     """
 
-    #     x1 = self.triangular_element.points[0][0]
-    #     y1 = self.triangular_element.points[0][1]
-    #     x2 = self.triangular_element.points[1][0]
-    #     y2 = self.triangular_element.points[1][1]
-    #     x3 = self.triangular_element.points[2][0]
-    #     y3 = self.triangular_element.points[2][1]
+    #     x_1 = self.triangular_element.points[0][0]
+    #     y_1 = self.triangular_element.points[0][1]
+    #     x_2 = self.triangular_element.points[1][0]
+    #     y_2 = self.triangular_element.points[1][1]
+    #     x_3 = self.triangular_element.points[2][0]
+    #     y_3 = self.triangular_element.points[2][1]
 
-    #     det_jacobien = abs((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))
+    #     det_jacobien = abs((x_2-x_1)*(y_3-y_1) - (x_3-x_1)*(y_2-y_1))
 
     #     element_form_functions = self.triangular_element.form_functions
-    #     a1 = element_form_functions[0][0]
-    #     b1 = element_form_functions[0][1]
-    #     c1 = element_form_functions[0][2]
-    #     a2 = element_form_functions[1][0]
-    #     b2 = element_form_functions[1][1]
-    #     c2 = element_form_functions[1][2]
-    #     a3 = element_form_functions[2][0]
-    #     b3 = element_form_functions[2][1]
-    #     c3 = element_form_functions[2][2]
+    #     a_1 = element_form_functions[0][0]
+    #     b_1 = element_form_functions[0][1]
+    #     c_1 = element_form_functions[0][2]
+    #     a_2 = element_form_functions[1][0]
+    #     b_2 = element_form_functions[1][1]
+    #     c_2 = element_form_functions[1][2]
+    #     a_3 = element_form_functions[2][0]
+    #     b_3 = element_form_functions[2][1]
+    #     c_3 = element_form_functions[2][2]
 
-    #     double_integral_N1_dS = det_jacobien*(a1 + 0.5*b1*x2 + 0.5*c1*y2 + 0.5*b1*x3 + 0.5*c1*y3)
-    #     double_integral_N2_dS = det_jacobien*(a2 + 0.5*b2*x2 + 0.5*c2*y2 + 0.5*b2*x3 + 0.5*c2*y3)
-    #     double_integral_N3_dS = det_jacobien*(a3 + 0.5*b3*x2 + 0.5*c3*y2 + 0.5*b3*x3 + 0.5*c3*y3)
+    #     double_integral_n1_ds = det_jacobien*(a_1 + 0.5*b_1*x_2 + 0.5*c_1*y_2 + \
+    #                                           0.5*b_1*x_3 + 0.5*c_1*y_3)
+    #     double_integral_n2_ds = det_jacobien*(a_2 + 0.5*b_2*x_2 + 0.5*c_2*y_2 + \
+    #                                           0.5*b_2*x_3 + 0.5*c_2*y_3)
+    #     double_integral_n3_ds = det_jacobien*(a_3 + 0.5*b_3*x_2 + 0.5*c_3*y_2 + \
+    #                                           0.5*b_3*x_3 + 0.5*c_3*y_3)
 
-    #     return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
+    #     return (double_integral_n1_ds, double_integral_n2_ds, double_integral_n3_ds)
 
     def element_to_node_factors(self):
-        x1 = self.triangular_element.points[0][0]
-        y1 = self.triangular_element.points[0][1]
-        x2 = self.triangular_element.points[1][0]
-        y2 = self.triangular_element.points[1][1]
-        x3 = self.triangular_element.points[2][0]
-        y3 = self.triangular_element.points[2][1]
+        """
+        Defines
 
-        det_jacobien = abs((x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1))
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        x_1 = self.triangular_element.points[0][0]
+        y_1 = self.triangular_element.points[0][1]
+        x_2 = self.triangular_element.points[1][0]
+        y_2 = self.triangular_element.points[1][1]
+        x_3 = self.triangular_element.points[2][0]
+        y_3 = self.triangular_element.points[2][1]
+
+        det_jacobien = abs((x_2 - x_1) * (y_3 - y_1) - (x_3 - x_1) * (y_2 - y_1))
 
         element_form_functions = self.triangular_element.form_functions
-        a1 = element_form_functions[0][0]
-        b1 = element_form_functions[0][1]
-        c1 = element_form_functions[0][2]
-        a2 = element_form_functions[1][0]
-        b2 = element_form_functions[1][1]
-        c2 = element_form_functions[1][2]
-        a3 = element_form_functions[2][0]
-        b3 = element_form_functions[2][1]
-        c3 = element_form_functions[2][2]
+        a_1 = element_form_functions[0][0]
+        b_1 = element_form_functions[0][1]
+        c_1 = element_form_functions[0][2]
+        a_2 = element_form_functions[1][0]
+        b_2 = element_form_functions[1][1]
+        c_2 = element_form_functions[1][2]
+        a_3 = element_form_functions[2][0]
+        b_3 = element_form_functions[2][1]
+        c_3 = element_form_functions[2][2]
 
-        double_integral_N1_dS = det_jacobien * (a1 + 0.5 * b1 * x2 + 0.5 * c1 * y2 + 0.5 * b1 * x3 + 0.5 * c1 * y3)
-        double_integral_N2_dS = det_jacobien * (a2 + 0.5 * b2 * x2 + 0.5 * c2 * y2 + 0.5 * b2 * x3 + 0.5 * c2 * y3)
-        double_integral_N3_dS = det_jacobien * (a3 + 0.5 * b3 * x2 + 0.5 * c3 * y2 + 0.5 * b3 * x3 + 0.5 * c3 * y3)
+        double_integral_n1_ds = det_jacobien * (a_1 + 0.5 * b_1 * x_2 + 0.5 * c_1 * y_2 +
+                                                0.5 * b_1 * x_3 + 0.5 * c_1 * y_3)
+        double_integral_n2_ds = det_jacobien * (a_2 + 0.5 * b_2 * x_2 + 0.5 * c_2 * y_2 +
+                                                0.5 * b_2 * x_3 + 0.5 * c_2 * y_3)
+        double_integral_n3_ds = det_jacobien * (a_3 + 0.5 * b_3 * x_2 + 0.5 * c_3 * y_2 +
+                                                0.5 * b_3 * x_3 + 0.5 * c_3 * y_3)
 
-        return (double_integral_N1_dS, double_integral_N2_dS, double_integral_N3_dS)
+        return (double_integral_n1_ds, double_integral_n2_ds, double_integral_n3_ds)
 
 
 class ElasticityElement(DessiaObject):
+    """
+    This class
+
+    :param mesh_element: DESCRIPTION
+    :type mesh_element: TYPE
+    :param elasticity_modulus: DESCRIPTION
+    :type elasticity_modulus: TYPE
+    :param poisson_ratio: DESCRIPTION
+    :type poisson_ratio: TYPE
+    :param mass_density: DESCRIPTION
+    :type mass_density: TYPE
+    :param displacements: DESCRIPTION, defaults to None
+    :type displacements: TYPE, optional
+    :param stress: DESCRIPTION, defaults to None
+    :type stress: TYPE, optional
+    :param strain: DESCRIPTION, defaults to None
+    :type strain: TYPE, optional
+    :param name: DESCRIPTION, defaults to ''
+    :type name: str, optional
+    """
+
     _standalone_in_db = False
     _non_serializable_attributes = []
     _non_eq_attributes = ['name']
@@ -186,22 +249,47 @@ class ElasticityElement(DessiaObject):
         DessiaObject.__init__(self, name=name)
 
     def d_matrix(self, plane_strain: bool, plane_stress: bool):
+        """
+        Defines
+
+        :param plane_strain: DESCRIPTION
+        :type plane_strain: bool
+        :param plane_stress: DESCRIPTION
+        :type plane_stress: bool
+        :raises ValueError: DESCRIPTION
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         if (plane_strain and plane_stress):
             raise ValueError('just one of plane_strain or plane_stress can be True')
-        elif (not plane_strain and not plane_stress):
+        if (not plane_strain and not plane_stress):
             raise ValueError('one of plane_strain or plane_stress must be True')
-        elif plane_strain:
+        if plane_strain:
             return self.d_matrix_plane_strain
-        elif plane_stress:
+        if plane_stress:
             return self.d_matrix_plane_stress
+        raise ValueError('plane_strain or plane_stress are not well defined')
 
     def energy(self, plane_strain: bool, plane_stress: bool):
+        """
+        Defines
+
+        :param plane_strain: DESCRIPTION
+        :type plane_strain: bool
+        :param plane_stress: DESCRIPTION
+        :type plane_stress: bool
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         shape = self.dimension * len(self.mesh_element.points)
-        return 0.5 * (npy.matmul(npy.matmul(npy.transpose(npy.array(self.displacements)),
-                                            self.elementary_matrix(plane_strain, plane_stress).reshape(shape, shape)),
-                                 npy.array(self.displacements)))
+        return 0.5 * (npy.matmul(
+            npy.matmul(npy.transpose(npy.array(self.displacements)),
+                       self.elementary_matrix(plane_strain, plane_stress).reshape(shape, shape)),
+            npy.array(self.displacements)))
 
     @classmethod
     def with_material_object(cls, mesh_element,
@@ -210,6 +298,27 @@ class ElasticityElement(DessiaObject):
                              stress=None,
                              strain=None,
                              name: str = ''):
+        """
+        Defines
+
+        :param cls: DESCRIPTION
+        :type cls: TYPE
+        :param mesh_element: DESCRIPTION
+        :type mesh_element: TYPE
+        :param material: DESCRIPTION
+        :type material: finite_elements.core.Material
+        :param displacements: DESCRIPTION, defaults to None
+        :type displacements: TYPE, optional
+        :param stress: DESCRIPTION, defaults to None
+        :type stress: TYPE, optional
+        :param strain: DESCRIPTION, defaults to None
+        :type strain: TYPE, optional
+        :param name: DESCRIPTION, defaults to ''
+        :type name: str, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         return cls(mesh_element=mesh_element,
                    elasticity_modulus=material.elasticity_modulus,
@@ -222,6 +331,29 @@ class ElasticityElement(DessiaObject):
 
 
 class ElasticityTriangularElement2D(ElasticityElement, Element2D):
+    """
+    This class
+
+    :param mesh_element: DESCRIPTION
+    :type mesh_element: vmmesh.TriangularElement2D
+    :param elasticity_modulus: DESCRIPTION
+    :type elasticity_modulus: TYPE
+    :param poisson_ratio: DESCRIPTION
+    :type poisson_ratio: TYPE
+    :param mass_density: DESCRIPTION
+    :type mass_density: TYPE
+    :param thickness: DESCRIPTION, defaults to 1.0
+    :type thickness: float, optional
+    :param displacements: DESCRIPTION, defaults to None
+    :type displacements: TYPE, optional
+    :param stress: DESCRIPTION, defaults to None
+    :type stress: TYPE, optional
+    :param strain: DESCRIPTION, defaults to None
+    :type strain: TYPE, optional
+    :param name: DESCRIPTION, defaults to ''
+    :type name: str, optional
+    """
+
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -261,51 +393,88 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
         # DessiaObject.__init__(self, name=name)
 
     def _b_matrix(self):
+        """
+        Defines
 
-        y = [(self.points[i].y - self.points[j].y) for (i, j) in [(1, 2), (2, 0), (0, 1)]]
-        x = [(self.points[i].x - self.points[j].x) for (i, j) in [(2, 1), (0, 2), (1, 0)]]
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
-        det_jacobian = (self.points[0].x - self.points[2].x) * (self.points[1].y - self.points[2].y) \
+        y_coor = [(self.points[i].y - self.points[j].y) for (i, j) in [(1, 2), (2, 0), (0, 1)]]
+        x_coor = [(self.points[i].x - self.points[j].x) for (i, j) in [(2, 1), (0, 2), (1, 0)]]
+
+        det_jacobian = \
+            (self.points[0].x - self.points[2].x) * (self.points[1].y - self.points[2].y) \
             - (self.points[0].y - self.points[2].y) * (self.points[1].x - self.points[2].x)
 
-        data = [y[0], 0, y[1], 0, y[2], 0,
-                0, x[0], 0, x[1], 0, x[2],
-                x[0], y[0], x[1], y[1], x[2], y[2]]
+        data = [y_coor[0], 0, y_coor[1], 0, y_coor[2], 0,
+                0, x_coor[0], 0, x_coor[1], 0, x_coor[2],
+                x_coor[0], y_coor[0], x_coor[1], y_coor[1], x_coor[2], y_coor[2]]
 
         b_matrix = (1 / det_jacobian) * npy.array(data).reshape(3, 6)
 
         return b_matrix
 
     def _d_matrix_plane_strain(self):
+        """
+        Defines
 
-        a = (self.elasticity_modulus * self.poisson_ratio) \
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        a_param = (self.elasticity_modulus * self.poisson_ratio) \
             / ((1 + self.poisson_ratio) * (1 - 2 * self.poisson_ratio))
-        b = self.elasticity_modulus / (2 * (1 + self.poisson_ratio))
-        c = a + 2 * b
-        data = [c, a, 0,
-                a, c, 0,
-                0, 0, b]
+        b_param = self.elasticity_modulus / (2 * (1 + self.poisson_ratio))
+        c_param = a_param + 2 * b_param
+        data = [c_param, a_param, 0,
+                a_param, c_param, 0,
+                0, 0, b_param]
 
         return npy.array(data).reshape(3, 3)
 
     def _d_matrix_plane_stress(self):
+        """
+        Defines
 
-        a = (self.elasticity_modulus * self.poisson_ratio) \
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        a_param = (self.elasticity_modulus * self.poisson_ratio) \
             / (1 - self.poisson_ratio**2)
-        b = self.elasticity_modulus / (2 * (1 + self.poisson_ratio))
-        c = a + 2 * b
+        b_param = self.elasticity_modulus / (2 * (1 + self.poisson_ratio))
+        c_param = a_param + 2 * b_param
 
-        data = [c, a, 0,
-                a, c, 0,
-                0, 0, b]
+        data = [c_param, a_param, 0,
+                a_param, c_param, 0,
+                0, 0, b_param]
 
         return npy.array(data).reshape(3, 3)
 
     @property
     def dimension(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return 2
 
     def elementary_matrix(self, plane_strain: bool, plane_stress: bool):
+        """
+        Defines
+
+        :param plane_strain: DESCRIPTION
+        :type plane_strain: bool
+        :param plane_stress: DESCRIPTION
+        :type plane_stress: bool
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         b_matrix = self.b_matrix
         d_matrix = self.d_matrix(plane_strain, plane_stress)
@@ -441,29 +610,78 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
 
     @classmethod
     def from_element(cls, mesh_element, elasticity_element):
+        """
+        Defines
+
+        :param cls: DESCRIPTION
+        :type cls: TYPE
+        :param mesh_element: DESCRIPTION
+        :type mesh_element: TYPE
+        :param elasticity_element: DESCRIPTION
+        :type elasticity_element: TYPE
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return cls(mesh_element, elasticity_element.elasticity_modulus,
                    elasticity_element.poisson_ratio, elasticity_element.mass_density,
                    elasticity_element.thickness)
 
     def strain(self):
-        b_matrix = self.b_matrix()
-        q = self.displacements
+        """
+        Defines
 
-        strain = npy.matmul(b_matrix, q)
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        b_matrix = self.b_matrix()
+        q_vector = self.displacements
+
+        strain = npy.matmul(b_matrix, q_vector)
 
         return strain
 
     def stress(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         b_matrix = self.b_matrix()
         d_matrix = self.d_matrix()
-        q = self.displacements
+        q_vector = self.displacements
 
-        stress = (npy.matmul(npy.matmul(d_matrix, b_matrix), q))
+        stress = (npy.matmul(npy.matmul(d_matrix, b_matrix), q_vector))
 
         return stress
 
 
 class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElement):
+    """
+    This class
+
+    :param mesh_element: DESCRIPTION
+    :type mesh_element: vmmesh.TetrahedralElement
+    :param elasticity_modulus: DESCRIPTION
+    :type elasticity_modulus: TYPE
+    :param poisson_ratio: DESCRIPTION
+    :type poisson_ratio: TYPE
+    :param mass_density: DESCRIPTION
+    :type mass_density: TYPE
+    :param displacements: DESCRIPTION, defaults to None
+    :type displacements: TYPE, optional
+    :param stress: DESCRIPTION, defaults to None
+    :type stress: TYPE, optional
+    :param strain: DESCRIPTION, defaults to None
+    :type strain: TYPE, optional
+    :param name: DESCRIPTION, defaults to ''
+    :type name: str, optional
+    """
+
     # _standalone_in_db = False
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -499,40 +717,67 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
         # DessiaObject.__init__(self, name=name)
 
     def _b_matrix(self):
+        """
+        Defines
 
-        N1, N2, N3, N4 = self.mesh_element.form_functions
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
-        a1 = N1[1]
-        b1 = N1[2]
-        c1 = N1[3]
-        a2 = N2[1]
-        b2 = N2[2]
-        c2 = N2[3]
-        a3 = N3[1]
-        b3 = N3[2]
-        c3 = N3[3]
-        a4 = N4[1]
-        b4 = N4[2]
-        c4 = N4[3]
+        form_fct_1, form_fct_2, form_fct_3, form_fct_4 = self.mesh_element.form_functions
 
-        data = [a1, 0, 0, a2, 0, 0, a3, 0, 0, a4, 0, 0,
-                0, b1, 0, 0, b2, 0, 0, b3, 0, 0, b4, 0,
-                0, 0, c1, 0, 0, c2, 0, 0, c3, 0, 0, c4,
-                b1, a1, 0, b2, a2, 0, b3, a3, 0, b4, a4, 0,
-                0, c1, b1, 0, c2, b2, 0, c3, b3, 0, c4, b4,
-                c1, 0, a1, c2, 0, a2, c3, 0, a3, c4, 0, a4]
+        a_1 = form_fct_1[1]
+        b_1 = form_fct_1[2]
+        c_1 = form_fct_1[3]
+        a_2 = form_fct_2[1]
+        b_2 = form_fct_2[2]
+        c_2 = form_fct_2[3]
+        a_3 = form_fct_3[1]
+        b_3 = form_fct_3[2]
+        c_3 = form_fct_3[3]
+        a_4 = form_fct_4[1]
+        b_4 = form_fct_4[2]
+        c_4 = form_fct_4[3]
+
+        data = [a_1, 0, 0, a_2, 0, 0, a_3, 0, 0, a_4, 0, 0,
+                0, b_1, 0, 0, b_2, 0, 0, b_3, 0, 0, b_4, 0,
+                0, 0, c_1, 0, 0, c_2, 0, 0, c_3, 0, 0, c_4,
+                b_1, a_1, 0, b_2, a_2, 0, b_3, a_3, 0, b_4, a_4, 0,
+                0, c_1, b_1, 0, c_2, b_2, 0, c_3, b_3, 0, c_4, b_4,
+                c_1, 0, a_1, c_2, 0, a_2, c_3, 0, a_3, c_4, 0, a_4]
 
         b_matrix = (1 / (6 * self.mesh_element.volume)) * npy.array(data).reshape(6, 12)
 
         return b_matrix
 
     def _d_matrix_plane_strain(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return self._d_matrix_()
 
     def _d_matrix_plane_stress(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return self._d_matrix_()
 
     def _d_matrix_(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         elasticity_modulus = self.elasticity_modulus
         poisson_ratio = self.poisson_ratio
         coeff_a = 1 - poisson_ratio
@@ -552,9 +797,27 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
 
     @property
     def dimension(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return 3
 
     def elementary_matrix(self, plane_strain: bool, plane_stress: bool):
+        """
+        Defines
+
+        :param plane_strain: DESCRIPTION
+        :type plane_strain: bool
+        :param plane_stress: DESCRIPTION
+        :type plane_stress: bool
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         b_matrix = self.b_matrix
         d_matrix = self.d_matrix(plane_strain, plane_stress)
@@ -595,5 +858,19 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
 
     @classmethod
     def from_element(cls, mesh_element, elasticity_element):
+        """
+        Defines
+
+        :param cls: DESCRIPTION
+        :type cls: TYPE
+        :param mesh_element: DESCRIPTION
+        :type mesh_element: TYPE
+        :param elasticity_element: DESCRIPTION
+        :type elasticity_element: TYPE
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return cls(mesh_element, elasticity_element.elasticity_modulus,
                    elasticity_element.poisson_ratio, elasticity_element.mass_density)

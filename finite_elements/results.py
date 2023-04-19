@@ -4,27 +4,30 @@
 Module containing objects related to finite elements analysis results
 """
 
+from typing import List  # Tuple, TypeVar
+# import math
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
+# from matplotlib import cm
 import numpy as npy
 import volmdlr as vm
 import volmdlr.mesh as vmmesh
 from dessia_common.core import DessiaObject
-from typing import List  # Tuple, TypeVar
 from finite_elements.core import MU, blue_red
 import finite_elements.core
-from matplotlib.tri import Triangulation, TriAnalyzer, UniformTriRefiner
-from matplotlib import cm
-import math
 
 
 class Result(DessiaObject):
     """
+    This class
+
     :param mesh: The mesh on which the result has been solved.
     :type mesh: a Mesh object
     :param result_vector: The solution vector for the magnetic potential A.
     :type result_vector: a list of float
     """
+
     _standalone_in_db = True
     _non_serializable_attributes = []
     _non_eq_attributes = ['name']
@@ -39,10 +42,26 @@ class Result(DessiaObject):
 
     @property
     def dimension(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return self.mesh.elements_groups[0].elements[0].dimension
 
 
 class MagneticResults(Result):
+    """
+    This class
+
+    :param mesh: DESCRIPTION
+    :type mesh: vmmesh.Mesh
+    :param result_vector: DESCRIPTION
+    :type result_vector: List[float]
+    """
+
     _standalone_in_db = True
     _non_serializable_attributes = []
     _non_eq_attributes = ['name']
@@ -56,29 +75,55 @@ class MagneticResults(Result):
         self.magnetic_field_per_element = self._magnetic_field_per_element()
         self.magnetic_field_norm = self._magnetic_field_norm()
 
+        Result.__init__(self, mesh, result_vector)
+
     def brbtetha(self, gap_elements_group):
+        """
+        Defines
+
+        :param gap_elements_group: DESCRIPTION
+        :type gap_elements_group: TYPE
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         element_to_magnetic_field = self.magnetic_field_per_element
-        all_BrBtetha = []
+        all_br_btetha = []
         for element in gap_elements_group.elements:
-            vector_B = element_to_magnetic_field[element]
+            vector_b = element_to_magnetic_field[element]
 
             element_center = element.center
             e_r = vm.Vector2D(*element_center)
             e_r.normalize()
             e_teta = vm.Vector2D(-e_r[1], e_r[0])
-            B_r = vector_B.dot(e_r)
-            B_teta = vector_B.dot(e_teta)
+            b_r = vector_b.dot(e_r)
+            b_teta = vector_b.dot(e_teta)
 
-            all_BrBtetha.append(B_r * B_teta)
-        return all_BrBtetha
+            all_br_btetha.append(b_r * b_teta)
+        return all_br_btetha
 
     def _magnetic_field_norm(self):
-        element_to_magnetic_field = self.magnetic_field_per_element
-        Bs = [B.norm() for B in list(element_to_magnetic_field.values())]
+        """
+        Defines
 
-        return Bs
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        element_to_magnetic_field = self.magnetic_field_per_element
+        bs_param = [b_param.norm() for b_param in list(element_to_magnetic_field.values())]
+
+        return bs_param
 
     def _magnetic_field_per_element(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         element_to_magnetic_field = {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
@@ -86,48 +131,55 @@ class MagneticResults(Result):
                 indexes = [self.mesh.node_to_index[element.points[0]],
                            self.mesh.node_to_index[element.points[1]],
                            self.mesh.node_to_index[element.points[2]]]
-                b1 = element_form_functions[0][1]
-                c1 = element_form_functions[0][2]
-                b2 = element_form_functions[1][1]
-                c2 = element_form_functions[1][2]
-                b3 = element_form_functions[2][1]
-                c3 = element_form_functions[2][2]
-                B_x = float(c1 *
+                b1_param = element_form_functions[0][1]
+                c1_param = element_form_functions[0][2]
+                b2_param = element_form_functions[1][1]
+                c2_param = element_form_functions[1][2]
+                b3_param = element_form_functions[2][1]
+                c3_param = element_form_functions[2][2]
+                b_x = float(c1_param *
                             self.result_vector[indexes[0]] +
-                            c2 *
+                            c2_param *
                             self.result_vector[indexes[1]] +
-                            c3 *
+                            c3_param *
                             self.result_vector[indexes[2]])
-                B_y = float(-b1 * self.result_vector[indexes[0]] - b2 *
-                            self.result_vector[indexes[1]] - b3 * self.result_vector[indexes[2]])
-                element_to_magnetic_field[element] = vm.Vector2D(B_x, B_y)
+                b_y = float(-b1_param * self.result_vector[indexes[0]] - b2_param *
+                            self.result_vector[indexes[1]] - b3_param
+                            * self.result_vector[indexes[2]])
+                element_to_magnetic_field[element] = vm.Vector2D(b_x, b_y)
         return element_to_magnetic_field
 
     def maxwell_stress_tensor(self, element):
         """
         Computes the Maxwell stress tensor for one element.
-        Returns a list made of sigma_r_r, sigma_r_theta and sigma_theta_theta, \
-        since sigma_r_theta = sigma_theta_r.
+            Returns a list made of sigma_r_r, sigma_r_theta and sigma_theta_theta,
+            since sigma_r_theta = sigma_theta_r
 
         :param element: The element on which the tensor is computed.
         :type element: a TriangularElement object
+
+        :return: DESCRIPTION
+        :rtype: TYPE
         """
+
         element_to_magnetic_field = self.magnetic_field_per_element
-        vector_B = element_to_magnetic_field[element]
+        vector_b = element_to_magnetic_field[element]
         element_center = element.center
+
         e_r = vm.Vector2D(*element_center)
         e_r.normalize()
         e_teta = vm.Vector2D(-e_r[1], e_r[0])
-        B_r = vector_B.dot(e_r)
-        B_teta = vector_B.dot(e_teta)
+        b_r = vector_b.dot(e_r)
+        b_teta = vector_b.dot(e_teta)
 
-        sigma_rr = 1 / MU * B_r**2 - 1 / (2 * MU) * vector_B.Norm()**2
-        sigma_rteta = 1 / MU * B_r * B_teta
-        sigma_tetateta = 1 / MU * B_teta**2 - 1 / (2 * MU) * vector_B.Norm()**2
+        sigma_rr = 1 / MU * b_r**2 - 1 / (2 * MU) * vector_b.Norm()**2
+        sigma_rteta = 1 / MU * b_r * b_teta
+        sigma_tetateta = 1 / MU * b_teta**2 - 1 / (2 * MU) * vector_b.Norm()**2
         sigma_rr_rteta_tetateta = [sigma_rr, sigma_rteta, sigma_tetateta]
         return sigma_rr_rteta_tetateta
 
-    def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor):  # , nb_notches):
+    def torque(self, air_gap_elements_group_name, length_motor, radius_stator, radius_rotor):
+        # nb_notches):
         """
         Computes the resistant magnetic torque when the rotor is blocked and \
         the current inside the stator is evolving. Unit : N.m.
@@ -143,7 +195,11 @@ class MagneticResults(Result):
         :type radius_rotor: float
         :param nb_notches: The number of notches of the Stator.
         :type nb_notches: int
+
+        :return: DESCRIPTION
+        :rtype: TYPE
         """
+
         element_to_magnetic_field = self.magnetic_field_per_element
 
         for elements_group in self.mesh.elements_groups:
@@ -154,36 +210,49 @@ class MagneticResults(Result):
         somme = 0
         i = 0
 
-#        r = (radius_stator - radius_rotor)/2 + radius_rotor
+        # r = (radius_stator - radius_rotor)/2 + radius_rotor
 
-#        fig, ax = plt.subplots()
+        # fig, ax = plt.subplots()
 
         for element in gap_elements_group.elements:
-            vector_B = element_to_magnetic_field[element]
+            vector_b = element_to_magnetic_field[element]
 
             element_center = element.center
+
             e_r = vm.Vector2D(*element_center)
             e_r.normalize()
             e_teta = vm.Vector2D(-e_r[1], e_r[0])
-            B_r = vector_B.dot(e_r)
-            B_teta = vector_B.dot(e_teta)
-            r_Br_Bteta = element_center.norm() * B_r * B_teta
-#            r_Br_Bteta = r * B_r * B_teta
-            dS = element.area
+            b_r = vector_b.dot(e_r)
+            b_teta = vector_b.dot(e_teta)
+            r_br_bteta = element_center.norm() * b_r * b_teta
+#            r_br_bteta = r * b_r * b_teta
+            ds_param = element.area
 
-#            e_r.plot(ax=ax, origin=element_center, amplitude=0.005, color='b')
-#            e_teta.plot(ax=ax, origin=element_center, amplitude=0.005, color='g')
-#            vector_B.plot(ax=ax, origin=element_center, amplitude=0.005, color='r')
+            # e_r.plot(ax=ax, origin=element_center, amplitude=0.005, color='b')
+            # e_teta.plot(ax=ax, origin=element_center, amplitude=0.005, color='g')
+            # vector_b.plot(ax=ax, origin=element_center, amplitude=0.005, color='r')
 
-            somme += r_Br_Bteta * dS
+            somme += r_br_bteta * ds_param
             i += 1
 
-#        print('nb elements in airgap', i)
-        T = length_motor / (MU * (radius_stator - radius_rotor)) * somme
+        # print('nb elements in airgap', i)
+        t_param = length_motor / (MU * (radius_stator - radius_rotor)) * somme
 
-        return T
+        return t_param
 
     def plot_brbtetha(self, ax=None, air_gap_elements_group_name='Gap ring'):
+        """
+        Plots
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param air_gap_elements_group_name: DESCRIPTION, defaults to 'Gap ring'
+        :type air_gap_elements_group_name: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if ax is None:
             fig, ax = plt.subplots()
             # ax = self.mesh.plot()
@@ -196,90 +265,113 @@ class MagneticResults(Result):
                 gap_elements_group = elements_group
                 break
 
-        all_BrBtetha = self.brbtetha(gap_elements_group)
+        all_br_btetha = self.brbtetha(gap_elements_group)
 
         # color_map = ((0,0,1), (1,0,0))
         jet = plt.get_cmap('jet')
-        # Bs = [B.Norm() for B in list(element_to_magnetic_field.values())]
+        # bs_param = [B.Norm() for B in list(element_to_magnetic_field.values())]
 
-        BrBtetha_max, BrBtetha_min = max(all_BrBtetha), min(all_BrBtetha)
+        br_btetha_max, br_btetha_min = max(all_br_btetha), min(all_br_btetha)
 
-        B_to_color = {}
+        b_to_color = {}
         all_colors = []
-        for B in all_BrBtetha:
-            if B > BrBtetha_max:
-                x = 1
+        for b_param in all_br_btetha:
+            if b_param > br_btetha_max:
+                x_param = 1
             else:
-                x = (B - BrBtetha_min) / (BrBtetha_max - BrBtetha_min)
+                x_param = (b_param - br_btetha_min) / (br_btetha_max - br_btetha_min)
             # color = (color_map[0][0]-(color_map[0][0]-color_map[1][0])*x,
             #          color_map[0][1]-(color_map[0][1]-color_map[1][1])*x,
             #          color_map[0][2]-(color_map[0][2]-color_map[1][2])*x)
-            color = jet(int(x * 256))[:3]
+            color = jet(int(x_param * 256))[:3]
 
-            B_to_color[B] = color
+            b_to_color[b_param] = color
             all_colors.append(color)
-        # print(B_to_color)
+        # print(b_to_color)
         for i, element in enumerate(gap_elements_group.elements):
-            # element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].Norm()], fill=True)
+            # element.plot(ax=ax, color=b_to_color[element_to_magnetic_field[element].Norm()],
+            #              fill=True)
             element.plot(ax=ax, color=all_colors[i], fill=True)
 
-        norm = mpl.colors.Normalize(vmin=BrBtetha_min, vmax=BrBtetha_max)
-        sm = plt.cm.ScalarMappable(cmap=jet, norm=norm)
+        norm = mpl.colors.Normalize(vmin=br_btetha_min, vmax=br_btetha_max)
+        scalar_mappable = plt.cm.ScalarMappable(cmap=jet, norm=norm)
 
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ticks=npy.linspace(BrBtetha_min, BrBtetha_max, 10))
+        scalar_mappable.set_array([])
+        cbar = fig.colorbar(scalar_mappable, ticks=npy.linspace(br_btetha_min, br_btetha_max, 10))
         # cbar = fig.colorbar(sm, ticks=npy.linspace(-0.9, 0.8, 10))
         cbar.set_label('Br*Btetha')
 
         return ax
 
-    def plot_magnetic_field(self, ax=None, Bmax=None):
+    def plot_magnetic_field(self, ax=None, bmax=None):
         """
         Plots the mesh with colored triangular elements representing the \
         intensity of the induction field inside the Machine.
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param bmax: DESCRIPTION, defaults to None
+        :type bmax: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
         """
+
         if ax is None:
             fig, ax = plt.subplots()
         else:
             fig = plt.gcf()
         element_to_magnetic_field = self.magnetic_field_per_element
-        Bs = self.magnetic_field_norm
+        bs_param = self.magnetic_field_norm
 
-        B_max, B_min = finite_elements.core.get_bmin_bmax(Bs, Bmin=None, Bmax=Bmax)
-        B_to_color = finite_elements.core.get_colors(Bs, B_max=B_max, B_min=B_min)
+        b_max, b_min = finite_elements.core.get_bmin_bmax(bs_param,
+                                                          param_bmin=None,
+                                                          param_bmax=bmax)
+        b_to_color = finite_elements.core.get_colors(bs_param, param_bmax=b_max, param_bmin=b_min)
 
         for group in self.mesh.elements_groups:
             for element in group.elements:
-                element.plot(ax=ax, color=B_to_color[element_to_magnetic_field[element].norm()], fill=True)
+                element.plot(ax=ax, color=b_to_color[element_to_magnetic_field[element].norm()],
+                             fill=True)
 
-        norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10))
+        norm = mpl.colors.Normalize(vmin=b_min, vmax=b_max)
+        scalar_mappable = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        scalar_mappable.set_array([])
+        cbar = fig.colorbar(scalar_mappable, ticks=npy.linspace(b_min, b_max, 10))
         cbar.set_label('Magnetic Field in Tesla')
 
         return ax
 
     def plot_magnetic_field_contour(self, ax=None):
+        """
+        Plots
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if ax is None:
-            fig, ax = plt.subplots()
+            _, ax = plt.subplots()
         else:
-            fig = plt.gcf()
+            _ = plt.gcf()
         ax.set_aspect('equal')
 
         element_to_magnetic_field = self.magnetic_field_per_element
 
-        x = []
-        y = []
-        Z = []
+        x_coor = []
+        y_coor = []
+        z_param = []
         for group in self.mesh.elements_groups:
             for element in group.elements:
                 x_center, y_center = element.center
-                x.append(x_center)
-                y.append(y_center)
-                Z.append(element_to_magnetic_field[element].norm())
+                x_coor.append(x_center)
+                y_coor.append(y_center)
+                z_param.append(element_to_magnetic_field[element].norm())
 
-        tri = Triangulation(x, y)
+        tri = Triangulation(x_coor, y_coor)
 
         # -----------------------------------------------------------------------------
         # Improving the triangulation before high-res plots: removing flat triangles
@@ -292,42 +384,56 @@ class MagneticResults(Result):
         # refining the data
         refiner = UniformTriRefiner(tri)
         subdiv = 3
-        tri_refi, z_test_refi = refiner.refine_field(Z, subdiv=subdiv)
+        tri_refi, z_test_refi = refiner.refine_field(z_param, subdiv=subdiv)
 
         levels = npy.arange(0., 1., 0.05)
-        cmap = cm.get_cmap(name='Blues', lut=None)
+        # cmap = cm.get_cmap(name='Blues', lut=None)
         ax.tricontour(tri_refi, z_test_refi, levels=levels,  # cmap=cmap,
                       linewidths=[2.0, 0.5, 1.0, 0.5])
-#        ax.triplot(tri_refi, color='0.97')
-#        ax.triplot(tri, color='0.7')
-#        ax.tricontour(x, y, Z)
+        # ax.triplot(tri_refi, color='0.97')
+        # ax.triplot(tri, color='0.7')
+        # ax.tricontour(x, y, Z)
         return ax
 
     def plot_magnetic_field_vectors(self, ax=None, amplitude=0.005,
-                                    Bmax=None, Bmin=None):
+                                    bmax=None, bmin=None):
         """
         Plots the mesh with a field of vectors representing the induction field \
         and its direction inside the Machine.
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param amplitude: DESCRIPTION, defaults to 0.005
+        :type amplitude: TYPE, optional
+        :param bmax: DESCRIPTION, defaults to None
+        :type bmax: TYPE, optional
+        :param bmin: DESCRIPTION, defaults to None
+        :type bmin: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
         """
+
         if ax is None:
             fig, ax = plt.subplots()
         else:
             fig = plt.gcf()
 
         element_to_magnetic_field = self.magnetic_field_per_element
-        Bs = self.magnetic_field_norm
+        bs_param = self.magnetic_field_norm
 
-        B_max, B_min = finite_elements.core.get_bmin_bmax(Bs, Bmin, Bmax)
-        B_to_color = finite_elements.core.get_colors(Bs, B_max=B_max, B_min=B_min)
+        b_max, b_min = finite_elements.core.get_bmin_bmax(param_bs=bs_param, param_bmax=bmax,
+                                                          param_bmin=bmin)
+        b_to_color = finite_elements.core.get_colors(bs_param, param_bmax=b_max, param_bmin=b_min)
 
-        for element, B in element_to_magnetic_field.items():
-            B.plot(amplitude=amplitude, origin=element.center, ax=ax,
-                   color=B_to_color[B.norm()], normalize=True)
+        for element, b_param in element_to_magnetic_field.items():
+            b_param.plot(amplitude=amplitude, origin=element.center, ax=ax,
+                         color=b_to_color[b_param.norm()], normalize=True)
 
-        norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10))
+        norm = mpl.colors.Normalize(vmin=b_min, vmax=b_max)
+        scalar_mappable = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        scalar_mappable.set_array([])
+        cbar = fig.colorbar(scalar_mappable, ticks=npy.linspace(b_min, b_max, 10))
         cbar.set_label('Magnetic Field in Tesla')
 
         return ax
@@ -336,30 +442,50 @@ class MagneticResults(Result):
         """
         Plots the mesh with colored triangular elements representing the \
         intensity of the magnetic potential inside the Machine.
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
         """
 
         triang = finite_elements.core.get_triangulation(self.mesh)
-        z = npy.asarray([p for p in self.result_vector[:len(self.mesh.nodes)]])  # p[0]
-        z_min, z_max = min(z), max(z)
+        # z_param = npy.asarray([p for p in self.result_vector[:len(self.mesh.nodes)]])  # p[0]
+        z_param = npy.asarray(list(self.result_vector[:len(self.mesh.nodes)]))  # unnecessary-comprehension
+        z_min, z_max = min(z_param), max(z_param)
 
         if ax is None:
             fig, ax = plt.subplots()
         else:
             fig = plt.gcf()
-        ax.tricontourf(triang, z, cmap=blue_red)
+        ax.tricontourf(triang, z_param, cmap=blue_red)
         ax.triplot(triang, 'k-')
         ax.set_title('Triangular grid')
 
         norm = mpl.colors.Normalize(vmin=z_min, vmax=z_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ticks=npy.linspace(z_min, z_max, 10))
+        scalar_mappable = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        scalar_mappable.set_array([])
+        cbar = fig.colorbar(scalar_mappable, ticks=npy.linspace(z_min, z_max, 10))
         cbar.set_label('Potential Vector')
 
         return ax
 
 
 class ElasticityResults(Result):
+    """
+    This class
+
+    :param mesh: DESCRIPTION
+    :type mesh: vmmesh.Mesh
+    :param result_vector: DESCRIPTION
+    :type result_vector: List[float]
+    :param plane_strain: DESCRIPTION
+    :type plane_strain: bool
+    :param plane_stress: DESCRIPTION
+    :type plane_stress: bool
+    """
+
     _standalone_in_db = True
     _non_serializable_attributes = []
     _non_eq_attributes = ['name']
@@ -369,7 +495,6 @@ class ElasticityResults(Result):
     def __init__(self, mesh: vmmesh.Mesh, result_vector: List[float],
                  plane_strain: bool,
                  plane_stress: bool):
-
         self.mesh = mesh
         self.result_vector = result_vector
         self.plane_strain = plane_strain
@@ -395,11 +520,27 @@ class ElasticityResults(Result):
 
     @property
     def deformed_mesh(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if not self._deformed_mesh:
             self._deformed_mesh = self.deformed_mesh_m()
         return self._deformed_mesh
 
     def deformed_mesh_m(self, amplitude=1):
+        """
+        Defines
+
+        :param amplitude: DESCRIPTION, defaults to 1
+        :type amplitude: TYPE, optional
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if amplitude == 1:
             deformed_nodes = self.deformed_nodes
         else:
@@ -429,44 +570,87 @@ class ElasticityResults(Result):
 
     @property
     def deformed_nodes(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if not self._deformed_nodes:
             self._deformed_nodes = self.deformed_nodes_m()
         return self._deformed_nodes
 
     def deformed_nodes_m(self, amplitude=1):
+        """
+        Defines
+
+        :param amplitude: DESCRIPTION, defaults to 1
+        :type amplitude: TYPE, optional
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         displacement_field_vectors = self.displacement_vectors_per_node
         deformed_nodes = []
-        for i, node in enumerate(self.mesh.nodes):
+        for _, node in enumerate(self.mesh.nodes):
             obj = getattr(vmmesh, f'Node{self.__class__.__name__[-2::]}')
-            deformed_nodes.append(getattr(obj, 'from_point')(node + displacement_field_vectors[i] * amplitude))
+            deformed_nodes.append(
+                getattr(obj, 'from_point')(node + displacement_field_vectors[node] * amplitude))
 
         return deformed_nodes
 
     def displacement_per_node_x(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         return [displacement[0] for displacement in self.displacement_vectors_per_node]
 
     def displacement_per_node_y(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         return [displacement[1] for displacement in self.displacement_vectors_per_node]
 
     @property
     def displacement_vectors_per_node(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if not self._displacement_vectors_per_node:
             self._displacement_vectors_per_node = self.displacement_vectors_per_node_m()
         return self._displacement_vectors_per_node
 
     def displacement_vectors_per_node_m(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         nodes_number = len(self.mesh.nodes)
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=nodes_number)
         displacement_field_vectors = {}
-        q = self.result_vector
+        q_vector = self.result_vector
 
         for n, node in enumerate(self.mesh.nodes):
             displacement = []
             for i in range(self.dimension):
-                displacement.append(q[positions[(n, i + 1)]])
+                displacement.append(q_vector[positions[(n, i + 1)]])
 
             displacement_field_vectors[node] = getattr(
                 vm, f'Vector{self.__class__.__name__[-2::]}')(*displacement)
@@ -476,14 +660,28 @@ class ElasticityResults(Result):
 
     @property
     def displacements_per_element(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if not self._displacements_per_element:
             self._displacements_per_element = self.displacements_per_element_m()
         return self._displacements_per_element
 
     def displacements_per_element_m(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
                                                                  nodes_number=len(self.mesh.nodes))
-        q = self.result_vector
+        q_vector = self.result_vector
 
         displacements_per_element = {}
         for elements_group in self.mesh.elements_groups:
@@ -492,8 +690,8 @@ class ElasticityResults(Result):
                 indexes = [self.mesh.node_to_index[point] for point in element.points]
                 for index in indexes:
                     for i in range(self.dimension):
-                        d = q[positions[(index, i + 1)]]
-                        displacements.append(d.real)  # TODO: consier complex number with d.imag != 0
+                        disp = q_vector[positions[(index, i + 1)]]
+                        displacements.append(disp.real)  # TODO: consier complex number with d.imag != 0
 
                 displacements_per_element[element] = displacements
                 element.displacements = displacements
@@ -502,11 +700,25 @@ class ElasticityResults(Result):
 
     @property
     def energy(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if not self._energy:
             self._energy = self.energy_m()
         return self._energy
 
     def energy_m(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         # # shape = len(self.mesh.nodes) * self.dimension
         # # K = self.create_matrix() (!)
         # # displacements = self.result_vector[0:shape]
@@ -522,43 +734,82 @@ class ElasticityResults(Result):
 
         # return energy
 
-        return sum([value for value in self.energy_per_element.values()])
+        # return sum([value for value in self.energy_per_element.values()]) #unnecessary-comprehension
+        return sum(list(self.energy_per_element.values()))
 
     @property
     def energy_per_element(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if not self._energy_per_element:
             _ = self.displacements_per_element_m()
             self._energy_per_element = self.energy_per_element_m()
         return self._energy_per_element
 
     def energy_per_element_m(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         energy = {}
         for group in self.mesh.elements_groups:
             for element in group.elements:
-                energy[element] = (element.energy(self.plane_strain, self.plane_stress))
+                energy[element] = element.energy(self.plane_strain, self.plane_stress)
         return energy
 
     @property
     def strain(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if not self._strain:
             self._strain, self._stress = self.strain_stress_per_element_m()
         return self._strain
 
     @property
     def stress(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if not self._stress:
             self._strain, self._stress = self.strain_stress_per_element_m()
         return self._stress
 
     def strain_stress_per_element_m(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        _ = self.displacements_per_element
+
         element_to_strain, element_to_stress = {}, {}
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
-                element_to_strain[element] = (npy.matmul(element.b_matrix, element.displacements))
+                element_to_strain[element] = npy.matmul(element.b_matrix, element.displacements)
                 element.strain = element_to_strain[element]
-                element_to_stress[element] = (npy.matmul(npy.matmul(element.d_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress),
-                                                                    element.b_matrix),
-                                                         element.displacements))
+                element_to_stress[element] = (npy.matmul(npy.matmul(
+                    element.d_matrix(plane_strain=self.plane_strain, plane_stress=self.plane_stress),
+                    element.b_matrix),
+                    element.displacements))
                 element.stress = element_to_stress[element]
 
         return element_to_strain, element_to_stress
@@ -568,8 +819,8 @@ class ElasticityResults(Result):
         if file_name_output[-3::] != 'vtk':
             file_name_output += '.vtk'
 
-        with open('initial_mesh.vtk') as f_in:
-            with open(file_name_output, "w") as f_out:
+        with open('initial_mesh.vtk', encoding="utf-8") as f_in:
+            with open(file_name_output, "w", encoding="utf-8") as f_out:
                 for line in f_in:
                     f_out.write(line)
         f_out.close()
@@ -598,60 +849,74 @@ class ElasticityResults(Result):
             for displacement in displacements:
                 lines.append(str([*displacement])[1:-1].replace(',', ''))
 
-        with open(file_name_output, "a+") as f_out:
+        with open(file_name_output, "a+", encoding="utf-8") as f_out:
             for line in lines:
                 f_out.write(line)
                 f_out.write('\n')
         f_out.close()
 
-    '''
-    def update_vtk_with_results(self, input_file_name, output_file_name):
-        with open(input_file_name) as f_in:
-            with open(output_file_name, "w") as f_out:
-                for line in f_in:
-                    f_out.write(line)
-        f_out.close()
-        f_in.close()
+    # def update_vtk_with_results(self, input_file_name, output_file_name):
+    #     """
+    #     Defines
 
-        lines = ['POINT_DATA ' + str(len(self.mesh.nodes))]
-        lines.append('SCALARS ' + 'Displacement_Magnitude float 1')
-        lines.append('LOOKUP_TABLE default')
-        for displacement in self.displacement_vectors_per_node:
-            lines.append(str(displacement.norm()))
+    #     :param input_file_name: DESCRIPTION
+    #     :type input_file_name: TYPE
+    #     :param output_file_name: DESCRIPTION
+    #     :type output_file_name: TYPE
 
-        lines.append('VECTORS Displacement_Vectors float')
-        for displacement in self.displacement_vectors_per_node:
-            line = ''
-            for i in range(len([*displacement])):
-                line += str(displacement[i]) + ' '
-            if i == 1:
-                line += '0'
-            lines.append(line)
-            # lines.append(str(displacement.x)+' '+str(displacement.y)+' '+str(displacement.z))
+    #     :return: DESCRIPTION
+    #     :rtype: TYPE
+    #     """
 
-        # lines.append('CELL_DATA ' + str(104))
-        # lines.append('SCALARS cell_scalars int 1')
-        # lines.append('LOOKUP_TABLE default')
-        # for i in range(104):
-        #     lines.append(str(i))
-        # lines.append('SCALARS axial_strain_x float 1')
-        # lines.append('LOOKUP_TABLE default')
+    #     with open(input_file_name) as f_in:
+    #         with open(output_file_name, "w") as f_out:
+    #             for line in f_in:
+    #                 f_out.write(line)
+    #     f_out.close()
+    #     f_in.close()
 
-        # axial_strain_x = self.axial_strain_x()
-        # for _, value in axial_strain_x.items():
-        #     lines.append(str(value))
+    #     lines = ['POINT_DATA ' + str(len(self.mesh.nodes))]
+    #     lines.append('SCALARS ' + 'Displacement_Magnitude float 1')
+    #     lines.append('LOOKUP_TABLE default')
+    #     for displacement in self.displacement_vectors_per_node:
+    #         lines.append(str(displacement.norm()))
 
-        with open(output_file_name, "a+") as f_out:
-            # f_out.seek(0)
-            # f.write('\n')
-            for line in lines:
-                f_out.write(line)
-                f_out.write('\n')
-        f_out.close()
-        '''
+    #     lines.append('VECTORS Displacement_Vectors float')
+    #     for displacement in self.displacement_vectors_per_node:
+    #         line = ''
+    #         for i in range(len([*displacement])):
+    #             line += str(displacement[i]) + ' '
+    #         if i == 1:
+    #             line += '0'
+    #         lines.append(line)
+    #         # lines.append(str(displacement.x)+' '+str(displacement.y)+' '+str(displacement.z))
+
+    #     # lines.append('CELL_DATA ' + str(104))
+    #     # lines.append('SCALARS cell_scalars int 1')
+    #     # lines.append('LOOKUP_TABLE default')
+    #     # for i in range(104):
+    #     #     lines.append(str(i))
+    #     # lines.append('SCALARS axial_strain_x float 1')
+    #     # lines.append('LOOKUP_TABLE default')
+
+    #     # axial_strain_x = self.axial_strain_x()
+    #     # for _, value in axial_strain_x.items():
+    #     #     lines.append(str(value))
+
+    #     with open(output_file_name, "a+") as f_out:
+    #         # f_out.seek(0)
+    #         # f.write('\n')
+    #         for line in lines:
+    #             f_out.write(line)
+    #             f_out.write('\n')
+    #     f_out.close()
 
 
 class ElasticityResults2D(ElasticityResults):
+    """
+    This class
+    """
+
     # _standalone_in_db = True
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -670,6 +935,12 @@ class ElasticityResults2D(ElasticityResults):
     #     Result.__init__(self, mesh, result_vector)
 
     def axial_strain_x(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         strain = self.strain
         axial_strain_x = {}
@@ -680,6 +951,12 @@ class ElasticityResults2D(ElasticityResults):
         return axial_strain_x
 
     def axial_strain_y(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         strain = self.strain
         axial_strain_y = {}
@@ -690,6 +967,12 @@ class ElasticityResults2D(ElasticityResults):
         return axial_strain_y
 
     def axial_stress_x(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         stress = self.stress
         axial_stress_x = {}
@@ -700,6 +983,12 @@ class ElasticityResults2D(ElasticityResults):
         return axial_stress_x
 
     def axial_stress_y(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         stress = self.stress
         axial_stress_y = {}
@@ -710,44 +999,88 @@ class ElasticityResults2D(ElasticityResults):
         return axial_stress_y
 
     def plot_axial_strain_x(self, ax=None, fig=None):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         return self.plot_constraints(constraint_name='axial_strain_x', ax=ax, fig=fig)
 
     def plot_axial_strain_y(self, ax=None, fig=None):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         return self.plot_constraints(constraint_name='axial_strain_y', ax=ax, fig=fig)
 
     def plot_axial_stress_x(self, ax=None, fig=None):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         return self.plot_constraints(constraint_name='axial_stress_x', ax=ax, fig=fig)
 
     def plot_axial_stress_y(self, ax=None, fig=None):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         return self.plot_constraints(constraint_name='axial_stress_y', ax=ax, fig=fig)
 
     def plot_constraints(self, constraint_name: str, ax=None, fig=None):
+        """
+        Defines
+
+        :param constraint_name: DESCRIPTION
+        :type constraint_name: str
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param fig: DESCRIPTION, defaults to None
+        :type fig: TYPE, optional
+        :raises NotImplementedError: DESCRIPTION
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         if ax is None:
             fig, ax = plt.subplots()
 
         if hasattr(self, constraint_name):
             result = getattr(self, constraint_name)()
-            result_values = [value for value in result.values()]
+            # result_values = [value for value in result.values()] #unnecessary-comprehension
+            result_values = list(result.values())
         else:
             raise NotImplementedError(
                 f'Class {self.__class__.__name__} does not implement {constraint_name}')
 
         deformed_mesh = self.deformed_mesh
-        B_max, B_min = finite_elements.core.get_bmin_bmax(result_values, Bmin=None, Bmax=None)
-        B_to_color = finite_elements.core.get_colors(result_values, B_max=B_max, B_min=B_min)
-        for g, group in enumerate(deformed_mesh.elements_groups):
-            for e, element in enumerate(group.elements):
-                element.plot(ax=ax, color=B_to_color[result[self.mesh.elements_groups[g].elements[e]]], fill=True)
+        b_max, b_min = finite_elements.core.get_bmin_bmax(result_values, param_bmax=None,
+                                                          param_bmin=None)
+        b_to_color = finite_elements.core.get_colors(result_values, param_bmax=b_max,
+                                                     param_bmin=b_min)
+        for g_index, group in enumerate(deformed_mesh.elements_groups):
+            for e_index, element in enumerate(group.elements):
+                element.plot(ax=ax,
+                             color=b_to_color[result[
+                                 self.mesh.elements_groups[g_index].elements[e_index]]],
+                             fill=True)
 
-        norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10), ax=ax)
+        norm = mpl.colors.Normalize(vmin=b_min, vmax=b_max)
+        scalar_mappable = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        scalar_mappable.set_array([])
+        cbar = fig.colorbar(scalar_mappable, ticks=npy.linspace(b_min, b_max, 10), ax=ax)
         cbar.set_label(constraint_name)
 
         ax.set_xlabel('x')
@@ -756,8 +1089,20 @@ class ElasticityResults2D(ElasticityResults):
         return ax
 
     def plot_deformed_mesh(self, ax=None, amplitude=1):
+        """
+        Defines
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param amplitude: DESCRIPTION, defaults to 1
+        :type amplitude: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if ax is None:
-            fig, ax = plt.subplots()
+            _, ax = plt.subplots()
             ax.set_aspect('equal')
         if amplitude != 1:
             self.deformed_mesh_m(amplitude=amplitude).plot(ax=ax)
@@ -777,6 +1122,22 @@ class ElasticityResults2D(ElasticityResults):
         return ax
 
     def plot_displacements(self, displacement_name: str, ax=None, fig=None, amplitude=1):
+        """
+        Defines
+
+        :param displacement_name: DESCRIPTION
+        :type displacement_name: str
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param fig: DESCRIPTION, defaults to None
+        :type fig: TYPE, optional
+        :param amplitude: DESCRIPTION, defaults to 1
+        :type amplitude: TYPE, optional
+        :raises NotImplementedError: DESCRIPTION
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         if hasattr(self, displacement_name):
             x = getattr(self, displacement_name)()
@@ -806,9 +1167,9 @@ class ElasticityResults2D(ElasticityResults):
         # ax.set_title('Triangular grid')
 
         norm = mpl.colors.Normalize(vmin=x_min, vmax=x_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ticks=npy.linspace(x_min, x_max, 10))
+        scalar_mappable = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        scalar_mappable.set_array([])
+        cbar = fig.colorbar(scalar_mappable, ticks=npy.linspace(x_min, x_max, 10))
         cbar.set_label(displacement_name)
 
         ax.set_xlabel('x')
@@ -823,25 +1184,73 @@ class ElasticityResults2D(ElasticityResults):
         return ax
 
     def plot_displacement_per_node_x(self, ax=None, amplitude=1):
+        """
+        Defines
 
-        return self.plot_displacements(displacement_name='displacement_per_node_x', ax=ax, amplitude=amplitude)
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param amplitude: DESCRIPTION, defaults to 1
+        :type amplitude: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        return self.plot_displacements(displacement_name='displacement_per_node_x', ax=ax,
+                                       amplitude=amplitude)
 
     def plot_displacement_per_node_xy(self, ax=None, amplitude=1):
+        """
+        Defines
 
-        return self.plot_displacements(displacement_name='displacement_per_node_xy', ax=ax, amplitude=amplitude)
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param amplitude: DESCRIPTION, defaults to 1
+        :type amplitude: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        return self.plot_displacements(displacement_name='displacement_per_node_xy', ax=ax,
+                                       amplitude=amplitude)
 
     def plot_displacement_per_node_y(self, ax=None, amplitude=1):
+        """
+        Defines
 
-        return self.plot_displacements(displacement_name='displacement_per_node_y', ax=ax, amplitude=amplitude)
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param amplitude: DESCRIPTION, defaults to 1
+        :type amplitude: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        return self.plot_displacements(displacement_name='displacement_per_node_y', ax=ax,
+                                       amplitude=amplitude)
 
     def plot_displacement_vectors_per_node(self, ax=None, amplitude=0.05):
+        """
+        Defines
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param amplitude: DESCRIPTION, defaults to 0.05
+        :type amplitude: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if ax is None:
-            fig, ax = plt.subplots()
+            _, ax = plt.subplots()
 
         ax.set_aspect('equal')
         self.mesh.plot(ax)
         displacement_field_vectors = self.displacement_vectors_per_node
-        for i, vector in enumerate(displacement_field_vectors):
+        for i, (_, vector) in enumerate(displacement_field_vectors.items()):
             vector.plot(amplitude=amplitude, origin=self.mesh.nodes[i], ax=ax, normalize=True)
 
         ax.set_xlabel('x')
@@ -854,9 +1263,23 @@ class ElasticityResults2D(ElasticityResults):
         ax.set_title(comment)
 
     def plot_energy(self, ax=None, fig=None, amplitude=1):
+        """
+        Defines
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param fig: DESCRIPTION, defaults to None
+        :type fig: TYPE, optional
+        :param amplitude: DESCRIPTION, defaults to 1
+        :type amplitude: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         result = self.energy_per_element
-        result_values = [value for value in self.energy_per_element.values()]
+        # result_values = [value for value in self.energy_per_element.values()] #unnecessary-comprehension
+        result_values = list(self.energy_per_element.values())
 
         if amplitude != 1:
             deformed_mesh = self.deformed_mesh_m(amplitude=amplitude)
@@ -868,16 +1291,21 @@ class ElasticityResults2D(ElasticityResults):
         else:
             fig = plt.gcf()
 
-        B_max, B_min = finite_elements.core.get_bmin_bmax(result_values, Bmin=None, Bmax=None)
-        B_to_color = finite_elements.core.get_colors(result_values, B_max=B_max, B_min=B_min)
-        for g, group in enumerate(deformed_mesh.elements_groups):
-            for e, element in enumerate(group.elements):
-                element.plot(ax=ax, color=B_to_color[result[self.mesh.elements_groups[g].elements[e]]], fill=True)
+        b_max, b_min = finite_elements.core.get_bmin_bmax(result_values, param_bmin=None,
+                                                          param_bmax=None)
+        b_to_color = finite_elements.core.get_colors(result_values, param_bmax=b_max,
+                                                     param_bmin=b_min)
+        for g_index, group in enumerate(deformed_mesh.elements_groups):
+            for e_index, element in enumerate(group.elements):
+                element.plot(ax=ax,
+                             color=b_to_color[result[
+                                 self.mesh.elements_groups[g_index].elements[e_index]]],
+                             fill=True)
 
-        norm = mpl.colors.Normalize(vmin=B_min, vmax=B_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ticks=npy.linspace(B_min, B_max, 10), ax=ax)
+        norm = mpl.colors.Normalize(vmin=b_min, vmax=b_max)
+        scalar_mappable = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)
+        scalar_mappable.set_array([])
+        cbar = fig.colorbar(scalar_mappable, ticks=npy.linspace(b_min, b_max, 10), ax=ax)
         cbar.set_label('Energy')
         ax.set_aspect('equal')
 
@@ -893,14 +1321,50 @@ class ElasticityResults2D(ElasticityResults):
         return ax
 
     def plot_shear_strain_xy(self, ax=None, fig=None):
+        """
+        Plots
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param fig: DESCRIPTION, defaults to None
+        :type fig: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         return self.plot_constraints(constraint_name='shear_strain_xy', ax=ax, fig=fig)
 
     def plot_shear_stress_xy(self, ax=None, fig=None):
+        """
+        Plots
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+        :param fig: DESCRIPTION, defaults to None
+        :type fig: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         return self.plot_constraints(constraint_name='shear_stress_xy', ax=ax, fig=fig)
 
     def plot_strain(self, axs=None, fig=None, row=1):
+        """
+        Plots
+
+        :param axs: DESCRIPTION, defaults to None
+        :type axs: TYPE, optional
+        :param fig: DESCRIPTION, defaults to None
+        :type fig: TYPE, optional
+        :param row: DESCRIPTION, defaults to 1
+        :type row: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if fig is None:
             fig = plt.figure()
 
@@ -919,6 +1383,20 @@ class ElasticityResults2D(ElasticityResults):
         return axs
 
     def plot_stress(self, axs=None, fig=None, row=1):
+        """
+        Plots
+
+        :param axs: DESCRIPTION, defaults to None
+        :type axs: TYPE, optional
+        :param fig: DESCRIPTION, defaults to None
+        :type fig: TYPE, optional
+        :param row: DESCRIPTION, defaults to 1
+        :type row: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if fig is None:
             fig = plt.figure()
 
@@ -937,6 +1415,12 @@ class ElasticityResults2D(ElasticityResults):
         return axs
 
     def shear_strain_xy(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         strain = self.strain
         shear_strain_xy = {}
@@ -947,6 +1431,12 @@ class ElasticityResults2D(ElasticityResults):
         return shear_strain_xy
 
     def shear_stress_xy(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         stress = self.stress
         shear_stress_xy = {}
@@ -958,6 +1448,9 @@ class ElasticityResults2D(ElasticityResults):
 
 
 class ElasticityResults3D(ElasticityResults):
+    """
+    This class
+    """
     # _standalone_in_db = True
     # _non_serializable_attributes = []
     # _non_eq_attributes = ['name']
@@ -976,6 +1469,12 @@ class ElasticityResults3D(ElasticityResults):
     #     Result.__init__(self, mesh, result_vector)
 
     def axial_strain_x(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         strain = self.strain
         axial_strain_x = {}
@@ -986,6 +1485,12 @@ class ElasticityResults3D(ElasticityResults):
         return axial_strain_x
 
     def axial_strain_y(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         strain = self.strain
         axial_strain_y = {}
@@ -996,6 +1501,12 @@ class ElasticityResults3D(ElasticityResults):
         return axial_strain_y
 
     def axial_strain_z(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         strain = self.strain
         axial_strain_z = {}
@@ -1006,6 +1517,12 @@ class ElasticityResults3D(ElasticityResults):
         return axial_strain_z
 
     def axial_stress_x(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         stress = self.stress
         axial_stress_x = {}
@@ -1016,6 +1533,12 @@ class ElasticityResults3D(ElasticityResults):
         return axial_stress_x
 
     def axial_stress_y(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         stress = self.stress
         axial_stress_y = {}
@@ -1026,6 +1549,12 @@ class ElasticityResults3D(ElasticityResults):
         return axial_stress_y
 
     def axial_stress_z(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         stress = self.stress
         axial_stress_z = {}
@@ -1036,6 +1565,12 @@ class ElasticityResults3D(ElasticityResults):
         return axial_stress_z
 
     def displacement_per_node_z(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         return [displacement[2] for displacement in self.displacement_vectors_per_node]
 
@@ -1092,6 +1627,12 @@ class ElasticityResults3D(ElasticityResults):
     #     return axs
 
     def shear_strain_xy(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         strain = self.strain
         shear_strain_xy = {}
@@ -1102,6 +1643,12 @@ class ElasticityResults3D(ElasticityResults):
         return shear_strain_xy
 
     def shear_strain_yz(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         strain = self.strain
         shear_strain_xy = {}
@@ -1112,6 +1659,12 @@ class ElasticityResults3D(ElasticityResults):
         return shear_strain_xy
 
     def shear_strain_zx(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         strain = self.strain
         shear_strain_xy = {}
@@ -1122,6 +1675,12 @@ class ElasticityResults3D(ElasticityResults):
         return shear_strain_xy
 
     def shear_stress_xy(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         stress = self.stress
         shear_stress_xy = {}
@@ -1132,6 +1691,12 @@ class ElasticityResults3D(ElasticityResults):
         return shear_stress_xy
 
     def shear_stress_yz(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         stress = self.stress
         shear_stress_xy = {}
@@ -1142,6 +1707,12 @@ class ElasticityResults3D(ElasticityResults):
         return shear_stress_xy
 
     def shear_stress_zx(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
 
         stress = self.stress
         shear_stress_xy = {}

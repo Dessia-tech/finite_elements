@@ -4,6 +4,7 @@
 Module containing objects related to finite elements analysis
 """
 
+from typing import List
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as npy
@@ -16,7 +17,7 @@ import scipy.sparse.linalg
 from scipy.sparse import csc_matrix
 
 from dessia_common.core import DessiaObject
-from typing import List
+
 import finite_elements.elements
 from finite_elements.loads import ElementsLoad, EdgeLoad, NodeLoad, MagnetLoad
 from finite_elements.conditions import ContinuityCondition
@@ -25,6 +26,16 @@ from finite_elements.core import blue_red
 
 
 def node_boundary_conditions_to_dict(node_boundary_conditions):
+    """
+    Creates
+
+    :param node_boundary_conditions: DESCRIPTION
+    :type node_boundary_conditions: TYPE
+
+    :return: DESCRIPTION
+    :rtype: TYPE
+    """
+
     node_boundary_conditions_dict = {}
     for node_bc in node_boundary_conditions:
         try:
@@ -37,6 +48,16 @@ def node_boundary_conditions_to_dict(node_boundary_conditions):
 
 
 def node_boundary_from_dict(node_boundary_conditions_dict):
+    """
+    Creates
+
+    :param node_boundary_conditions_dict: DESCRIPTION
+    :type node_boundary_conditions_dict: TYPE
+
+    :return: DESCRIPTION
+    :rtype: TYPE
+    """
+
     node_boundary_conditions = []
     for key, value in node_boundary_conditions_dict.items():
         node_boundary_conditions.append(
@@ -48,6 +69,16 @@ def node_boundary_from_dict(node_boundary_conditions_dict):
 
 
 def node_loads_to_dict(node_loads):
+    """
+    Creates
+
+    :param node_loads: DESCRIPTION
+    :type node_loads: TYPE
+
+    :return: DESCRIPTION
+    :rtype: TYPE
+    """
+
     node_loads_dict = {}
     for node_load in node_loads:
         try:
@@ -60,6 +91,16 @@ def node_loads_to_dict(node_loads):
 
 
 def node_loads_from_dict(node_loads_dict):
+    """
+    Creates
+
+    :param node_loads_dict: DESCRIPTION
+    :type node_loads_dict: TYPE
+
+    :return: DESCRIPTION
+    :rtype: TYPE
+    """
+
     node_loads = []
     for key, value in node_loads_dict.items():
         node_loads.append(NodeLoad(
@@ -70,17 +111,49 @@ def node_loads_from_dict(node_loads_dict):
 
 
 class FiniteElements(DessiaObject):
+    """
+    This class
+
+    :param mesh: DESCRIPTION
+    :type mesh: vmmesh.Mesh
+    :param element_loads: DESCRIPTION
+    :type element_loads: List[ElementsLoad]
+    :param edge_loads: DESCRIPTION
+    :type edge_loads: List[EdgeLoad]
+    :param node_loads: DESCRIPTION
+    :type node_loads: List[NodeLoad]
+    :param magnet_loads: DESCRIPTION
+    :type magnet_loads: List[MagnetLoad]
+    :param continuity_conditions: DESCRIPTION
+    :type continuity_conditions: List[ContinuityCondition]
+    :param node_boundary_conditions: DESCRIPTION
+    :type node_boundary_conditions: List[finite_elements.conditions.NodeBoundaryCondition]
+    :param edge_boundary_conditions: DESCRIPTION
+    :type edge_boundary_conditions: List[finite_elements.conditions.EdgeBoundaryCondition]
+    :param element_boundary_conditions: DESCRIPTION
+    :type element_boundary_conditions: List[finite_elements.conditions.ElementBoundaryCondition]
+    :param plane_strain: DESCRIPTION, defaults to None
+    :type plane_strain: bool, optional
+    :param plane_stress: DESCRIPTION, defaults to None
+    :type plane_stress: bool, optional
+    """
+
     def __init__(self, mesh: vmmesh.Mesh,
                  element_loads: List[ElementsLoad],
                  edge_loads: List[EdgeLoad],
                  node_loads: List[NodeLoad],
                  magnet_loads: List[MagnetLoad],
-                 continuity_conditions: List[ContinuityCondition],
-                 node_boundary_conditions: List[finite_elements.conditions.NodeBoundaryCondition],
-                 edge_boundary_conditions: List[finite_elements.conditions.EdgeBoundaryCondition],
-                 element_boundary_conditions: List[finite_elements.conditions.ElementBoundaryCondition],
+                 continuity_conditions:
+                     List[ContinuityCondition],
+                 node_boundary_conditions:
+                     List[finite_elements.conditions.NodeBoundaryCondition],
+                 edge_boundary_conditions:
+                     List[finite_elements.conditions.EdgeBoundaryCondition],
+                 element_boundary_conditions:
+                     List[finite_elements.conditions.ElementBoundaryCondition],
                  plane_strain: bool = None,
                  plane_stress: bool = None):
+
         self.mesh = mesh
         self.element_loads = element_loads  # current density J
         self.edge_loads = edge_loads
@@ -100,6 +173,13 @@ class FiniteElements(DessiaObject):
         DessiaObject.__init__(self, name='')
 
     def c_matrix_continuity_conditions(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         row_ind, col_ind, data = [], [], []
         for i, condition in enumerate(self.continuity_conditions):
             data.extend(condition.c_matrix())
@@ -119,22 +199,36 @@ class FiniteElements(DessiaObject):
         return data, row_ind, col_ind
 
     def boundary_conditions_element_to_node(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         element_to_node_boundary_conditions = []
-        for i, element_condition in enumerate(self.element_boundary_conditions):
+        for element_condition in self.element_boundary_conditions:
 
             matrix_factors = element_condition.application.element_to_node_factors()
 
-            for p, point in enumerate(element_condition.application.points):
+            for p_index, point in enumerate(element_condition.application.points):
                 element_to_node_boundary_conditions.append(
                     finite_elements.conditions.NodeBoundaryCondition(
                         application=point,
-                        value=element_condition.value * matrix_factors[p],
+                        value=element_condition.value * matrix_factors[p_index],
                         dimension=element_condition.dimension))
         return element_to_node_boundary_conditions
 
     def boundary_conditions_edge_to_node(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         edge_to_node_boundary_conditions = []
-        for i, edge_condition in enumerate(self.edge_boundary_conditions):
+        for edge_condition in self.edge_boundary_conditions:
             for point in [edge_condition.application.start,
                           edge_condition.application.end]:
                 edge_to_node_boundary_conditions.append(
@@ -145,6 +239,13 @@ class FiniteElements(DessiaObject):
         return edge_to_node_boundary_conditions
 
     def c_matrix_boundary_conditions(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if self._boundary_conditions:
             node_boundary_conditions = self._boundary_conditions
         else:
@@ -155,10 +256,12 @@ class FiniteElements(DessiaObject):
             node_boundary_conditions.extend(self.boundary_conditions_edge_to_node())
 
             # node_bc to_dict
-            node_boundary_conditions_dict = node_boundary_conditions_to_dict(node_boundary_conditions)
+            node_boundary_conditions_dict = node_boundary_conditions_to_dict(
+                node_boundary_conditions)
 
             # node_bc dict from_dict
-            node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
+            node_boundary_conditions = node_boundary_from_dict(
+                node_boundary_conditions_dict)
             self._boundary_conditions = node_boundary_conditions
 
         # c_matrix data
@@ -176,23 +279,47 @@ class FiniteElements(DessiaObject):
         return data, row_ind, col_ind
 
     @property
+    def dimension(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        return self.mesh.elements_groups[0].elements[0].dimension
+
+    @property
     def elements_name(self):
+        """
+        Defines
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         return self.mesh.elements_groups[0].elements[0].__class__.__name__
 
     def elements_permeability(self):
+        """
+        Creates
 
-        permeabilities = [elements_group.elements[0].mu_total for elements_group in self.mesh.elements_groups]
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
+        permeabilities = [elements_group.elements[0].mu_total for elements_group in
+                          self.mesh.elements_groups]
 
         return permeabilities
 
     def k_matrix(self, method_name):
         if method_name == 'dense':
             return self.k_matrix_dense()
-        elif method_name == 'sparse':
+        if method_name == 'sparse':
             return self.k_matrix_sparse()
-        else:
-            raise NotImplementedError(
-                f'Class {self.__class__.__name__} does not implement {method_name} k matrix')
+        raise NotImplementedError(
+            f'Class {self.__class__.__name__} does not implement {method_name} k matrix')
 
     def k_matrix_data(self):
         row_ind, col_ind, data = [], [], []
@@ -222,11 +349,10 @@ class FiniteElements(DessiaObject):
     def m_matrix(self, method_name):
         if method_name == 'dense':
             return self.m_matrix_dense()
-        elif method_name == 'sparse':
+        if method_name == 'sparse':
             return self.m_matrix_sparse()
-        else:
-            raise NotImplementedError(
-                f'Class {self.__class__.__name__} does not implement {method_name} m matrix')
+        raise NotImplementedError(
+            f'Class {self.__class__.__name__} does not implement {method_name} m matrix')
 
     def m_matrix_data(self):
         row_ind, col_ind, data = [], [], []
@@ -251,8 +377,8 @@ class FiniteElements(DessiaObject):
                             len(self.mesh.nodes) * self.dimension))
         if hasattr(self, method_name):
             data, row_ind, col_ind = getattr(self, method_name)()
-            for i, d in enumerate(data):
-                matrix[row_ind[i], col_ind[i]] += d
+            for i, data_i in enumerate(data):
+                matrix[row_ind[i], col_ind[i]] += data_i
         else:
             raise NotImplementedError(
                 f'Class {self.__class__.__name__} does not implement {method_name}')
@@ -262,11 +388,11 @@ class FiniteElements(DessiaObject):
         if hasattr(self, method_name):
             data, row_ind, col_ind = getattr(self, method_name)()
             dict_data = {}
-            for i, d in enumerate(data):
+            for i, data_i in enumerate(data):
                 try:
-                    dict_data[(row_ind[i], col_ind[i])] += d
+                    dict_data[(row_ind[i], col_ind[i])] += data_i
                 except KeyError:
-                    dict_data[(row_ind[i], col_ind[i])] = d
+                    dict_data[(row_ind[i], col_ind[i])] = data_i
             data_new, row_ind_new, col_ind_new = [], [], []
             for key, value in dict_data.items():
                 data_new.append(value)
@@ -279,25 +405,39 @@ class FiniteElements(DessiaObject):
         return matrix
 
     def loads_element_to_node(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         element_to_node_loads = []
-        for i, elements_load in enumerate(self.element_loads):
+        for elements_load in self.element_loads:
             loads_per_element = elements_load.value_per_element
 
             for j, element in enumerate(elements_load.elements):
 
                 matrix_factors = element.element_to_node_factors()
 
-                for p, point in enumerate(element.points):
+                for p_index, point in enumerate(element.points):
                     element_to_node_loads.append(NodeLoad(
                         node=point,
-                        value=loads_per_element[j] * matrix_factors[p],
+                        value=loads_per_element[j] * matrix_factors[p_index],
                         dimension=elements_load.dimension))
 
         return element_to_node_loads
 
     def loads_edge_to_node(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         edge_to_node_loads = []
-        for i, edge_load in enumerate(self.edge_loads):
+        for edge_load in self.edge_loads:
             for point in [edge_load.edge.start,
                           edge_load.edge.end]:
                 edge_to_node_loads.append(NodeLoad(
@@ -315,6 +455,13 @@ class FiniteElements(DessiaObject):
         return self._positions
 
     def source_c_matrix_loads(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         node_loads = self.node_loads[:]
         # element to node
         node_loads.extend(self.loads_element_to_node())
@@ -335,7 +482,7 @@ class FiniteElements(DessiaObject):
         # positions = finite_elements.core.global_matrix_positions(dimension=self.dimension,
         #                                                          nodes_number=len(self.mesh.nodes))
         positions = self.positions
-        for i, load in enumerate(node_loads):
+        for _, load in enumerate(node_loads):
             data.append(load.source_c_matrix())
             row_ind.append(positions[(self.mesh.node_to_index[load.node], load.dimension)])
 
@@ -360,6 +507,13 @@ class FiniteElements(DessiaObject):
     #     return data, row_ind
 
     def source_c_matrix_boundary_conditions(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if self._boundary_conditions:
             node_boundary_conditions = self._boundary_conditions
         else:
@@ -370,10 +524,12 @@ class FiniteElements(DessiaObject):
             node_boundary_conditions.extend(self.boundary_conditions_edge_to_node())
 
             # node_bc to_dict
-            node_boundary_conditions_dict = node_boundary_conditions_to_dict(node_boundary_conditions)
+            node_boundary_conditions_dict = node_boundary_conditions_to_dict(
+                node_boundary_conditions)
 
             # node_bc dict from_dict
-            node_boundary_conditions = node_boundary_from_dict(node_boundary_conditions_dict)
+            node_boundary_conditions = node_boundary_from_dict(
+                node_boundary_conditions_dict)
 
             self._boundary_conditions = node_boundary_conditions
 
@@ -398,16 +554,23 @@ class FiniteElements(DessiaObject):
     #     return data, row_ind
 
     def source_c_matrix_magnet_loads(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         data, row_ind = [], []
         for magnet_load in self.magnet_loads:
             for linear_element in magnet_load.contour_linear_elements():
                 indexes = [self.mesh.node_to_index[linear_element.points[0]],
                            self.mesh.node_to_index[linear_element.points[1]]]
                 length = linear_element.length()
-                dl = vm.Vector2D([-linear_element.interior_normal[1],
-                                  linear_element.interior_normal[0]])
-                data.append(magnet_load.magnetization_vector.Dot(dl) * length / 2)
-                data.append(magnet_load.magnetization_vector.Dot(dl) * length / 2)
+                dl_parameter = vm.Vector2D([-linear_element.interior_normal[1],
+                                            linear_element.interior_normal[0]])
+                data.append(magnet_load.magnetization_vector.Dot(dl_parameter) * length / 2)
+                data.append(magnet_load.magnetization_vector.Dot(dl_parameter) * length / 2)
                 row_ind.append(indexes[0])
                 row_ind.append(indexes[1])
 
@@ -429,12 +592,14 @@ class FiniteElementAnalysis(FiniteElements):
     """
 
     # def __init__(self, mesh: vmmesh.Mesh,
-    #              element_loads: List[ElementsLoad],
-    #              node_loads: List[NodeLoad],
-    #              magnet_loads: List[MagnetLoad],
-    #              continuity_conditions: List[ContinuityCondition],
-    #              node_boundary_conditions: List[finite_elements.conditions.NodeBoundaryCondition],
-    #              element_boundary_conditions: List[finite_elements.conditions.ElementBoundaryCondition]):
+    #               element_loads: List[ElementsLoad],
+    #               node_loads: List[NodeLoad],
+    #               magnet_loads: List[MagnetLoad],
+    #               continuity_conditions: List[ContinuityCondition],
+    #               node_boundary_conditions:
+    #                   List[finite_elements.conditions.NodeBoundaryCondition],
+    #               element_boundary_conditions:
+    #                   List[finite_elements.conditions.ElementBoundaryCondition]):
     #     self.mesh = mesh
     #     self.element_loads = element_loads  # current density J
     #     self.node_loads = node_loads
@@ -450,6 +615,13 @@ class FiniteElementAnalysis(FiniteElements):
     #                             node_boundary_conditions, element_boundary_conditions)
 
     def create_matrix(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         row_ind = []
         col_ind = []
         data = []
@@ -472,7 +644,7 @@ class FiniteElementAnalysis(FiniteElements):
         # row_ind.extend(c_matrix_boundary_conditions[1])
         # col_ind.extend(c_matrix_boundary_conditions[2])
 
-        method_names = ['k_matrix', 'c_matrix_continuity_conditions',
+        method_names = ['k_matrix_data', 'c_matrix_continuity_conditions',
                         'c_matrix_boundary_conditions']
 
         for method_name in method_names:
@@ -491,6 +663,13 @@ class FiniteElementAnalysis(FiniteElements):
         return matrix
 
     def create_source_matrix(self):
+        """
+        Creates
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         matrix = npy.zeros((self.get_source_matrix_length(), 1))
 
         # # elements_loads
@@ -519,8 +698,8 @@ class FiniteElementAnalysis(FiniteElements):
         for method_name in method_names:
             if hasattr(self, method_name):
                 result = getattr(self, method_name)()
-                for i, d in enumerate(result[0]):
-                    matrix[result[1][i]][0] += d
+                for i, data in enumerate(result[0]):
+                    matrix[result[1][i]][0] += data
 
             else:
                 raise NotImplementedError(
@@ -606,13 +785,15 @@ class FiniteElementAnalysis(FiniteElements):
 
             return eigvals, eigvecs.T
 
-        elif order == 'smallest':
+        if order == 'smallest':
             m_matrix_sparse = self.m_matrix_sparse()
             k_matrix_sparse = csc_matrix(scipy.linalg.inv(self.k_matrix_dense()))
             eigvals, eigvecs = scipy.sparse.linalg.eigs(k_matrix_sparse @ m_matrix_sparse,
                                                         which='LM',
                                                         k=k)
             return 1 / eigvals, eigvecs.T
+
+        raise ValueError("Order parameter should be either 'largest' or 'smallest'")
 
     def solve(self):
         """
@@ -632,27 +813,36 @@ class FiniteElementAnalysis(FiniteElements):
         # scipy.sparse.linalg.spsolved is the fastest !
         # print('avant')
 
-        K_sparse = self.create_matrix()
-        F = self.create_source_matrix()
+        k_sparse = self.create_matrix()
+        force = self.create_source_matrix()
 
         try:
-            X = sparse.linalg.spsolve(K_sparse, F,
-                                      permc_spec='NATURAL',
-                                      use_umfpack=True)
-        except sparse.linalg.MatrixRankWarning:
+            x_solution = sparse.linalg.spsolve(k_sparse, force,
+                                               permc_spec='NATURAL',
+                                               use_umfpack=True)
+
+        except sparse.linalg.MatrixRankWarning as exc:
             print('MatricRankWarning')
-            raise NotImplementedError
-        X = list(X)
+            raise NotImplementedError from exc
+
+        x_solution = list(x_solution)
         # print('apres')
-        return Result(self.mesh, X)
+        return Result(self.mesh, x_solution)
 
     def plot_elements_loads(self, ax=None):
         """
-        Plots the mesh. The triangular elements are filled red if they are a \
-        source of magnetic potential thanks to their current density.
+        Plots the mesh. The triangular elements are filled red if they are a
+            source of magnetic potential thanks to their current density
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
         """
+
         if ax is None:
-            fig, ax = plt.subplots()
+            _, ax = plt.subplots()
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
                 element.plot(ax=ax, color='w', fill=True)
@@ -664,9 +854,16 @@ class FiniteElementAnalysis(FiniteElements):
 
     def plot_elements_permeability(self, ax=None):
         """
-        Plots the mesh with colored triangular elements depending on the \
-        permeability of the material the element meshes.
+        Plots the mesh with colored triangular elements depending on the
+            permeability of the material the element meshes
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
         """
+
         if ax is None:
             fig, ax = plt.subplots()
         else:
@@ -679,16 +876,16 @@ class FiniteElementAnalysis(FiniteElements):
         mu_min = min(permeabilities)
         colors = []
         for elements_group in self.mesh.elements_groups:
-            x = (elements_group.elements[0].mu_total - mu_min) / (mu_max - mu_min)
-            color = (color_map[0][0] - (color_map[0][0] - color_map[1][0]) * x,
-                     color_map[0][1] - (color_map[0][1] - color_map[1][1]) * x,
-                     color_map[0][2] - (color_map[0][2] - color_map[1][2]) * x)
+            x_param = (elements_group.elements[0].mu_total - mu_min) / (mu_max - mu_min)
+            color = (color_map[0][0] - (color_map[0][0] - color_map[1][0]) * x_param,
+                     color_map[0][1] - (color_map[0][1] - color_map[1][1]) * x_param,
+                     color_map[0][2] - (color_map[0][2] - color_map[1][2]) * x_param)
             colors.append(color)
 
         norm = mpl.colors.Normalize(vmin=mu_min, vmax=mu_max)
-        sm = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)  # plt.get_cmap('jet_r')
-        sm.set_array([])
-        cbar = fig.colorbar(sm, ticks=npy.linspace(mu_min, mu_max, 10))
+        sm_param = plt.cm.ScalarMappable(cmap=blue_red, norm=norm)  # plt.get_cmap('jet_r')
+        sm_param.set_array([])
+        cbar = fig.colorbar(sm_param, ticks=npy.linspace(mu_min, mu_max, 10))
         cbar.set_label('permeability')
         for i, elements_group in enumerate(self.mesh.elements_groups):
             for element in elements_group.elements:
@@ -697,22 +894,39 @@ class FiniteElementAnalysis(FiniteElements):
         return ax
 
     def plot_continuity_condition(self, ax=None):
+        """
+        Plots
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
+        """
+
         if ax is None:
             ax = self.mesh.plot()
 
         for i, continuity_condition in enumerate(self.continuity_conditions):
-            continuity_condition.node1.MPLPlot(ax=ax, color='C{}'.format(i % 10))
-            continuity_condition.node2.MPLPlot(ax=ax, color='C{}'.format(i % 10))
+            continuity_condition.node1.MPLPlot(ax=ax, color=f'C{i % 10}')
+            continuity_condition.node2.MPLPlot(ax=ax, color=f'C{i % 10}')
         return ax
 
     def plot_magnet_loads(self, ax=None):
         """
-        Plots the mesh. The triangular elements are filled red if they are a \
-        source of magnetic potential thanks to their magnetization. The contour \
-        of the magnetizating mesh is drawn in blue.
+        Plots the mesh. The triangular elements are filled red if they are a
+            source of magnetic potential thanks to their magnetization. The contour
+            of the magnetizating mesh is drawn in blue.
+
+        :param ax: DESCRIPTION, defaults to None
+        :type ax: TYPE, optional
+
+        :return: DESCRIPTION
+        :rtype: TYPE
         """
+
         if ax is None:
-            fig, ax = plt.subplots()
+            _, ax = plt.subplots()
         for elements_group in self.mesh.elements_groups:
             for element in elements_group.elements:
                 element.plot(ax=ax, color='w', fill=True)

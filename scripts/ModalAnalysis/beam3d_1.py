@@ -6,7 +6,7 @@ Created on Thu Dec 1 2022
 @author: s.bendjebla
 """
 
-import volmdlr.gmsh
+import volmdlr.gmsh_vm
 import volmdlr.mesh as vmmesh
 import finite_elements as fe
 import finite_elements.elements
@@ -22,7 +22,7 @@ files_path = ['../InputFiles/3D/beam3d_0.5', '../InputFiles/3D/beam3d_1',
 
 file_path = files_path[0]
 
-gmsh = volmdlr.gmsh.Gmsh.from_file(file_path+'.msh')
+gmsh = volmdlr.gmsh_vm.GmshParser.from_file(file_path+'.msh')
 
 mesh = gmsh.define_tetrahedron_element_mesh()
 
@@ -73,6 +73,4 @@ for eigval in eigvals:
 # %% VTK files generation
 
 # for i, elasticity_result in enumerate(elasticity_results):
-#     elasticity_result.update_vtk_with_results(
-#         input_file_name = file_path+'.vtk',
-#         output_file_name = file_path+'_mode_n°_'+str(i)+'.vtk')
+#     elasticity_result.generate_vtk_file(file_path+'_mode_n°_'+str(i)+'.vtk')

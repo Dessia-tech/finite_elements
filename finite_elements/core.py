@@ -31,13 +31,13 @@ blue_red = LinearSegmentedColormap('BLueRed', cdict)
 MU = 4 * math.pi * 1e-7
 
 
-def get_bmin_bmax(Bs, Bmax=None, Bmin=None):
+def get_bmin_bmax(param_bs, param_bmax=None, param_bmin=None):
     """
 
-    :param Bs: DESCRIPTION
-    :type Bs: TYPE
-    :param Bmax: DESCRIPTION, defaults to None
-    :type Bmax: TYPE, optional
+    :param param_bs: DESCRIPTION
+    :type param_bs: TYPE
+    :param param_bmax: DESCRIPTION, defaults to None
+    :type param_bmax: TYPE, optional
     :param Bmin: DESCRIPTION, defaults to None
     :type Bmin: TYPE, optional
 
@@ -45,27 +45,25 @@ def get_bmin_bmax(Bs, Bmax=None, Bmin=None):
     :rtype: TYPE
     """
 
-    if Bmax is None and Bmin is None:
-        B_max, B_min = max(Bs), min(Bs)
-    elif Bmax is not None and Bmin is None:
-        B_max, B_min = Bmax, min(Bs)
-    elif Bmax is None and Bmin is not None:
-        B_max, B_min = max(Bs), Bmin
-    else:
-        B_max, B_min = Bmax, Bmin
+    if param_bmax is None and param_bmin is None:
+        param_bmax, param_bmin = max(param_bs), min(param_bs)
+    elif param_bmax is not None and param_bmin is None:
+        param_bmin = min(param_bs)
+    elif param_bmax is None and param_bmin is not None:
+        param_bmax = max(param_bs)
 
-    return B_max, B_min
+    return param_bmax, param_bmin
 
 
-def get_colors(Bs, B_max=None, B_min=None):
+def get_colors(param_bs, param_bmax=None, param_bmin=None):
     """
 
-    :param Bs: DESCRIPTION
-    :type Bs: TYPE
-    :param B_max: DESCRIPTION, defaults to None
-    :type B_max: TYPE, optional
-    :param B_min: DESCRIPTION, defaults to None
-    :type B_min: TYPE, optional
+    :param param_bs: DESCRIPTION
+    :type param_bs: TYPE
+    :param param_bmax: DESCRIPTION, defaults to None
+    :type param_bmax: TYPE, optional
+    :param param_bmin: DESCRIPTION, defaults to None
+    :type param_bmin: TYPE, optional
 
     :return: DESCRIPTION
     :rtype: TYPE
@@ -73,19 +71,19 @@ def get_colors(Bs, B_max=None, B_min=None):
 
     color_map = ((0, 0, 1), (1, 0, 0))
 
-    B_to_color = {}
-    for B in Bs:
-        if B > B_max:
-            x = 1
+    b_to_color = {}
+    for param_b in param_bs:
+        if param_b > param_bmax:
+            x_param = 1
         else:
-            x = (B - B_min) / (B_max - B_min)
+            x_param = (param_b - param_bmin) / (param_bmax - param_bmin)
 
-        color = (color_map[0][0] - (color_map[0][0] - color_map[1][0]) * x,
-                 color_map[0][1] - (color_map[0][1] - color_map[1][1]) * x,
-                 color_map[0][2] - (color_map[0][2] - color_map[1][2]) * x)
-        B_to_color[B] = color
+        color = (color_map[0][0] - (color_map[0][0] - color_map[1][0]) * x_param,
+                 color_map[0][1] - (color_map[0][1] - color_map[1][1]) * x_param,
+                 color_map[0][2] - (color_map[0][2] - color_map[1][2]) * x_param)
+        b_to_color[param_b] = color
 
-    return B_to_color
+    return b_to_color
 
 
 def global_matrix_positions(dimension, nodes_number):
@@ -131,14 +129,29 @@ def get_triangulation(mesh):
                               mesh.node_to_index[element.points[1]],
                               mesh.node_to_index[element.points[2]]])
 
-    x = npy.asarray(x_list)
-    y = npy.asarray(y_list)
-    triang = mtri.Triangulation(x, y, triangles)
+    x_coor = npy.asarray(x_list)
+    y_coor = npy.asarray(y_list)
+    triang = mtri.Triangulation(x_coor, y_coor, triangles)
 
     return triang
 
 
 class Material(DessiaObject):
+    """
+    This class defines a material with its physical characteristics
+
+    :param elasticity_modulus: The unit of measurement of an object's resistance to being deformed
+        elastically, when a stress is applied to it
+    :type elasticity_modulus: float
+    :param poisson_ratio:  The measure of the Poisson effect, the deformation (expansion or
+       contraction) of a material in directions perpendicular to the specific direction of loading
+    :type poisson_ratio: float
+    :param mass_density: The substance's mass per unit of volume
+    :type mass_density: float
+    :param name: The name, defaults to ''
+    :type name: str, optional
+    """
+
     _standalone_in_db = False
     _non_serializable_attributes = []
     _non_eq_attributes = ['name']
