@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Update methods based on volmdlr updates
 
 
-## [v0.1.0] - 04/17/2023
+## [v0.1.0] - 04/19/2023
 
 ### Refactorings
 
