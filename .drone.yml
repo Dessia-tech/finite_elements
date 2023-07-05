@@ -19,7 +19,7 @@ steps:
     - bash code_pep8.sh
 
 - name: install, build doc run scripts
-  image: python:3.8
+  image: python:3.9
   commands:
   - git fetch --tags
   - pip install Cython sphinx sphinx_rtd_theme coverage
@@ -31,7 +31,7 @@ steps:
   - python coverage.py
 
 - name: generate sdist
-  image: python:3.8
+  image: python:3.9
   commands:
   - git fetch --tags
   - pip install Cython
