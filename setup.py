@@ -112,5 +112,5 @@ setup(name='finite_elements',
       package_dir={},
       include_package_data = True,
       install_requires=['packaging', 'dessia_common>=0.3.7',
-                        'volmdlr>=0.10.0', 'numpy', 'matplotlib'],
+                        'volmdlr>=0.10.0', 'numpy<=1.24.0', 'matplotlib'],
       classifiers=['Topic :: Scientific/Engineering','Development Status :: 3 - Alpha'])
