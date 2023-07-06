@@ -4,20 +4,37 @@ type: docker
 name: default
 
 steps:
+- name: check code complexity
+  image: python:3.9
+  commands:
+  - pip install radon pylint
+  - ./code_quality.sh
+  - python code_pylint.py
+
+- name: check pep8 formatting
+  image: python:3.9
+  commands:
+    - git fetch --tags
+    - pip3 install -U pip autopep8
+    - bash code_pep8.sh
+
 - name: install, build doc run scripts
-  image: python:3.7
+  image: python:3.9
   commands:
-  - git fetch --tags 
+  - git fetch --tags
+  - pip install Cython sphinx sphinx_rtd_theme coverage
   - python setup.py install
+  - cd scripts
+  - coverage run --source finite_elements ci_scripts.py
+  - coverage json
+  - coverage report
+  - python coverage.py
 
-- name: develop
-  image: python:3.7
+- name: generate sdist
+  image: python:3.9
   commands:
-  - python setup.py develop
-
-- name: sdist
-  image: python:3.7
-  commands:
+  - git fetch --tags
+  - pip install Cython
   - python setup.py sdist
 
 - name: upload to pypi
@@ -30,6 +47,21 @@ steps:
     password:
         from_secret: pypi_password
 
+- name: upload_doc_master
+  image: appleboy/drone-scp
+  when:
+    branch: master
+    event: push
+  settings:
+    host: austerlitz.dessia.tech
+    target: /var/www/documentation/finite_elements/
+    source: doc/build/html/*
+    strip_components: 3
+    username: drone
+    password:
+      from_secret: ssh_drone_password
+
+
 - name: notify by email
   when:
     status:
@@ -39,6 +71,5 @@ steps:
     host: mail.dessia.tech
     username: technical@dessia.tech
     password:
-     from_secret: email_password
+      from_secret: email_password
     from: technical@dessia.tech
-    recipients: [ root@dessia.tech ]
