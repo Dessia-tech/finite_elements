@@ -5,7 +5,7 @@ scripts = [
     # Magnetic
     # 'Magnetic/current_loop.py',
     'Magnetic/finite_element_beam.py',
-    # 'Magnetic/magnet_in_void.py',
+    # # 'Magnetic/magnet_in_void.py',
 
     # Elasticity2D
     'Elasticity/beam2d_example_1.py',

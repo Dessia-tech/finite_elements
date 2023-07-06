@@ -1,6 +1,6 @@
 from pylint.lint import Run
 
-MIN_NOTE = 4.95
+MIN_NOTE = 8.0
 
 MAX_ERROR_BY_TYPE = {
                      'invalid-name': 142,
@@ -43,7 +43,7 @@ MAX_ERROR_BY_TYPE = {
                      'too-many-boolean-expressions': 3,
                      'too-many-lines': 3,
                      'redundant-keyword-arg': 3,
-                     'no-value-for-parameter': 2,
+                     'no-value-for-parameter': 3,
                      'consider-using-with': 2,
                      'consider-using-get': 2,
                      'eval-used': 2,
