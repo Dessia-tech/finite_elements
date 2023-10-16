@@ -215,8 +215,8 @@ class ElasticityElement(DessiaObject):
 
     _standalone_in_db = False
     _non_serializable_attributes = []
-    _non_eq_attributes = ['name']
-    _non_hash_attributes = ['name']
+    _non_data_eq_attributes = ['name', 'b_matrix', 'd_matrix_plane_strain', 'd_matrix_plane_stress']
+    _non_data_hash_attributes = ['name', 'b_matrix', 'd_matrix_plane_strain', 'd_matrix_plane_stress']
     _generic_eq = True
     # def __init__(self, mesh_element,
     #              elasticity_modulus : float,
@@ -376,6 +376,12 @@ class ElasticityTriangularElement2D(ElasticityElement, Element2D):
     #     self.displacements = displacements
     #     self.stress = stress
     #     self.strain = strain
+
+    _standalone_in_db = False
+    _non_serializable_attributes = []
+    _non_data_eq_attributes = ['name', 'b_matrix', 'd_matrix_plane_strain', 'd_matrix_plane_stress']
+    _non_data_hash_attributes = ['name', 'b_matrix', 'd_matrix_plane_strain', 'd_matrix_plane_stress']
+    _generic_eq = True
 
     def __init__(self, mesh_element: vmmesh.TriangularElement2D,
                  elasticity_modulus, poisson_ratio, mass_density,
@@ -681,6 +687,12 @@ class ElasticityTetrahedralElement3D(ElasticityElement, vmmesh.TetrahedralElemen
     :param name: DESCRIPTION, defaults to ''
     :type name: str, optional
     """
+
+    _standalone_in_db = False
+    _non_serializable_attributes = []
+    _non_data_eq_attributes = ['name', 'b_matrix', 'd_matrix_plane_strain', 'd_matrix_plane_stress']
+    _non_data_hash_attributes = ['name', 'b_matrix', 'd_matrix_plane_strain', 'd_matrix_plane_stress']
+    _generic_eq = True
 
     # _standalone_in_db = False
     # _non_serializable_attributes = []
